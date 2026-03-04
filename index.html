@@ -34,7 +34,13 @@
       min-height: 100vh;
     }
 
-    .wrap { max-width: 1100px; margin: 0 auto; padding: 24px }
+    /* ✅ WIDER LAYOUT */
+    .wrap{
+      max-width: none;
+      width: min(1700px, calc(100vw - 48px));
+      margin: 0 auto;
+      padding: 24px;
+    }
 
     .topbar {
       display:flex; gap:14px; align-items:center; justify-content:space-between;
@@ -89,10 +95,11 @@
 
     .row{ display:flex; gap:14px; flex-wrap:wrap }
 
+    /* ✅ WIDER GRID SPLIT */
     .grid{
       display:grid;
-      grid-template-columns: 1.4fr .9fr;
-      gap:14px;
+      grid-template-columns: 2.2fr 1fr;
+      gap:18px;
       margin-top:14px;
     }
     @media (max-width: 980px){
@@ -179,8 +186,9 @@
       padding:8px 16px 16px 16px;
     }
 
+    /* ✅ BIGGER DAY CELLS */
     .day{
-      min-height:112px;
+      min-height:150px;
       border:1px solid rgba(255,255,255,.10);
       background:rgba(255,255,255,.04);
       border-radius:14px;
@@ -379,11 +387,8 @@
   <div class="toast" id="toast"></div>
 
   <script type="module">
-    // Firebase (Firestore)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-    import {
-      getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot
-    } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+    import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyD3PvEamzNh4_fYIRAG9YxfVDZyucBC2b4",
@@ -397,62 +402,51 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Codes (NOTE: this is NOT secure on a public site - real security needs Firebase Auth + rules)
     const CODES = {
       admin: "PICKA-ADMIN-4927",
       staff: "PICKA-STAFF-1835",
     };
 
-    // Local keys
     const KEY_SESSION = "staffCal.session.v1";
-    const KEY_EVENTS  = "staffCal.events.v1";
-    const KEY_AVAIL   = "staffCal.availability.v1";
+    const KEY_EVENTS = "staffCal.events.v1";
+    const KEY_AVAIL = "staffCal.availability.v1";
     const KEY_SAVED_NAME = "staffCal.savedName.v1";
 
-    // State
-    let session = loadJSON(KEY_SESSION, null); // { role, name }
-    let events  = loadJSON(KEY_EVENTS, []);
-    let avail   = loadJSON(KEY_AVAIL, []);
+    let session = loadJSON(KEY_SESSION, null);
+    let events = loadJSON(KEY_EVENTS, []);
+    let avail = loadJSON(KEY_AVAIL, []);
     let viewDate = new Date();
     let selectedDate = null;
     let pendingOpenDate = null;
 
-    // Helpers
-    function saveJSON(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
-    function loadJSON(key, fallback) {
-      try {
-        const raw = localStorage.getItem(key);
-        return raw ? JSON.parse(raw) : fallback;
-      } catch {
-        return fallback;
-      }
+    function saveJSON(key, value){ localStorage.setItem(key, JSON.stringify(value)); }
+    function loadJSON(key, fallback){
+      try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }
+      catch { return fallback; }
     }
-    function uid() { return Math.random().toString(16).slice(2) + Date.now().toString(16); }
-    function pad2(n) { return String(n).padStart(2, "0"); }
-    function toISODate(d) {
-      const y = d.getFullYear();
-      const m = pad2(d.getMonth() + 1);
-      const day = pad2(d.getDate());
-      return y + "-" + m + "-" + day;
+    function uid(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
+    function pad2(n){ return String(n).padStart(2, "0"); }
+    function toISODate(d){
+      return d.getFullYear() + "-" + pad2(d.getMonth()+1) + "-" + pad2(d.getDate());
     }
-    function fromISODate(s) {
-      const parts = s.split("-").map(Number);
-      return new Date(parts[0], parts[1] - 1, parts[2]);
+    function fromISODate(s){
+      const p = s.split("-").map(Number);
+      return new Date(p[0], p[1]-1, p[2]);
     }
-    function startOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
-    function endOfMonth(d) { return new Date(d.getFullYear(), d.getMonth() + 1, 0); }
-    function monthLabel(d) { return d.toLocaleString(undefined, { month: "long", year: "numeric" }); }
-    function mondayIndex(jsDay) { return (jsDay + 6) % 7; }
-    function prettyDate(iso) {
+    function startOfMonth(d){ return new Date(d.getFullYear(), d.getMonth(), 1); }
+    function endOfMonth(d){ return new Date(d.getFullYear(), d.getMonth()+1, 0); }
+    function monthLabel(d){ return d.toLocaleString(undefined, { month:"long", year:"numeric" }); }
+    function mondayIndex(jsDay){ return (jsDay + 6) % 7; }
+    function prettyDate(iso){
       const d = fromISODate(iso);
-      return d.toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+      return d.toLocaleDateString(undefined, { weekday:"long", year:"numeric", month:"long", day:"numeric" });
     }
-    function escapeHTML(s) {
-      return String(s).replace(/[&<>"']/g, (c) => ({
-        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    function escapeHTML(s){
+      return String(s).replace(/[&<>"']/g, c => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
       }[c]));
     }
-    function toast(msg) {
+    function toast(msg){
       const t = document.getElementById("toast");
       t.textContent = msg;
       t.style.display = "block";
@@ -460,16 +454,13 @@
       toast._tm = setTimeout(() => t.style.display = "none", 2200);
     }
 
-    // Firestore refs
     const eventsCol = collection(db, "events");
-    const availCol  = collection(db, "availability");
+    const availCol = collection(db, "availability");
+    async function upsertEvent(ev){ await setDoc(doc(db, "events", ev.id), ev, { merge:true }); }
+    async function removeEvent(id){ await deleteDoc(doc(db, "events", id)); }
+    async function upsertAvail(a){ await setDoc(doc(db, "availability", a.id), a, { merge:true }); }
+    async function removeAvail(id){ await deleteDoc(doc(db, "availability", id)); }
 
-    async function upsertEvent(ev) { await setDoc(doc(db, "events", ev.id), ev, { merge: true }); }
-    async function removeEvent(id) { await deleteDoc(doc(db, "events", id)); }
-    async function upsertAvail(a)  { await setDoc(doc(db, "availability", a.id), a, { merge: true }); }
-    async function removeAvail(id) { await deleteDoc(doc(db, "availability", id)); }
-
-    // Elements
     const whoLine = document.getElementById("whoLine");
     const rolePill = document.getElementById("rolePill");
     const btnLogin = document.getElementById("btnLogin");
@@ -498,8 +489,8 @@
     const dayModalSub = document.getElementById("dayModalSub");
     const dayModalBody = document.getElementById("dayModalBody");
 
-    function renderTop() {
-      if (!session) {
+    function renderTop(){
+      if(!session){
         whoLine.textContent = "Synced (Firebase) - Login required";
         rolePill.style.display = "none";
         btnLogin.style.display = "inline-block";
@@ -525,19 +516,18 @@
       }
     }
 
-    function renderCalendar() {
+    function renderCalendar(){
       monthTitle.textContent = monthLabel(viewDate);
       calGrid.innerHTML = "";
 
       const first = startOfMonth(viewDate);
-      const last = endOfMonth(viewDate);
       const lead = mondayIndex(first.getDay());
       const cells = 42;
 
       const startCellDate = new Date(first);
       startCellDate.setDate(first.getDate() - lead);
 
-      for (let i = 0; i < cells; i++) {
+      for(let i=0;i<cells;i++){
         const cellDate = new Date(startCellDate);
         cellDate.setDate(startCellDate.getDate() + i);
         const iso = toISODate(cellDate);
@@ -549,7 +539,7 @@
         const div = document.createElement("div");
         div.className = "day" + (inMonth ? "" : " muted");
 
-        if (selectedDate === iso) {
+        if(selectedDate === iso){
           div.style.borderColor = "rgba(114,137,218,.65)";
           div.style.background = "rgba(114,137,218,.10)";
         }
@@ -563,8 +553,8 @@
 
         const badge = document.createElement("div");
         const parts = [];
-        if (dayEvents.length) parts.push("E " + dayEvents.length);
-        if (dayAvail.length) parts.push("A " + dayAvail.length);
+        if(dayEvents.length) parts.push("E " + dayEvents.length);
+        if(dayAvail.length) parts.push("A " + dayAvail.length);
         badge.className = "badge" + (dayEvents.length ? " brand" : (dayAvail.length ? " ok" : ""));
         badge.textContent = parts.length ? parts.join(" ") : "";
 
@@ -574,14 +564,14 @@
         const list = document.createElement("div");
         list.className = "miniList";
 
-        dayEvents.slice(0, 2).forEach(ev => {
+        dayEvents.slice(0,2).forEach(ev => {
           const it = document.createElement("div");
           it.className = "miniItem";
           it.textContent = ev.host ? (ev.title + " - " + ev.host) : ev.title;
           list.appendChild(it);
         });
 
-        if (dayEvents.length > 2) {
+        if(dayEvents.length > 2){
           const it = document.createElement("div");
           it.className = "miniItem";
           it.innerHTML = "<span>+" + (dayEvents.length - 2) + " more</span>";
@@ -596,7 +586,7 @@
           renderCalendar();
           renderDetails();
 
-          if (!session) {
+          if(!session){
             pendingOpenDate = iso;
             openLogin();
             return;
@@ -608,11 +598,11 @@
       }
     }
 
-    function renderDetails() {
+    function renderDetails(){
       selectedDateText.textContent = selectedDate ? prettyDate(selectedDate) : "None";
       detailList.innerHTML = "";
 
-      if (!session) {
+      if(!session){
         detailList.innerHTML =
           '<div class="item"><div>' +
           '<h4>Login required</h4>' +
@@ -622,12 +612,11 @@
         return;
       }
 
-      if (!selectedDate) {
+      if(!selectedDate){
         detailList.innerHTML =
           '<div class="item"><div>' +
           '<h4>Pick a date</h4>' +
           '<p>Click any day to see events and availability.</p>' +
-          '<div class="meta">Tip: Use Today to jump back.</div>' +
           '</div></div>';
         return;
       }
@@ -635,7 +624,6 @@
       const dayEvents = events.filter(e => e.date === selectedDate);
       const dayAvail = avail.filter(a => a.date === selectedDate);
 
-      // Events section
       const evCard = document.createElement("div");
       evCard.className = "item";
 
@@ -646,122 +634,113 @@
       evTitle.textContent = "Official events (" + dayEvents.length + ")";
       evLeft.appendChild(evTitle);
 
-      if (dayEvents.length === 0) {
+      if(dayEvents.length === 0){
         const p = document.createElement("p");
         p.textContent = "No official events on this day yet.";
         evLeft.appendChild(p);
       } else {
-        dayEvents
-          .slice()
-          .sort((a, b) => (a.time || "").localeCompare(b.time || ""))
-          .forEach(ev => {
-            const wrap = document.createElement("div");
-            wrap.style.marginTop = "10px";
-            wrap.style.padding = "10px";
-            wrap.style.borderRadius = "12px";
-            wrap.style.border = "1px solid rgba(255,255,255,.10)";
-            wrap.style.background = "rgba(0,0,0,.16)";
+        dayEvents.slice().sort((a,b) => (a.time||"").localeCompare(b.time||"")).forEach(ev => {
+          const wrap = document.createElement("div");
+          wrap.style.marginTop = "10px";
+          wrap.style.padding = "10px";
+          wrap.style.borderRadius = "12px";
+          wrap.style.border = "1px solid rgba(255,255,255,.10)";
+          wrap.style.background = "rgba(0,0,0,.16)";
 
-            const h = document.createElement("div");
-            h.style.display = "flex";
-            h.style.justifyContent = "space-between";
-            h.style.gap = "10px";
-            h.style.alignItems = "flex-start";
+          const h = document.createElement("div");
+          h.style.display = "flex";
+          h.style.justifyContent = "space-between";
+          h.style.gap = "10px";
+          h.style.alignItems = "flex-start";
 
-            const hostLine = ev.host ? ("Host: " + ev.host) : "Host: Unassigned";
+          const hostLine = ev.host ? ("Host: " + ev.host) : "Host: Unassigned";
 
-            const t = document.createElement("div");
-            t.innerHTML =
-              "<b>" + escapeHTML(ev.title) + "</b>" +
-              '<div class="meta">' +
-              escapeHTML(ev.time || "Time TBA") + " • " +
-              escapeHTML(ev.location || "Location TBA") + " • " +
-              escapeHTML(hostLine) +
-              "</div>";
+          const t = document.createElement("div");
+          t.innerHTML =
+            "<b>" + escapeHTML(ev.title) + "</b>" +
+            '<div class="meta">' +
+            escapeHTML(ev.time || "Time TBA") + " • " +
+            escapeHTML(ev.location || "Location TBA") + " • " +
+            escapeHTML(hostLine) +
+            "</div>";
+          h.appendChild(t);
 
-            h.appendChild(t);
+          const rightBtns = document.createElement("div");
+          rightBtns.style.display = "flex";
+          rightBtns.style.gap = "8px";
+          rightBtns.style.flexWrap = "wrap";
+          rightBtns.style.justifyContent = "flex-end";
 
-            const rightBtns = document.createElement("div");
-            rightBtns.style.display = "flex";
-            rightBtns.style.gap = "8px";
-            rightBtns.style.flexWrap = "wrap";
-            rightBtns.style.justifyContent = "flex-end";
+          if(session.role !== "admin" && !ev.host){
+            const claim = document.createElement("button");
+            claim.className = "btn small ok";
+            claim.textContent = "I'm hosting this";
+            claim.addEventListener("click", async (e) => {
+              e.stopPropagation();
+              await upsertEvent(Object.assign({}, ev, { host: session.name }));
+              toast("You are now the host");
+            });
+            rightBtns.appendChild(claim);
+          }
 
-            // Staff can claim host if unassigned
-            if (session.role !== "admin" && !ev.host) {
-              const claim = document.createElement("button");
-              claim.className = "btn small ok";
-              claim.textContent = "I'm hosting this";
-              claim.addEventListener("click", async (e) => {
-                e.stopPropagation();
-                await upsertEvent(Object.assign({}, ev, { host: session.name }));
-                toast("You are now the host");
-              });
-              rightBtns.appendChild(claim);
-            }
+          if(session.role === "admin"){
+            const setHost = document.createElement("button");
+            setHost.className = "btn small primary";
+            setHost.textContent = "Set host";
+            setHost.addEventListener("click", async (e) => {
+              e.stopPropagation();
+              const name = prompt("Host name:", ev.host || "");
+              if(name === null) return;
+              await upsertEvent(Object.assign({}, ev, { host: name.trim() }));
+              toast("Host updated");
+            });
 
-            // Admin controls
-            if (session.role === "admin") {
-              const setHost = document.createElement("button");
-              setHost.className = "btn small primary";
-              setHost.textContent = "Set host";
-              setHost.addEventListener("click", async (e) => {
-                e.stopPropagation();
-                const name = prompt("Host name:", ev.host || "");
-                if (name === null) return;
-                await upsertEvent(Object.assign({}, ev, { host: name.trim() }));
-                toast("Host updated");
-              });
+            const clearHost = document.createElement("button");
+            clearHost.className = "btn small";
+            clearHost.textContent = "Clear host";
+            clearHost.addEventListener("click", async (e) => {
+              e.stopPropagation();
+              await upsertEvent(Object.assign({}, ev, { host: "" }));
+              toast("Host cleared");
+            });
 
-              const clearHost = document.createElement("button");
-              clearHost.className = "btn small";
-              clearHost.textContent = "Clear host";
-              clearHost.addEventListener("click", async (e) => {
-                e.stopPropagation();
-                await upsertEvent(Object.assign({}, ev, { host: "" }));
-                toast("Host cleared");
-              });
+            const del = document.createElement("button");
+            del.className = "btn small danger";
+            del.textContent = "Remove";
+            del.addEventListener("click", async (e) => {
+              e.stopPropagation();
+              await removeEvent(ev.id);
+              toast("Event removed");
+            });
 
-              const del = document.createElement("button");
-              del.className = "btn small danger";
-              del.textContent = "Remove";
-              del.addEventListener("click", async (e) => {
-                e.stopPropagation();
-                await removeEvent(ev.id);
-                toast("Event removed");
-              });
+            rightBtns.appendChild(setHost);
+            rightBtns.appendChild(clearHost);
+            rightBtns.appendChild(del);
+          }
 
-              rightBtns.appendChild(setHost);
-              rightBtns.appendChild(clearHost);
-              rightBtns.appendChild(del);
-            }
+          h.appendChild(rightBtns);
+          wrap.appendChild(h);
 
-            h.appendChild(rightBtns);
-            wrap.appendChild(h);
+          if(ev.note){
+            const note = document.createElement("p");
+            note.style.margin = "8px 0 0";
+            note.style.fontSize = "12px";
+            note.style.color = "var(--muted)";
+            note.textContent = ev.note;
+            wrap.appendChild(note);
+          }
 
-            if (ev.note) {
-              const note = document.createElement("p");
-              note.style.margin = "8px 0 0";
-              note.style.fontSize = "12px";
-              note.style.color = "var(--muted)";
-              note.textContent = ev.note;
-              wrap.appendChild(note);
-            }
-
-            evLeft.appendChild(wrap);
-          });
+          evLeft.appendChild(wrap);
+        });
       }
 
       const evRight = document.createElement("div");
-      evRight.innerHTML = (session.role === "admin")
-        ? '<div class="badge brand">Admin</div>'
-        : '<div class="badge">Staff</div>';
+      evRight.innerHTML = (session.role === "admin") ? '<div class="badge brand">Admin</div>' : '<div class="badge">Staff</div>';
 
       evCard.appendChild(evLeft);
       evCard.appendChild(evRight);
       detailList.appendChild(evCard);
 
-      // Availability section
       const avCard = document.createElement("div");
       avCard.className = "item";
 
@@ -772,7 +751,7 @@
       avTitle.textContent = "Staff availability (" + dayAvail.length + ")";
       avLeft.appendChild(avTitle);
 
-      if (dayAvail.length === 0) {
+      if(dayAvail.length === 0){
         const p = document.createElement("p");
         p.textContent = "No availability added yet.";
         avLeft.appendChild(p);
@@ -788,7 +767,7 @@
             '<b class="okText">' + escapeHTML(a.name) + "</b>" +
             '<div class="meta">' + escapeHTML(a.note || "Available to host") + "</div>";
 
-          if (session.role === "admin" || a.name === session.name) {
+          if(session.role === "admin" || a.name === session.name){
             const del = document.createElement("button");
             del.className = "btn small danger";
             del.textContent = "Remove";
@@ -806,12 +785,13 @@
 
       const avRight = document.createElement("div");
       avRight.innerHTML = '<div class="badge ok">Availability</div>';
+
       avCard.appendChild(avLeft);
       avCard.appendChild(avRight);
       detailList.appendChild(avCard);
     }
 
-    function openLogin() {
+    function openLogin(){
       loginBackdrop.style.display = "flex";
       const saved = localStorage.getItem(KEY_SAVED_NAME) || "";
       loginName.value = saved || (session ? session.name : "");
@@ -819,10 +799,10 @@
       codeHelp.textContent = "Admin: " + CODES.admin + " • Staff: " + CODES.staff;
       setTimeout(() => loginName.focus(), 50);
     }
-    function closeLogin() { loginBackdrop.style.display = "none"; }
+    function closeLogin(){ loginBackdrop.style.display = "none"; }
 
-    function openDayModal(iso) {
-      if (!session) return;
+    function openDayModal(iso){
+      if(!session) return;
 
       dayBackdrop.style.display = "flex";
       dayModalTitle.textContent = prettyDate(iso);
@@ -843,32 +823,22 @@
             '<div class="t">Add official event</div>' +
             '<div style="height:10px"></div>' +
 
-            '<div class="field">' +
-              "<label>Event title</label>" +
-              '<input id="evTitle" placeholder="e.g. Time Trial" maxlength="50">' +
-            "</div>" +
+            '<div class="field"><label>Event title</label>' +
+              '<input id="evTitle" placeholder="e.g. Time Trial" maxlength="50"></div>' +
 
             '<div class="row">' +
-              '<div class="field" style="flex:1;min-width:160px">' +
-                "<label>Time (optional)</label>" +
-                '<input id="evTime" placeholder="e.g. 6:00PM AEST" maxlength="30">' +
-              "</div>" +
-              '<div class="field" style="flex:1;min-width:160px">' +
-                "<label>Location (optional)</label>" +
-                '<input id="evLoc" placeholder="e.g. Spider cave" maxlength="40">' +
-              "</div>" +
+              '<div class="field" style="flex:1;min-width:160px"><label>Time (optional)</label>' +
+                '<input id="evTime" placeholder="e.g. 6:00PM AEST" maxlength="30"></div>' +
+              '<div class="field" style="flex:1;min-width:160px"><label>Location (optional)</label>' +
+                '<input id="evLoc" placeholder="e.g. Spider cave" maxlength="40"></div>' +
             "</div>" +
 
-            '<div class="field">' +
-              "<label>Host (optional)</label>" +
+            '<div class="field"><label>Host (optional)</label>' +
               '<input id="evHost" placeholder="e.g. Nugg" maxlength="24">' +
-              '<div class="tiny">Tip: staff can also claim host later</div>' +
-            "</div>" +
+              '<div class="tiny">Tip: staff can also claim host later</div></div>' +
 
-            '<div class="field">' +
-              "<label>Notes (optional)</label>" +
-              '<textarea id="evNote" placeholder="Extra details..."></textarea>' +
-            "</div>" +
+            '<div class="field"><label>Notes (optional)</label>' +
+              '<textarea id="evNote" placeholder="Extra details..."></textarea></div>' +
 
             '<button class="btn ok" id="saveEvent">Add event</button>' +
           "</div>" +
@@ -878,10 +848,8 @@
         '<div class="kv">' +
           '<div class="t">Add availability</div>' +
           '<div style="height:10px"></div>' +
-          '<div class="field">' +
-            "<label>Your note (optional)</label>" +
-            '<input id="avNote" placeholder="e.g. Can host after 5pm" maxlength="60">' +
-          "</div>" +
+          '<div class="field"><label>Your note (optional)</label>' +
+            '<input id="avNote" placeholder="e.g. Can host after 5pm" maxlength="60"></div>' +
           '<button class="btn primary" id="saveAvail">Add availability</button>' +
           '<div class="tiny" style="margin-top:8px">Saved name: <b>' + escapeHTML(session.name) + "</b></div>" +
         "</div>";
@@ -891,7 +859,7 @@
       document.getElementById("saveAvail").onclick = async () => {
         const note = (document.getElementById("avNote").value || "").trim();
         const exists = avail.some(a => a.date === iso && a.name === session.name);
-        if (exists) { toast("You already added availability for this day"); return; }
+        if(exists){ toast("You already added availability for this day"); return; }
 
         const a = { id: uid(), date: iso, name: session.name, note: note };
         await upsertAvail(a);
@@ -899,7 +867,7 @@
         dayBackdrop.style.display = "none";
       };
 
-      if (isAdmin) {
+      if(isAdmin){
         document.getElementById("saveEvent").onclick = async () => {
           const title = (document.getElementById("evTitle").value || "").trim();
           const time  = (document.getElementById("evTime").value || "").trim();
@@ -907,7 +875,7 @@
           const host  = (document.getElementById("evHost").value || "").trim();
           const note  = (document.getElementById("evNote").value || "").trim();
 
-          if (!title) { toast("Event title required"); return; }
+          if(!title){ toast("Event title required"); return; }
 
           const ev = { id: uid(), date: iso, title: title, time: time, location: loc, host: host, note: note };
           await upsertEvent(ev);
@@ -917,10 +885,10 @@
       }
     }
 
-    // UI actions
+    // UI events
     btnLogin.addEventListener("click", openLogin);
     document.getElementById("loginCancel").addEventListener("click", closeLogin);
-    loginBackdrop.addEventListener("click", (e) => { if (e.target === loginBackdrop) closeLogin(); });
+    loginBackdrop.addEventListener("click", (e) => { if(e.target === loginBackdrop) closeLogin(); });
 
     clearSavedNameBtn.addEventListener("click", () => {
       localStorage.removeItem(KEY_SAVED_NAME);
@@ -932,12 +900,12 @@
     document.getElementById("loginGo").addEventListener("click", () => {
       const name = (loginName.value || "").trim();
       const code = (loginCode.value || "").trim();
-      if (!name) { toast("Enter a display name"); return; }
+      if(!name){ toast("Enter a display name"); return; }
 
       let role = null;
-      if (code === CODES.admin) role = "admin";
-      if (code === CODES.staff) role = role || "staff";
-      if (!role) { toast("Wrong code"); return; }
+      if(code === CODES.admin) role = "admin";
+      if(code === CODES.staff) role = role || "staff";
+      if(!role){ toast("Wrong code"); return; }
 
       session = { role: role, name: name };
       saveJSON(KEY_SESSION, session);
@@ -949,7 +917,7 @@
       renderCalendar();
       renderDetails();
 
-      if (pendingOpenDate) {
+      if(pendingOpenDate){
         const d = pendingOpenDate;
         pendingOpenDate = null;
         openDayModal(d);
@@ -966,11 +934,11 @@
     });
 
     document.getElementById("prevMonth").addEventListener("click", () => {
-      viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1);
+      viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth()-1, 1);
       renderCalendar();
     });
     document.getElementById("nextMonth").addEventListener("click", () => {
-      viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1);
+      viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth()+1, 1);
       renderCalendar();
     });
     document.getElementById("todayBtn").addEventListener("click", () => {
@@ -978,33 +946,32 @@
       selectedDate = toISODate(new Date());
       renderCalendar();
       renderDetails();
-      if (session) openDayModal(selectedDate);
+      if(session) openDayModal(selectedDate);
       else { pendingOpenDate = selectedDate; openLogin(); }
     });
 
     addEventBtn.addEventListener("click", () => {
-      if (!session) { pendingOpenDate = selectedDate || toISODate(new Date()); openLogin(); return; }
-      if (!selectedDate) selectedDate = toISODate(new Date());
+      if(!session){ pendingOpenDate = selectedDate || toISODate(new Date()); openLogin(); return; }
+      if(!selectedDate) selectedDate = toISODate(new Date());
       openDayModal(selectedDate);
     });
 
     addAvailBtn.addEventListener("click", () => {
-      if (!session) { pendingOpenDate = selectedDate || toISODate(new Date()); openLogin(); return; }
-      if (!selectedDate) selectedDate = toISODate(new Date());
+      if(!session){ pendingOpenDate = selectedDate || toISODate(new Date()); openLogin(); return; }
+      if(!selectedDate) selectedDate = toISODate(new Date());
       openDayModal(selectedDate);
     });
 
     resetBtn.addEventListener("click", () => {
-      if (!session || session.role !== "admin") return;
+      if(!session || session.role !== "admin") return;
       saveJSON(KEY_EVENTS, []);
       saveJSON(KEY_AVAIL, []);
       toast("Local cache cleared");
     });
 
-    dayBackdrop.addEventListener("click", (e) => { if (e.target === dayBackdrop) dayBackdrop.style.display = "none"; });
+    dayBackdrop.addEventListener("click", (e) => { if(e.target === dayBackdrop) dayBackdrop.style.display = "none"; });
 
-    // Firestore live sync
-    function startListeners() {
+    function startListeners(){
       storageNote.textContent = "Syncing with Firebase (Firestore)...";
 
       onSnapshot(eventsCol, (snap) => {
@@ -1023,14 +990,14 @@
       });
     }
 
-    function boot() {
+    function boot(){
       selectedDate = toISODate(new Date());
       renderTop();
       renderCalendar();
       renderDetails();
       startListeners();
 
-      if (session && !session.name) {
+      if(session && !session.name){
         session = null;
         saveJSON(KEY_SESSION, null);
       }
