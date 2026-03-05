@@ -1,1009 +1,1662 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Staff Calendar</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #0f1115;
-      --panel: rgba(255,255,255,0.06);
-      --panel2: rgba(255,255,255,0.09);
-      --stroke: rgba(255,255,255,0.12);
-      --text: #eef1f6;
-      --muted: rgba(238,241,246,0.7);
-      --brand: #7289da;
-      --danger: #ff6b6b;
-      --ok: #39d98a;
-      --shadow: 0 18px 60px rgba(0,0,0,.45);
-      --radius: 16px;
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Staff Calendar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
-    * { box-sizing: border-box }
+    <style>
+        :root {
+            --bg: #0f1115;
+            --panel: rgba(255,255,255,.06);
+            --panel2: rgba(255,255,255,.09);
+            --stroke: rgba(255,255,255,.12);
+            --text: #eef1f6;
+            --muted: rgba(238,241,246,.7);
+            --brand: #7289da;
+            --danger: #ff6b6b;
+            --ok: #39d98a;
+            --shadow: 0 18px 60px rgba(0,0,0,.45);
+            --radius: 16px;
+        }
 
-    body {
-      margin: 0;
-      font-family: Inter, system-ui, Segoe UI, Roboto, Arial, sans-serif;
-      background:
-        radial-gradient(1200px 700px at 20% -10%, rgba(114,137,218,.22), transparent 60%),
-        radial-gradient(900px 600px at 95% 0%, rgba(57,217,138,.12), transparent 60%),
-        radial-gradient(900px 600px at 60% 110%, rgba(255,107,107,.12), transparent 60%),
-        var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
+        * {
+            box-sizing: border-box;
+        }
 
-    /* ✅ WIDER LAYOUT */
-    .wrap{
-      max-width: none;
-      width: min(1700px, calc(100vw - 48px));
-      margin: 0 auto;
-      padding: 24px;
-    }
+        body {
+            margin: 0;
+            font-family: Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+            background: radial-gradient(1200px 700px at 20% -10%, rgba(114,137,218,.22), transparent 60%), radial-gradient(900px 600px at 95% 0%, rgba(57,217,138,.12), transparent 60%), radial-gradient(900px 600px at 60% 110%, rgba(255,107,107,.12), transparent 60%), var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-bottom: 110px;
+        }
 
-    .topbar {
-      display:flex; gap:14px; align-items:center; justify-content:space-between;
-      padding:16px 18px;
-      border:1px solid var(--stroke);
-      background:var(--panel);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      position:sticky; top:14px;
-      backdrop-filter: blur(10px);
-      z-index:10;
-    }
+        .wrap {
+            width: min(1700px, calc(100vw - 48px));
+            margin: 0 auto;
+            padding: 24px;
+        }
 
-    .brand { display:flex; gap:12px; align-items:center; }
-    .logo {
-      width:38px; height:38px; border-radius:12px;
-      background:linear-gradient(135deg, rgba(114,137,218,1), rgba(57,217,138,1));
-      box-shadow:0 10px 30px rgba(114,137,218,.25);
-    }
-    .brand h1 { font-size:14px; margin:0; letter-spacing:.2px }
-    .brand p { font-size:12px; margin:0; color:var(--muted) }
+        .topbar {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 18px;
+            border: 1px solid var(--stroke);
+            background: var(--panel);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 14px;
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
 
-    .pill{
-      font-size:12px; color:var(--text);
-      padding:7px 10px; border:1px solid var(--stroke);
-      background:rgba(255,255,255,.05);
-      border-radius:999px;
-      display:inline-flex; gap:8px; align-items:center;
-    }
-    .pill b{ font-weight:700 }
+        .brand {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
 
-    .btn{
-      border:1px solid var(--stroke);
-      background:rgba(255,255,255,.06);
-      color:var(--text);
-      padding:10px 12px; border-radius:12px;
-      font-weight:600; font-size:13px;
-      cursor:pointer;
-      transition:.15s transform, .15s background;
-      user-select:none;
-    }
-    .btn:hover{ background:rgba(255,255,255,.10) }
-    .btn:active{ transform: translateY(1px) }
-    .btn.primary{ background:rgba(114,137,218,.22); border-color:rgba(114,137,218,.45) }
-    .btn.primary:hover{ background:rgba(114,137,218,.28) }
-    .btn.danger{ background:rgba(255,107,107,.14); border-color:rgba(255,107,107,.35) }
-    .btn.danger:hover{ background:rgba(255,107,107,.18) }
-    .btn.ok{ background:rgba(57,217,138,.14); border-color:rgba(57,217,138,.35) }
-    .btn.ok:hover{ background:rgba(57,217,138,.18) }
-    .btn.ghost{ background:transparent }
-    .btn.small{ padding:8px 10px; border-radius:12px; font-size:12px }
+        .logo {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(114,137,218,1), rgba(57,217,138,1));
+            box-shadow: 0 10px 30px rgba(114,137,218,.25);
+        }
 
-    .row{ display:flex; gap:14px; flex-wrap:wrap }
+        .brand h1 {
+            font-size: 14px;
+            margin: 0;
+            letter-spacing: .2px;
+        }
 
-    /* ✅ WIDER GRID SPLIT */
-    .grid{
-      display:grid;
-      grid-template-columns: 2.2fr 1fr;
-      gap:18px;
-      margin-top:14px;
-    }
-    @media (max-width: 980px){
-      .grid{ grid-template-columns: 1fr }
-      .topbar{ position: static }
-    }
+        .brand p {
+            font-size: 12px;
+            margin: 0;
+            color: var(--muted);
+        }
 
-    .card{
-      border:1px solid var(--stroke);
-      background:var(--panel);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      overflow:hidden;
-    }
-    .cardHead{
-      padding:14px 16px;
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      border-bottom:1px solid rgba(255,255,255,.08);
-    }
-    .cardHead h2{ margin:0; font-size:13px }
-    .cardHead p{ margin:0; font-size:12px; color:var(--muted) }
-    .cardBody{ padding:14px 16px }
+        .pill {
+            font-size: 12px;
+            color: var(--text);
+            padding: 7px 10px;
+            border: 1px solid var(--stroke);
+            background: rgba(255,255,255,.05);
+            border-radius: 999px;
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+            overflow-wrap: anywhere;
+        }
 
-    /* Modals */
-    .modalBackdrop{
-      position:fixed; inset:0;
-      background:rgba(0,0,0,.55);
-      display:none; align-items:center; justify-content:center;
-      padding:20px; z-index:999;
-    }
-    .modal{
-      width:min(520px, 100%);
-      border:1px solid var(--stroke);
-      background:rgba(20,22,26,.95);
-      border-radius:20px;
-      box-shadow:var(--shadow);
-      overflow:hidden;
-    }
-    .modalTop{ padding:18px; border-bottom:1px solid rgba(255,255,255,.08) }
-    .modalTop h3{ margin:0; font-size:14px }
-    .modalTop p{ margin:8px 0 0; color:var(--muted); font-size:12px; line-height:1.35 }
-    .modalBody{ padding:16px }
+            .pill b {
+                font-weight: 700;
+            }
 
-    .field{ display:flex; flex-direction:column; gap:8px; margin-bottom:12px }
-    .field label{ font-size:12px; color:var(--muted) }
+        .btn {
+            border: 1px solid var(--stroke);
+            background: rgba(255,255,255,.06);
+            color: var(--text);
+            padding: 10px 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: .15s transform,.15s background;
+            user-select: none;
+            white-space: nowrap;
+        }
 
-    input, textarea{
-      font:inherit; color:var(--text);
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:12px;
-      padding:10px 12px;
-      outline:none;
-    }
-    textarea{ min-height:74px; resize:vertical }
-    input:focus, textarea:focus{ border-color:rgba(114,137,218,.55) }
+            .btn:hover {
+                background: rgba(255,255,255,.10);
+            }
 
-    .modalActions{ display:flex; gap:10px; justify-content:flex-end; margin-top:12px }
+            .btn:active {
+                transform: translateY(1px);
+            }
 
-    /* Calendar */
-    .calTop{
-      display:flex; gap:10px; align-items:center; justify-content:space-between;
-      padding:12px 16px;
-      border-bottom:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.03);
-    }
-    .calTopLeft{ display:flex; gap:10px; align-items:center; flex-wrap:wrap }
-    .monthTitle{ font-size:14px; font-weight:800; letter-spacing:.2px }
+            .btn.primary {
+                background: rgba(114,137,218,.22);
+                border-color: rgba(114,137,218,.45);
+            }
 
-    .weekdays{
-      display:grid;
-      grid-template-columns:repeat(7,1fr);
-      gap:8px;
-      padding:10px 16px 0 16px;
-      color:var(--muted);
-      font-size:12px;
-    }
-    .weekdays div{ padding:6px 8px }
+                .btn.primary:hover {
+                    background: rgba(114,137,218,.28);
+                }
 
-    .calGrid{
-      display:grid;
-      grid-template-columns:repeat(7,1fr);
-      gap:8px;
-      padding:8px 16px 16px 16px;
-    }
+            .btn.danger {
+                background: rgba(255,107,107,.14);
+                border-color: rgba(255,107,107,.35);
+            }
 
-    /* ✅ BIGGER DAY CELLS */
-    .day{
-      min-height:150px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.04);
-      border-radius:14px;
-      padding:10px;
-      display:flex; flex-direction:column; gap:8px;
-      cursor:pointer;
-      transition:.12s background, .12s transform, .12s border-color;
-    }
-    .day:hover{ background:rgba(255,255,255,.06); border-color:rgba(114,137,218,.35) }
-    .day:active{ transform:translateY(1px) }
-    .day.muted{ opacity:.45 }
+                .btn.danger:hover {
+                    background: rgba(255,107,107,.18);
+                }
 
-    .dayHead{
-      display:flex; align-items:center; justify-content:space-between;
-      font-size:12px; color:var(--muted);
-    }
-    .dayNum{ font-weight:800; color:var(--text); font-size:13px }
+            .btn.ok {
+                background: rgba(57,217,138,.14);
+                border-color: rgba(57,217,138,.35);
+            }
 
-    .badge{
-      font-size:11px;
-      padding:4px 8px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(0,0,0,.18);
-      color:var(--muted);
-      display:inline-flex; gap:6px; align-items:center;
-      max-width:100%;
-    }
-    .badge.brand{ border-color:rgba(114,137,218,.35); color:rgba(220,230,255,.92); background:rgba(114,137,218,.12) }
-    .badge.ok{ border-color:rgba(57,217,138,.35); color:rgba(204,255,230,.92); background:rgba(57,217,138,.12) }
+                .btn.ok:hover {
+                    background: rgba(57,217,138,.18);
+                }
 
-    .miniList{ display:flex; flex-direction:column; gap:6px; overflow:hidden }
-    .miniItem{
-      font-size:12px;
-      padding:7px 8px;
-      border-radius:12px;
-      background:rgba(0,0,0,.18);
-      border:1px solid rgba(255,255,255,.10);
-      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-    }
-    .miniItem span{ color:var(--muted) }
+            .btn.ghost {
+                background: transparent;
+            }
 
-    .divider{ height:1px; background:rgba(255,255,255,.08); margin:12px 0 }
+            .btn.small {
+                padding: 8px 10px;
+                border-radius: 12px;
+                font-size: 12px;
+            }
 
-    /* Side panel */
-    .kvs{ display:grid; grid-template-columns:1fr; gap:10px }
-    .kv{
-      padding:12px; border-radius:14px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.04);
-    }
-    .kv .t{ font-size:12px; color:var(--muted) }
-    .kv .v{ font-size:13px; font-weight:700; margin-top:6px }
+        .row {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
 
-    .list{ display:flex; flex-direction:column; gap:10px }
-    .item{
-      padding:12px; border-radius:14px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.04);
-      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
-    }
-    .item h4{ margin:0; font-size:13px }
-    .item p{ margin:6px 0 0; font-size:12px; color:var(--muted); line-height:1.35 }
-    .item .meta{ font-size:11px; color:var(--muted); margin-top:6px }
+        .grid {
+            display: grid;
+            grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+            gap: 18px;
+            margin-top: 14px;
+            align-items: start;
+            width: 100%;
+        }
 
-    .toast{
-      position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
-      padding:10px 12px; border-radius:999px;
-      background:rgba(0,0,0,.55);
-      border:1px solid rgba(255,255,255,.14);
-      color:var(--text); font-size:12px;
-      display:none; z-index:2000;
-      backdrop-filter: blur(10px);
-    }
-    .tiny{ font-size:11px; color:var(--muted) }
-    .rightActions{ display:flex; gap:8px; flex-wrap:wrap }
-    .okText{ color:rgba(190,255,220,.95) }
-  </style>
+        @media (max-width:1200px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                position: static;
+            }
+        }
+
+        .card {
+            border: 1px solid var(--stroke);
+            background: var(--panel);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        .cardHead {
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+            flex-wrap: wrap;
+            min-width: 0;
+        }
+
+            .cardHead h2 {
+                margin: 0;
+                font-size: 13px;
+            }
+
+            .cardHead p {
+                margin: 0;
+                font-size: 12px;
+                color: var(--muted);
+                overflow-wrap: anywhere;
+            }
+
+        .cardBody {
+            padding: 14px 16px;
+            min-width: 0;
+        }
+
+        .modalBackdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.55);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 9999;
+            backdrop-filter: blur(6px);
+        }
+
+        .modal {
+            width: min(520px, 100%);
+            border: 1px solid var(--stroke);
+            background: rgba(20,22,26,.95);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .modalTop {
+            padding: 18px;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+        }
+
+            .modalTop h3 {
+                margin: 0;
+                font-size: 14px;
+            }
+
+            .modalTop p {
+                margin: 8px 0 0;
+                color: var(--muted);
+                font-size: 12px;
+                line-height: 1.35;
+                overflow-wrap: anywhere;
+            }
+
+        .modalBody {
+            padding: 16px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+            .field label {
+                font-size: 12px;
+                color: var(--muted);
+            }
+
+        input, textarea {
+            font: inherit;
+            color: var(--text);
+            background: rgba(255,255,255,.06);
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 12px;
+            padding: 10px 12px;
+            outline: none;
+            min-width: 0;
+        }
+
+        textarea {
+            min-height: 74px;
+            resize: vertical;
+        }
+
+            input:focus, textarea:focus {
+                border-color: rgba(114,137,218,.55);
+            }
+
+        .modalActions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 12px;
+        }
+
+        .calTop {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+            background: rgba(255,255,255,.03);
+            flex-wrap: wrap;
+            min-width: 0;
+        }
+
+        .calTopLeft {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .monthTitle {
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: .2px;
+        }
+
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7,1fr);
+            gap: 8px;
+            padding: 10px 16px 0 16px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+            .weekdays div {
+                padding: 6px 8px;
+            }
+
+        .calGrid {
+            display: grid;
+            grid-template-columns: repeat(7,1fr);
+            gap: 8px;
+            padding: 8px 16px 16px 16px;
+            min-width: 0;
+        }
+
+        .day {
+            min-height: 150px;
+            border: 1px solid rgba(255,255,255,.10);
+            background: rgba(255,255,255,.04);
+            border-radius: 14px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            cursor: pointer;
+            transition: .12s background,.12s transform,.12s border-color;
+            min-width: 0;
+        }
+
+            .day:hover {
+                background: rgba(255,255,255,.06);
+                border-color: rgba(114,137,218,.35);
+            }
+
+            .day:active {
+                transform: translateY(1px);
+            }
+
+            .day.muted {
+                opacity: .45;
+            }
+
+        .dayHead {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--muted);
+            min-width: 0;
+        }
+
+        .dayNum {
+            font-weight: 800;
+            color: var(--text);
+            font-size: 13px;
+        }
+
+        .badge {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.14);
+            background: rgba(0,0,0,.18);
+            color: var(--muted);
+            display: inline-flex;
+            gap: 6px;
+            align-items: center;
+            max-width: 100%;
+            overflow-wrap: anywhere;
+        }
+
+            .badge.brand {
+                border-color: rgba(114,137,218,.35);
+                color: rgba(220,230,255,.92);
+                background: rgba(114,137,218,.12);
+            }
+
+            .badge.ok {
+                border-color: rgba(57,217,138,.35);
+                color: rgba(204,255,230,.92);
+                background: rgba(57,217,138,.12);
+            }
+
+        .miniList {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        .miniItem {
+            font-size: 12px;
+            padding: 7px 8px;
+            border-radius: 12px;
+            background: rgba(0,0,0,.18);
+            border: 1px solid rgba(255,255,255,.10);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+        }
+
+            .miniItem span {
+                color: var(--muted);
+            }
+
+        .divider {
+            height: 1px;
+            background: rgba(255,255,255,.08);
+            margin: 12px 0;
+        }
+
+        .kvs {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .kv {
+            padding: 12px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,.10);
+            background: rgba(255,255,255,.04);
+            min-width: 0;
+        }
+
+            .kv .t {
+                font-size: 12px;
+                color: var(--muted);
+            }
+
+            .kv .v {
+                font-size: 13px;
+                font-weight: 700;
+                margin-top: 6px;
+            }
+
+        .list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .item {
+            padding: 12px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,.10);
+            background: rgba(255,255,255,.04);
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            min-width: 0;
+        }
+
+            .item h4 {
+                margin: 0;
+                font-size: 13px;
+                overflow-wrap: anywhere;
+            }
+
+            .item p {
+                margin: 6px 0 0;
+                font-size: 12px;
+                color: var(--muted);
+                line-height: 1.35;
+                overflow-wrap: anywhere;
+            }
+
+            .item .meta {
+                font-size: 11px;
+                color: var(--muted);
+                margin-top: 6px;
+                overflow-wrap: anywhere;
+            }
+
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 18px;
+            transform: translateX(-50%);
+            padding: 10px 12px;
+            border-radius: 999px;
+            background: rgba(0,0,0,.55);
+            border: 1px solid rgba(255,255,255,.14);
+            color: var(--text);
+            font-size: 12px;
+            display: none;
+            z-index: 20000;
+            backdrop-filter: blur(10px);
+            max-width: min(720px, calc(100vw - 30px));
+            overflow-wrap: anywhere;
+        }
+
+        .tiny {
+            font-size: 11px;
+            color: var(--muted);
+            overflow-wrap: anywhere;
+        }
+
+        .rightActions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .okText {
+            color: rgba(190,255,220,.95);
+        }
+
+        .pfpGrid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0,1fr));
+            gap: 10px;
+            margin-top: 10px;
+            min-width: 0;
+        }
+
+        @media (max-width:520px) {
+            .pfpGrid {
+                grid-template-columns: repeat(2, minmax(0,1fr));
+            }
+        }
+
+        .pfpBtn {
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(0,0,0,.14);
+            border-radius: 14px;
+            padding: 10px 8px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            transition: .12s transform,.12s background,.12s border-color;
+            user-select: none;
+            min-height: 96px;
+            min-width: 0;
+        }
+
+            .pfpBtn:hover {
+                background: rgba(255,255,255,.06);
+                border-color: rgba(114,137,218,.35);
+            }
+
+            .pfpBtn:active {
+                transform: translateY(1px);
+            }
+
+            .pfpBtn[aria-disabled="true"] {
+                opacity: .45;
+                cursor: not-allowed;
+            }
+
+            .pfpBtn.active {
+                border-color: rgba(57,217,138,.55);
+                background: rgba(57,217,138,.10);
+            }
+
+        .pfpImg {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            object-fit: cover;
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.06);
+        }
+
+        .pfpName {
+            font-size: 11px;
+            color: var(--text);
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.1;
+        }
+
+        .hostBar {
+            position: fixed;
+            left: 50%;
+            bottom: 14px;
+            transform: translateX(-50%);
+            width: min(1200px, calc(100vw - 28px));
+            border: 1px solid var(--stroke);
+            background: rgba(20,22,26,.78);
+            backdrop-filter: blur(10px);
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            z-index: 1500;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 14px;
+            min-width: 0;
+        }
+
+        .hostBarLeft {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 220px;
+        }
+
+        .hostBarTitle {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .hostBarDate {
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .hostChips {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            overflow-x: auto;
+            padding-bottom: 2px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.14);
+            background: rgba(0,0,0,.18);
+            white-space: nowrap;
+        }
+
+            .chip img {
+                width: 26px;
+                height: 26px;
+                border-radius: 10px;
+                object-fit: cover;
+                border: 1px solid rgba(255,255,255,.12);
+                background: rgba(255,255,255,.06);
+            }
+
+            .chip b {
+                font-size: 12px;
+            }
+
+        .hostBarRight {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* clickable code */
+        #codeHelp {
+            cursor: pointer;
+            color: #7289da;
+            user-select: none;
+        }
+
+            #codeHelp:hover {
+                text-decoration: underline;
+            }
+    </style>
 </head>
 
 <body>
-  <div class="wrap">
-    <div class="topbar">
-      <div class="brand">
-        <div class="logo"></div>
-        <div>
-          <h1>Staff Calendar</h1>
-          <p id="whoLine">Loading...</p>
-        </div>
-      </div>
-      <div class="row" style="align-items:center;justify-content:flex-end">
-        <div class="pill" id="rolePill" style="display:none"></div>
-        <button class="btn ghost" id="btnLogin">Login</button>
-        <button class="btn" id="btnLogout" style="display:none">Logout</button>
-      </div>
-    </div>
-
-    <div class="grid">
-      <!-- Calendar -->
-      <div class="card">
-        <div class="calTop">
-          <div class="calTopLeft">
-            <button class="btn small" id="prevMonth">&#9664;</button>
-            <button class="btn small" id="todayBtn">Today</button>
-            <button class="btn small" id="nextMonth">&#9654;</button>
-            <div class="monthTitle" id="monthTitle">Month YYYY</div>
-          </div>
-          <div class="calTopRight">
-            <span class="pill" id="viewHint">Click a day to open</span>
-          </div>
-        </div>
-
-        <div class="weekdays">
-          <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
-        </div>
-
-        <div class="calGrid" id="calGrid"></div>
-      </div>
-
-      <!-- Right panel -->
-      <div class="card">
-        <div class="cardHead">
-          <div>
-            <h2 id="sideTitle">Details</h2>
-            <p id="sideSub">Login to view and manage events</p>
-          </div>
-          <div class="rightActions">
-            <button class="btn small ok" id="addEventBtn" style="display:none">+ Add event</button>
-            <button class="btn small primary" id="addAvailBtn" style="display:none">+ Add availability</button>
-          </div>
-        </div>
-
-        <div class="cardBody">
-          <div class="kvs">
-            <div class="kv">
-              <div class="t">Selected date</div>
-              <div class="v" id="selectedDateText">None</div>
-              <p class="tiny" id="selectedHint" style="margin-top:8px;">
-                Tip: staff can add availability and claim an event host.
-              </p>
+    <div class="wrap">
+        <div class="topbar">
+            <div class="brand">
+                <div class="logo"></div>
+                <div>
+                    <h1>Staff Calendar</h1>
+                    <p id="whoLine">Logged in as Nugg</p>
+                </div>
             </div>
-          </div>
-
-          <div class="divider"></div>
-          <div class="list" id="detailList"></div>
-          <div class="divider"></div>
-
-          <div class="row" style="justify-content:space-between;align-items:center">
-            <p class="tiny" id="storageNote">Sync status...</p>
-            <button class="btn small danger" id="resetBtn" style="display:none">Reset local cache</button>
-          </div>
+            <div class="row" style="align-items:center;justify-content:flex-end">
+                <div class="pill" id="rolePill" style="display:inline-flex;">Role: <b>STAFF</b></div>
+                <button class="btn ghost" id="btnLogin" style="display:none;">Login</button>
+                <button class="btn" id="btnLogout" style="display:inline-block;">Logout</button>
+            </div>
         </div>
-      </div>
+
+        <div class="grid">
+            <!-- Calendar -->
+            <div class="card">
+                <div class="calTop">
+                    <div class="calTopLeft">
+                        <button class="btn small" id="prevMonth">◀</button>
+                        <button class="btn small" id="todayBtn">Today</button>
+                        <button class="btn small" id="nextMonth">▶</button>
+                        <div class="monthTitle" id="monthTitle">March 2026</div>
+                    </div>
+                    <div class="calTopRight">
+                        <span class="pill" id="viewHint">Click a day to open</span>
+                    </div>
+                </div>
+
+                <div class="weekdays">
+                    <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+                </div>
+
+                <div class="calGrid" id="calGrid"></div>
+            </div>
+
+            <!-- Right panel -->
+            <div class="card">
+                <div class="cardHead">
+                    <div>
+                        <h2 id="sideTitle">Details</h2>
+                        <p id="sideSub">Staff: view only • Admin: manage calendar</p>
+                    </div>
+
+                    <div class="rightActions">
+                        <button class="btn small" id="viewModeBtn" style="display:inline-block;">View: OFF</button>
+                        <button class="btn small danger" id="clearAllBtn" style="display:none;">Clear ALL</button>
+
+                        <!-- Admin-only buttons (we control visibility in JS) -->
+                        <button class="btn small ok" id="addEventBtn" style="display:none;">+ Add event</button>
+                        <button class="btn small primary" id="addAvailBtn" style="display:none;">+ Add availability</button>
+                    </div>
+                </div>
+
+                <div class="cardBody">
+                    <div class="kvs">
+                        <div class="kv">
+                            <div class="t">Selected date</div>
+                            <div class="v" id="selectedDateText">None</div>
+                            <p class="tiny" id="selectedHint" style="margin-top:8px;">
+                                Tip: Staff can view. Admins can add/edit.
+                            </p>
+                        </div>
+
+                        <div class="kv" id="pfpPickerBox" style="display:none;">
+                            <div class="t">Pick who is hosting (click PFP)</div>
+                            <div class="tiny" style="margin-top:8px">
+                                Staff can only click their own PFP • Admin can click anyone
+                            </div>
+                            <div class="pfpGrid" id="pfpGrid"></div>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+                    <div class="list" id="detailList"></div>
+
+                    <div class="divider"></div>
+
+                    <div class="row" style="justify-content:space-between;align-items:center">
+                        <p class="tiny" id="storageNote">Synced with Firebase (Firestore)</p>
+                        <button class="btn small danger" id="resetBtn" style="display:none;">Reset local cache</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- Login modal -->
-  <div class="modalBackdrop" id="loginBackdrop">
-    <div class="modal">
-      <div class="modalTop">
-        <h3>Login</h3>
-        <p>Enter your staff code. Your name is saved so you do not need to type it every time.</p>
-      </div>
-      <div class="modalBody">
-        <div class="field">
-          <label>Display name</label>
-          <input id="loginName" placeholder="e.g. Nugg" maxlength="24" />
-          <div class="tiny">
-            <button class="btn small ghost" id="clearSavedNameBtn" type="button" style="padding:6px 8px">Clear saved name</button>
-          </div>
+    <!-- Bottom Host Bar -->
+    <div class="hostBar" id="hostBar">
+        <div class="hostBarLeft">
+            <div class="hostBarTitle">Hosting on</div>
+            <div class="hostBarDate" id="hostBarDate"></div>
         </div>
-        <div class="field">
-          <label>Code</label>
-          <input id="loginCode" placeholder="Enter code..." />
-          <div class="tiny" id="codeHelp"></div>
+        <div class="hostChips" id="hostChips"></div>
+        <div class="hostBarRight">
+            <button class="btn small" id="clearMyPickBtn" style="display:none;">Remove my pick</button>
         </div>
-        <div class="modalActions">
-          <button class="btn" id="loginCancel">Cancel</button>
-          <button class="btn primary" id="loginGo">Login</button>
-        </div>
-      </div>
     </div>
-  </div>
 
-  <!-- Day modal -->
-  <div class="modalBackdrop" id="dayBackdrop">
-    <div class="modal">
-      <div class="modalTop">
-        <h3 id="dayModalTitle">Day</h3>
-        <p id="dayModalSub">Add events (admin) or availability (staff).</p>
-      </div>
-      <div class="modalBody" id="dayModalBody"></div>
+    <!-- Login modal -->
+    <div class="modalBackdrop" id="loginBackdrop">
+        <div class="modal" role="dialog" aria-modal="true">
+            <div class="modalTop">
+                <h3>Login</h3>
+                <p>Enter your staff code. Your name is saved so you do not need to type it every time.</p>
+            </div>
+            <div class="modalBody">
+                <div class="field">
+                    <label>Display name</label>
+                    <input id="loginName" placeholder="e.g. Nugg" maxlength="24" />
+                    <div class="tiny">
+                        <button class="btn small ghost" id="clearSavedNameBtn" type="button" style="padding:6px 8px">Clear saved name</button>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Code</label>
+                    <input id="loginCode" placeholder="Staff: PICKA-STAFF-1835" />
+                    <div id="codeHelp" class="tiny">• Staff: PICKA-STAFF-1835</div>
+                </div>
+                <div class="modalActions">
+                    <button class="btn" id="loginCancel" type="button">Cancel</button>
+                    <button class="btn primary" id="loginGo" type="button">Login</button>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <div class="toast" id="toast"></div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-    import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyD3PvEamzNh4_fYIRAG9YxfVDZyucBC2b4",
-      authDomain: "staff-calendar-b25d4.firebaseapp.com",
-      projectId: "staff-calendar-b25d4",
-      storageBucket: "staff-calendar-b25d4.firebasestorage.app",
-      messagingSenderId: "771150169498",
-      appId: "1:771150169498:web:707d19b860fff00572a623"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    const CODES = {
-      admin: "PICKA-ADMIN-4927",
-      staff: "PICKA-STAFF-1835",
-    };
-
-    const KEY_SESSION = "staffCal.session.v1";
-    const KEY_EVENTS = "staffCal.events.v1";
-    const KEY_AVAIL = "staffCal.availability.v1";
-    const KEY_SAVED_NAME = "staffCal.savedName.v1";
-
-    let session = loadJSON(KEY_SESSION, null);
-    let events = loadJSON(KEY_EVENTS, []);
-    let avail = loadJSON(KEY_AVAIL, []);
-    let viewDate = new Date();
-    let selectedDate = null;
-    let pendingOpenDate = null;
-
-    function saveJSON(key, value){ localStorage.setItem(key, JSON.stringify(value)); }
-    function loadJSON(key, fallback){
-      try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }
-      catch { return fallback; }
-    }
-    function uid(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
-    function pad2(n){ return String(n).padStart(2, "0"); }
-    function toISODate(d){
-      return d.getFullYear() + "-" + pad2(d.getMonth()+1) + "-" + pad2(d.getDate());
-    }
-    function fromISODate(s){
-      const p = s.split("-").map(Number);
-      return new Date(p[0], p[1]-1, p[2]);
-    }
-    function startOfMonth(d){ return new Date(d.getFullYear(), d.getMonth(), 1); }
-    function endOfMonth(d){ return new Date(d.getFullYear(), d.getMonth()+1, 0); }
-    function monthLabel(d){ return d.toLocaleString(undefined, { month:"long", year:"numeric" }); }
-    function mondayIndex(jsDay){ return (jsDay + 6) % 7; }
-    function prettyDate(iso){
-      const d = fromISODate(iso);
-      return d.toLocaleDateString(undefined, { weekday:"long", year:"numeric", month:"long", day:"numeric" });
-    }
-    function escapeHTML(s){
-      return String(s).replace(/[&<>"']/g, c => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-      }[c]));
-    }
-    function toast(msg){
-      const t = document.getElementById("toast");
-      t.textContent = msg;
-      t.style.display = "block";
-      clearTimeout(toast._tm);
-      toast._tm = setTimeout(() => t.style.display = "none", 2200);
-    }
-
-    const eventsCol = collection(db, "events");
-    const availCol = collection(db, "availability");
-    async function upsertEvent(ev){ await setDoc(doc(db, "events", ev.id), ev, { merge:true }); }
-    async function removeEvent(id){ await deleteDoc(doc(db, "events", id)); }
-    async function upsertAvail(a){ await setDoc(doc(db, "availability", a.id), a, { merge:true }); }
-    async function removeAvail(id){ await deleteDoc(doc(db, "availability", id)); }
-
-    const whoLine = document.getElementById("whoLine");
-    const rolePill = document.getElementById("rolePill");
-    const btnLogin = document.getElementById("btnLogin");
-    const btnLogout = document.getElementById("btnLogout");
-
-    const calGrid = document.getElementById("calGrid");
-    const monthTitle = document.getElementById("monthTitle");
-
-    const sideSub = document.getElementById("sideSub");
-    const selectedDateText = document.getElementById("selectedDateText");
-    const detailList = document.getElementById("detailList");
-
-    const addEventBtn = document.getElementById("addEventBtn");
-    const addAvailBtn = document.getElementById("addAvailBtn");
-    const resetBtn = document.getElementById("resetBtn");
-    const storageNote = document.getElementById("storageNote");
-
-    const loginBackdrop = document.getElementById("loginBackdrop");
-    const loginName = document.getElementById("loginName");
-    const loginCode = document.getElementById("loginCode");
-    const codeHelp = document.getElementById("codeHelp");
-    const clearSavedNameBtn = document.getElementById("clearSavedNameBtn");
-
-    const dayBackdrop = document.getElementById("dayBackdrop");
-    const dayModalTitle = document.getElementById("dayModalTitle");
-    const dayModalSub = document.getElementById("dayModalSub");
-    const dayModalBody = document.getElementById("dayModalBody");
-
-    function renderTop(){
-      if(!session){
-        whoLine.textContent = "Synced (Firebase) - Login required";
-        rolePill.style.display = "none";
-        btnLogin.style.display = "inline-block";
-        btnLogout.style.display = "none";
-        addEventBtn.style.display = "none";
-        addAvailBtn.style.display = "none";
-        resetBtn.style.display = "none";
-        sideSub.textContent = "Login to view and manage events";
-      } else {
-        whoLine.textContent = "Logged in as " + session.name;
-        rolePill.style.display = "inline-flex";
-        rolePill.innerHTML = "Role: <b>" + session.role.toUpperCase() + "</b>";
-        btnLogin.style.display = "none";
-        btnLogout.style.display = "inline-block";
-
-        addAvailBtn.style.display = "inline-block";
-        addEventBtn.style.display = (session.role === "admin") ? "inline-block" : "none";
-        resetBtn.style.display = (session.role === "admin") ? "inline-block" : "none";
-
-        sideSub.textContent = (session.role === "admin")
-          ? "Admin: add/remove events, set host"
-          : "Staff: add availability and claim host";
-      }
-    }
-
-    function renderCalendar(){
-      monthTitle.textContent = monthLabel(viewDate);
-      calGrid.innerHTML = "";
-
-      const first = startOfMonth(viewDate);
-      const lead = mondayIndex(first.getDay());
-      const cells = 42;
-
-      const startCellDate = new Date(first);
-      startCellDate.setDate(first.getDate() - lead);
-
-      for(let i=0;i<cells;i++){
-        const cellDate = new Date(startCellDate);
-        cellDate.setDate(startCellDate.getDate() + i);
-        const iso = toISODate(cellDate);
-        const inMonth = cellDate.getMonth() === viewDate.getMonth();
-
-        const dayEvents = events.filter(e => e.date === iso);
-        const dayAvail = avail.filter(a => a.date === iso);
-
-        const div = document.createElement("div");
-        div.className = "day" + (inMonth ? "" : " muted");
-
-        if(selectedDate === iso){
-          div.style.borderColor = "rgba(114,137,218,.65)";
-          div.style.background = "rgba(114,137,218,.10)";
-        }
-
-        const head = document.createElement("div");
-        head.className = "dayHead";
-
-        const num = document.createElement("div");
-        num.className = "dayNum";
-        num.textContent = String(cellDate.getDate());
-
-        const badge = document.createElement("div");
-        const parts = [];
-        if(dayEvents.length) parts.push("E " + dayEvents.length);
-        if(dayAvail.length) parts.push("A " + dayAvail.length);
-        badge.className = "badge" + (dayEvents.length ? " brand" : (dayAvail.length ? " ok" : ""));
-        badge.textContent = parts.length ? parts.join(" ") : "";
-
-        head.appendChild(num);
-        head.appendChild(badge);
-
-        const list = document.createElement("div");
-        list.className = "miniList";
-
-        dayEvents.slice(0,2).forEach(ev => {
-          const it = document.createElement("div");
-          it.className = "miniItem";
-          it.textContent = ev.host ? (ev.title + " - " + ev.host) : ev.title;
-          list.appendChild(it);
-        });
-
-        if(dayEvents.length > 2){
-          const it = document.createElement("div");
-          it.className = "miniItem";
-          it.innerHTML = "<span>+" + (dayEvents.length - 2) + " more</span>";
-          list.appendChild(it);
-        }
-
-        div.appendChild(head);
-        div.appendChild(list);
-
-        div.addEventListener("click", () => {
-          selectedDate = iso;
-          renderCalendar();
-          renderDetails();
-
-          if(!session){
-            pendingOpenDate = iso;
-            openLogin();
-            return;
-          }
-          openDayModal(iso);
-        });
-
-        calGrid.appendChild(div);
-      }
-    }
-
-    function renderDetails(){
-      selectedDateText.textContent = selectedDate ? prettyDate(selectedDate) : "None";
-      detailList.innerHTML = "";
-
-      if(!session){
-        detailList.innerHTML =
-          '<div class="item"><div>' +
-          '<h4>Login required</h4>' +
-          '<p>Staff can add availability. Admins can add events and set hosts.</p>' +
-          '<div class="meta">This version syncs through Firestore.</div>' +
-          '</div></div>';
-        return;
-      }
-
-      if(!selectedDate){
-        detailList.innerHTML =
-          '<div class="item"><div>' +
-          '<h4>Pick a date</h4>' +
-          '<p>Click any day to see events and availability.</p>' +
-          '</div></div>';
-        return;
-      }
-
-      const dayEvents = events.filter(e => e.date === selectedDate);
-      const dayAvail = avail.filter(a => a.date === selectedDate);
-
-      const evCard = document.createElement("div");
-      evCard.className = "item";
-
-      const evLeft = document.createElement("div");
-      evLeft.style.flex = "1";
-
-      const evTitle = document.createElement("h4");
-      evTitle.textContent = "Official events (" + dayEvents.length + ")";
-      evLeft.appendChild(evTitle);
-
-      if(dayEvents.length === 0){
-        const p = document.createElement("p");
-        p.textContent = "No official events on this day yet.";
-        evLeft.appendChild(p);
-      } else {
-        dayEvents.slice().sort((a,b) => (a.time||"").localeCompare(b.time||"")).forEach(ev => {
-          const wrap = document.createElement("div");
-          wrap.style.marginTop = "10px";
-          wrap.style.padding = "10px";
-          wrap.style.borderRadius = "12px";
-          wrap.style.border = "1px solid rgba(255,255,255,.10)";
-          wrap.style.background = "rgba(0,0,0,.16)";
-
-          const h = document.createElement("div");
-          h.style.display = "flex";
-          h.style.justifyContent = "space-between";
-          h.style.gap = "10px";
-          h.style.alignItems = "flex-start";
-
-          const hostLine = ev.host ? ("Host: " + ev.host) : "Host: Unassigned";
-
-          const t = document.createElement("div");
-          t.innerHTML =
-            "<b>" + escapeHTML(ev.title) + "</b>" +
-            '<div class="meta">' +
-            escapeHTML(ev.time || "Time TBA") + " • " +
-            escapeHTML(ev.location || "Location TBA") + " • " +
-            escapeHTML(hostLine) +
-            "</div>";
-          h.appendChild(t);
-
-          const rightBtns = document.createElement("div");
-          rightBtns.style.display = "flex";
-          rightBtns.style.gap = "8px";
-          rightBtns.style.flexWrap = "wrap";
-          rightBtns.style.justifyContent = "flex-end";
-
-          if(session.role !== "admin" && !ev.host){
-            const claim = document.createElement("button");
-            claim.className = "btn small ok";
-            claim.textContent = "I'm hosting this";
-            claim.addEventListener("click", async (e) => {
-              e.stopPropagation();
-              await upsertEvent(Object.assign({}, ev, { host: session.name }));
-              toast("You are now the host");
-            });
-            rightBtns.appendChild(claim);
-          }
-
-          if(session.role === "admin"){
-            const setHost = document.createElement("button");
-            setHost.className = "btn small primary";
-            setHost.textContent = "Set host";
-            setHost.addEventListener("click", async (e) => {
-              e.stopPropagation();
-              const name = prompt("Host name:", ev.host || "");
-              if(name === null) return;
-              await upsertEvent(Object.assign({}, ev, { host: name.trim() }));
-              toast("Host updated");
-            });
-
-            const clearHost = document.createElement("button");
-            clearHost.className = "btn small";
-            clearHost.textContent = "Clear host";
-            clearHost.addEventListener("click", async (e) => {
-              e.stopPropagation();
-              await upsertEvent(Object.assign({}, ev, { host: "" }));
-              toast("Host cleared");
-            });
-
-            const del = document.createElement("button");
-            del.className = "btn small danger";
-            del.textContent = "Remove";
-            del.addEventListener("click", async (e) => {
-              e.stopPropagation();
-              await removeEvent(ev.id);
-              toast("Event removed");
-            });
-
-            rightBtns.appendChild(setHost);
-            rightBtns.appendChild(clearHost);
-            rightBtns.appendChild(del);
-          }
-
-          h.appendChild(rightBtns);
-          wrap.appendChild(h);
-
-          if(ev.note){
-            const note = document.createElement("p");
-            note.style.margin = "8px 0 0";
-            note.style.fontSize = "12px";
-            note.style.color = "var(--muted)";
-            note.textContent = ev.note;
-            wrap.appendChild(note);
-          }
-
-          evLeft.appendChild(wrap);
-        });
-      }
-
-      const evRight = document.createElement("div");
-      evRight.innerHTML = (session.role === "admin") ? '<div class="badge brand">Admin</div>' : '<div class="badge">Staff</div>';
-
-      evCard.appendChild(evLeft);
-      evCard.appendChild(evRight);
-      detailList.appendChild(evCard);
-
-      const avCard = document.createElement("div");
-      avCard.className = "item";
-
-      const avLeft = document.createElement("div");
-      avLeft.style.flex = "1";
-
-      const avTitle = document.createElement("h4");
-      avTitle.textContent = "Staff availability (" + dayAvail.length + ")";
-      avLeft.appendChild(avTitle);
-
-      if(dayAvail.length === 0){
-        const p = document.createElement("p");
-        p.textContent = "No availability added yet.";
-        avLeft.appendChild(p);
-      } else {
-        dayAvail.forEach(a => {
-          const line = document.createElement("div");
-          line.style.marginTop = "10px";
-          line.style.padding = "10px";
-          line.style.borderRadius = "12px";
-          line.style.border = "1px solid rgba(255,255,255,.10)";
-          line.style.background = "rgba(0,0,0,.16)";
-          line.innerHTML =
-            '<b class="okText">' + escapeHTML(a.name) + "</b>" +
-            '<div class="meta">' + escapeHTML(a.note || "Available to host") + "</div>";
-
-          if(session.role === "admin" || a.name === session.name){
-            const del = document.createElement("button");
-            del.className = "btn small danger";
-            del.textContent = "Remove";
-            del.style.marginTop = "10px";
-            del.addEventListener("click", async () => {
-              await removeAvail(a.id);
-              toast("Availability removed");
-            });
-            line.appendChild(del);
-          }
-
-          avLeft.appendChild(line);
-        });
-      }
-
-      const avRight = document.createElement("div");
-      avRight.innerHTML = '<div class="badge ok">Availability</div>';
-
-      avCard.appendChild(avLeft);
-      avCard.appendChild(avRight);
-      detailList.appendChild(avCard);
-    }
-
-    function openLogin(){
-      loginBackdrop.style.display = "flex";
-      const saved = localStorage.getItem(KEY_SAVED_NAME) || "";
-      loginName.value = saved || (session ? session.name : "");
-      loginCode.value = "";
-      codeHelp.textContent = "Admin: " + CODES.admin + " • Staff: " + CODES.staff;
-      setTimeout(() => loginName.focus(), 50);
-    }
-    function closeLogin(){ loginBackdrop.style.display = "none"; }
-
-    function openDayModal(iso){
-      if(!session) return;
-
-      dayBackdrop.style.display = "flex";
-      dayModalTitle.textContent = prettyDate(iso);
-      dayModalSub.textContent = (session.role === "admin")
-        ? "Admin: add event and host. Staff: add availability."
-        : "Add availability or claim host on an event.";
-
-      const isAdmin = session.role === "admin";
-
-      dayModalBody.innerHTML =
-        '<div class="row" style="justify-content:space-between;align-items:center;margin-bottom:10px">' +
-          '<div class="pill">Selected: <b>' + iso + "</b></div>" +
-          '<button class="btn" id="closeDayModal">Close</button>' +
-        "</div>" +
-
-        (isAdmin ? (
-          '<div class="kv">' +
-            '<div class="t">Add official event</div>' +
-            '<div style="height:10px"></div>' +
-
-            '<div class="field"><label>Event title</label>' +
-              '<input id="evTitle" placeholder="e.g. Time Trial" maxlength="50"></div>' +
-
-            '<div class="row">' +
-              '<div class="field" style="flex:1;min-width:160px"><label>Time (optional)</label>' +
-                '<input id="evTime" placeholder="e.g. 6:00PM AEST" maxlength="30"></div>' +
-              '<div class="field" style="flex:1;min-width:160px"><label>Location (optional)</label>' +
-                '<input id="evLoc" placeholder="e.g. Spider cave" maxlength="40"></div>' +
-            "</div>" +
-
-            '<div class="field"><label>Host (optional)</label>' +
-              '<input id="evHost" placeholder="e.g. Nugg" maxlength="24">' +
-              '<div class="tiny">Tip: staff can also claim host later</div></div>' +
-
-            '<div class="field"><label>Notes (optional)</label>' +
-              '<textarea id="evNote" placeholder="Extra details..."></textarea></div>' +
-
-            '<button class="btn ok" id="saveEvent">Add event</button>' +
-          "</div>" +
-          '<div class="divider"></div>'
-        ) : "") +
-
-        '<div class="kv">' +
-          '<div class="t">Add availability</div>' +
-          '<div style="height:10px"></div>' +
-          '<div class="field"><label>Your note (optional)</label>' +
-            '<input id="avNote" placeholder="e.g. Can host after 5pm" maxlength="60"></div>' +
-          '<button class="btn primary" id="saveAvail">Add availability</button>' +
-          '<div class="tiny" style="margin-top:8px">Saved name: <b>' + escapeHTML(session.name) + "</b></div>" +
-        "</div>";
-
-      document.getElementById("closeDayModal").onclick = () => { dayBackdrop.style.display = "none"; };
-
-      document.getElementById("saveAvail").onclick = async () => {
-        const note = (document.getElementById("avNote").value || "").trim();
-        const exists = avail.some(a => a.date === iso && a.name === session.name);
-        if(exists){ toast("You already added availability for this day"); return; }
-
-        const a = { id: uid(), date: iso, name: session.name, note: note };
-        await upsertAvail(a);
-        toast("Availability added");
-        dayBackdrop.style.display = "none";
-      };
-
-      if(isAdmin){
-        document.getElementById("saveEvent").onclick = async () => {
-          const title = (document.getElementById("evTitle").value || "").trim();
-          const time  = (document.getElementById("evTime").value || "").trim();
-          const loc   = (document.getElementById("evLoc").value || "").trim();
-          const host  = (document.getElementById("evHost").value || "").trim();
-          const note  = (document.getElementById("evNote").value || "").trim();
-
-          if(!title){ toast("Event title required"); return; }
-
-          const ev = { id: uid(), date: iso, title: title, time: time, location: loc, host: host, note: note };
-          await upsertEvent(ev);
-          toast("Event added");
-          dayBackdrop.style.display = "none";
+    <!-- Day modal (ADMIN ONLY now) -->
+    <div class="modalBackdrop" id="dayBackdrop">
+        <div class="modal" role="dialog" aria-modal="true">
+            <div class="modalTop">
+                <h3 id="dayModalTitle"></h3>
+                <p id="dayModalSub"></p>
+            </div>
+            <div class="modalBody" id="dayModalBody"></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+        import {
+            getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, getDocs
+        } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD3PvEamzNh4_fYIRAG9YxfVDZyucBC2b4",
+            authDomain: "staff-calendar-b25d4.firebaseapp.com",
+            projectId: "staff-calendar-b25d4",
+            storageBucket: "staff-calendar-b25d4.firebasestorage.app",
+            messagingSenderId: "771150169498",
+            appId: "1:771150169498:web:707d19b860fff00572a623"
         };
-      }
-    }
 
-    // UI events
-    btnLogin.addEventListener("click", openLogin);
-    document.getElementById("loginCancel").addEventListener("click", closeLogin);
-    loginBackdrop.addEventListener("click", (e) => { if(e.target === loginBackdrop) closeLogin(); });
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-    clearSavedNameBtn.addEventListener("click", () => {
-      localStorage.removeItem(KEY_SAVED_NAME);
-      loginName.value = "";
-      toast("Saved name cleared");
-      loginName.focus();
-    });
+        const CODES = {
+            admin: "PICKA-ADMIN-4927",
+            staff: "PICKA-STAFF-1835",
+        };
 
-    document.getElementById("loginGo").addEventListener("click", () => {
-      const name = (loginName.value || "").trim();
-      const code = (loginCode.value || "").trim();
-      if(!name){ toast("Enter a display name"); return; }
+        const HOSTS = [
+            { id: "nugg", name: "Nugg", img: "https://media.discordapp.net/attachments/1470700666895863900/1479031716755669062/pfp5.png.png?ex=69aa8f20&is=69a93da0&hm=1ec57ffc74e8ad041a78d6cf409fbba116615df48490073131cf8797fb52a2ff&=&format=webp&quality=lossless" },
+            { id: "dafound1", name: "Dafound1", img: "https://media.discordapp.net/attachments/1470700666895863900/1479031716458008638/pfp4.png.png?ex=69aa8f20&is=69a93da0&hm=43434b26efd48c47611def6509506c43f9d556d780e5b84e95d4230df286e008&=&format=webp&quality=lossless" },
+            { id: "glitch", name: "Glitch", img: "https://media.discordapp.net/attachments/1470700666895863900/1479031718026547261/pfp8.png.png?ex=69aa8f20&is=69a93da0&hm=8978687d57b9ef34978367232fc407313ad8a9022364e9381193642095f01675&=&format=webp&quality=lossless" },
+            { id: "artistred", name: "ArtistRed", img: "https://cdn.discordapp.com/attachments/1470700666895863900/1479032495755366491/content.png?ex=69aa8fda&is=69a93e5a&hm=4ff378f5844e60fa69d6004e13d22adf026c4dfa61ebdabafae1018c2469a785&" },
+            { id: "kingbearvr", name: "KingBearVR", img: "https://media.discordapp.net/attachments/1470700666895863900/1479031720094334976/pfp3.png.png?ex=69aa8f21&is=69a93da1&hm=7dd191f60c334020854dcefeb6d6a51fcc6584cade3cfd9fb7990a8bf4c9dd63&=&format=webp&quality=lossless" },
+            { id: "masonman", name: "Masonman585", img: "https://media.discordapp.net/attachments/1470700666895863900/1479031717108121704/pfp6.png.png?ex=69aa8f20&is=69a93da0&hm=58d514ece75852955bb3f986a4f5a3b065f8d642ca97157b2c423e41f3e62531&=&format=webp&quality=lossless" },
+            { id: "vibe", name: "Vibe", img: "https://media.discordapp.net/attachments/1470700666895863900/1479031718747832380/pfp1.png.png?ex=69aa8f20&is=69a93da0&hm=2bde62231628a7f7350849b3251d7824406809b740ee30cae3157f03480401d1&=&format=webp&quality=lossless" },
+            { id: "reeta", name: "Reeta", img: "https://media.discordapp.net/attachments/1470700666895863900/1479031717548392459/pfp7.png.png?ex=69aa8f20&is=69a93da0&hm=81c405f85c124233549e647a08ebf8fd590adc64e86d5c9273a4b35e167fda09&=&format=webp&quality=lossless" },
+            { id: "cyber", name: "Cyber", img: "https://media.discordapp.net/attachments/1470700666895863900/1479031718378999888/pfp9.png.png?ex=69aa8f20&is=69a93da0&hm=d009fe2f554fe64209e08027e32ad50877967ebf95edffd5891cafde65de8c68&=&format=webp&quality=lossless" },
+            { id: "riskhuntervr", name: "riskhuntervr", img: "https://media.discordapp.net/attachments/1470700666895863900/1479031719179980832/pfp2.png.png?ex=69aa8f20&is=69a93da0&hm=33dbb47617213120e91e9a8414b36ed4bfcef18f7e70d730efc7a48eaca7d0b9&=&format=webp&quality=lossless" }
+        ];
 
-      let role = null;
-      if(code === CODES.admin) role = "admin";
-      if(code === CODES.staff) role = role || "staff";
-      if(!role){ toast("Wrong code"); return; }
+        const KEY_SESSION = "staffCal.session.v1";
+        const KEY_EVENTS = "staffCal.events.v1";
+        const KEY_AVAIL = "staffCal.availability.v1";
+        const KEY_PICKS = "staffCal.hostPicks.v1";
+        const KEY_SAVED_NAME = "staffCal.savedName.v1";
+        const KEY_VIEWMODE = "staffCal.viewMode.v1";
 
-      session = { role: role, name: name };
-      saveJSON(KEY_SESSION, session);
-      localStorage.setItem(KEY_SAVED_NAME, name);
+        function saveJSON(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
+        function loadJSON(key, fallback) {
+            try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }
+            catch { return fallback; }
+        }
 
-      closeLogin();
-      toast("Logged in as " + role);
-      renderTop();
-      renderCalendar();
-      renderDetails();
+        let session = loadJSON(KEY_SESSION, null);
+        let events = loadJSON(KEY_EVENTS, []);
+        let avail = loadJSON(KEY_AVAIL, []);
+        let hostPicks = loadJSON(KEY_PICKS, []);
+        let viewMode = loadJSON(KEY_VIEWMODE, false);
 
-      if(pendingOpenDate){
-        const d = pendingOpenDate;
-        pendingOpenDate = null;
-        openDayModal(d);
-      }
-    });
+        let viewDate = new Date();
+        let selectedDate = null;
+        let pendingOpenDate = null;
 
-    btnLogout.addEventListener("click", () => {
-      session = null;
-      saveJSON(KEY_SESSION, null);
-      toast("Logged out");
-      renderTop();
-      renderCalendar();
-      renderDetails();
-    });
+        function uid() { return Math.random().toString(16).slice(2) + Date.now().toString(16); }
+        function pad2(n) { return String(n).padStart(2, "0"); }
+        function toISODate(d) { return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
+        function fromISODate(s) { const p = s.split("-").map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+        function startOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
+        function monthLabel(d) { return d.toLocaleString(undefined, { month: "long", year: "numeric" }); }
+        function mondayIndex(jsDay) { return (jsDay + 6) % 7; }
+        function prettyDate(iso) {
+            const d = fromISODate(iso);
+            return d.toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+        }
+        function escapeHTML(s) {
+            return String(s).replace(/[&<>"']/g, c => ({
+                "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+            }[c]));
+        }
+        function toast(msg) {
+            const t = document.getElementById("toast");
+            t.textContent = msg;
+            t.style.display = "block";
+            clearTimeout(toast._tm);
+            toast._tm = setTimeout(() => t.style.display = "none", 2200);
+        }
 
-    document.getElementById("prevMonth").addEventListener("click", () => {
-      viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth()-1, 1);
-      renderCalendar();
-    });
-    document.getElementById("nextMonth").addEventListener("click", () => {
-      viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth()+1, 1);
-      renderCalendar();
-    });
-    document.getElementById("todayBtn").addEventListener("click", () => {
-      viewDate = new Date();
-      selectedDate = toISODate(new Date());
-      renderCalendar();
-      renderDetails();
-      if(session) openDayModal(selectedDate);
-      else { pendingOpenDate = selectedDate; openLogin(); }
-    });
+        // Clickable code -> auto fill the code box
+        function fillPassword() {
+            loginCode.value = CODES.staff;
+            loginCode.focus();
+        }
 
-    addEventBtn.addEventListener("click", () => {
-      if(!session){ pendingOpenDate = selectedDate || toISODate(new Date()); openLogin(); return; }
-      if(!selectedDate) selectedDate = toISODate(new Date());
-      openDayModal(selectedDate);
-    });
+        const eventsCol = collection(db, "events");
+        const availCol = collection(db, "availability");
+        const picksCol = collection(db, "host_picks");
 
-    addAvailBtn.addEventListener("click", () => {
-      if(!session){ pendingOpenDate = selectedDate || toISODate(new Date()); openLogin(); return; }
-      if(!selectedDate) selectedDate = toISODate(new Date());
-      openDayModal(selectedDate);
-    });
+        async function upsertEvent(ev) { await setDoc(doc(db, "events", ev.id), ev, { merge: true }); }
+        async function removeEvent(id) { await deleteDoc(doc(db, "events", id)); }
+        async function upsertAvail(a) { await setDoc(doc(db, "availability", a.id), a, { merge: true }); }
+        async function removeAvail(id) { await deleteDoc(doc(db, "availability", id)); }
 
-    resetBtn.addEventListener("click", () => {
-      if(!session || session.role !== "admin") return;
-      saveJSON(KEY_EVENTS, []);
-      saveJSON(KEY_AVAIL, []);
-      toast("Local cache cleared");
-    });
+        function pickDocId(dateIso, hostId) { return dateIso + "_" + hostId; }
+        async function setPick(dateIso, host) {
+            const id = pickDocId(dateIso, host.id);
+            const record = { id, date: dateIso, hostId: host.id, hostName: host.name, hostImg: host.img };
+            await setDoc(doc(db, "host_picks", id), record, { merge: true });
+        }
+        async function removePick(dateIso, hostId) {
+            const id = pickDocId(dateIso, hostId);
+            await deleteDoc(doc(db, "host_picks", id));
+        }
 
-    dayBackdrop.addEventListener("click", (e) => { if(e.target === dayBackdrop) dayBackdrop.style.display = "none"; });
+        function picksForDate(dateIso) { return hostPicks.filter(p => p.date === dateIso); }
+        function isPicked(dateIso, hostId) { return hostPicks.some(p => p.date === dateIso && p.hostId === hostId); }
 
-    function startListeners(){
-      storageNote.textContent = "Syncing with Firebase (Firestore)...";
+        function canClickHost(host) {
+            if (!session) return false;
+            if (session.role === "admin") return true;
+            const a = (host.name || "").toLowerCase().trim();
+            const b = (session.name || "").toLowerCase().trim();
+            return a === b;
+        }
+        function myHostEntry() {
+            if (!session) return null;
+            const b = (session.name || "").toLowerCase().trim();
+            return HOSTS.find(h => (h.name || "").toLowerCase().trim() === b) || null;
+        }
 
-      onSnapshot(eventsCol, (snap) => {
-        events = snap.docs.map(d => d.data());
-        saveJSON(KEY_EVENTS, events);
-        renderCalendar();
-        renderDetails();
-        storageNote.textContent = "Synced with Firebase (Firestore)";
-      });
+        // UI refs
+        const whoLine = document.getElementById("whoLine");
+        const rolePill = document.getElementById("rolePill");
+        const btnLogin = document.getElementById("btnLogin");
+        const btnLogout = document.getElementById("btnLogout");
+        const calGrid = document.getElementById("calGrid");
+        const monthTitle = document.getElementById("monthTitle");
 
-      onSnapshot(availCol, (snap) => {
-        avail = snap.docs.map(d => d.data());
-        saveJSON(KEY_AVAIL, avail);
-        renderCalendar();
-        renderDetails();
-      });
-    }
+        const sideSub = document.getElementById("sideSub");
+        const selectedDateText = document.getElementById("selectedDateText");
+        const detailList = document.getElementById("detailList");
 
-    function boot(){
-      selectedDate = toISODate(new Date());
-      renderTop();
-      renderCalendar();
-      renderDetails();
-      startListeners();
+        const addEventBtn = document.getElementById("addEventBtn");
+        const addAvailBtn = document.getElementById("addAvailBtn");
+        const resetBtn = document.getElementById("resetBtn");
+        const storageNote = document.getElementById("storageNote");
+        const viewModeBtn = document.getElementById("viewModeBtn");
+        const clearAllBtn = document.getElementById("clearAllBtn");
 
-      if(session && !session.name){
-        session = null;
-        saveJSON(KEY_SESSION, null);
-      }
-    }
+        const loginBackdrop = document.getElementById("loginBackdrop");
+        const loginName = document.getElementById("loginName");
+        const loginCode = document.getElementById("loginCode");
+        const codeHelp = document.getElementById("codeHelp");
+        const clearSavedNameBtn = document.getElementById("clearSavedNameBtn");
 
-    boot();
-  </script>
+        const dayBackdrop = document.getElementById("dayBackdrop");
+        const dayModalTitle = document.getElementById("dayModalTitle");
+        const dayModalSub = document.getElementById("dayModalSub");
+        const dayModalBody = document.getElementById("dayModalBody");
+
+        const pfpPickerBox = document.getElementById("pfpPickerBox");
+        const pfpGrid = document.getElementById("pfpGrid");
+
+        const hostBar = document.getElementById("hostBar");
+        const hostBarDate = document.getElementById("hostBarDate");
+        const hostChips = document.getElementById("hostChips");
+        const clearMyPickBtn = document.getElementById("clearMyPickBtn");
+
+        function renderTop() {
+            if (!session) {
+                whoLine.textContent = "Synced (Firebase) - Login required";
+                rolePill.style.display = "none";
+                btnLogin.style.display = "inline-block";
+                btnLogout.style.display = "none";
+                addEventBtn.style.display = "none";
+                addAvailBtn.style.display = "none";
+                resetBtn.style.display = "none";
+                viewModeBtn.style.display = "none";
+                clearAllBtn.style.display = "none";
+                sideSub.textContent = "Login to view and manage events";
+                return;
+            }
+
+            whoLine.textContent = "Logged in as " + session.name;
+            rolePill.style.display = "inline-flex";
+            rolePill.innerHTML = "Role: <b>" + session.role.toUpperCase() + "</b>";
+            btnLogin.style.display = "none";
+            btnLogout.style.display = "inline-block";
+
+            viewModeBtn.style.display = "inline-block";
+            viewModeBtn.textContent = "View: " + (viewMode ? "ON" : "OFF");
+
+            clearAllBtn.style.display = (session.role === "admin") ? "inline-block" : "none";
+            resetBtn.style.display = (session.role === "admin") ? "inline-block" : "none";
+
+            // ✅ Admin-only: add event / add availability
+            addAvailBtn.style.display = (session.role === "admin" && !viewMode) ? "inline-block" : "none";
+            addEventBtn.style.display = (session.role === "admin" && !viewMode) ? "inline-block" : "none";
+
+            // ✅ Staff no longer adds availability via modal
+            sideSub.textContent = viewMode
+                ? "View mode: click dates to view only (no edit popup)"
+                : (session.role === "admin"
+                    ? "Admin: add/remove events, set host, add availability"
+                    : "Staff: click dates to view details (admin edits only)");
+        }
+
+        function renderHostPicker() {
+            // host picker stays as before (staff can pick ONLY their own PFP, admins can pick anyone)
+            const show = !!session && !!selectedDate && !viewMode;
+            pfpPickerBox.style.display = show ? "block" : "none";
+            if (!show) return;
+
+            pfpGrid.innerHTML = "";
+            HOSTS.forEach(host => {
+                const btn = document.createElement("div");
+                btn.className = "pfpBtn";
+                if (isPicked(selectedDate, host.id)) btn.classList.add("active");
+
+                const allowed = canClickHost(host);
+                btn.setAttribute("aria-disabled", allowed ? "false" : "true");
+
+                btn.innerHTML = `
+              <img class="pfpImg" src="${escapeHTML(host.img)}" alt="${escapeHTML(host.name)}"
+                   onerror="this.style.opacity='.35';this.title='Broken image link';" />
+              <div class="pfpName">${escapeHTML(host.name)}</div>
+            `;
+
+                btn.addEventListener("click", async (e) => {
+                    e.stopPropagation();
+                    if (!allowed) { toast("You can only pick your own PFP"); return; }
+                    const already = isPicked(selectedDate, host.id);
+                    try {
+                        if (already) await removePick(selectedDate, host.id);
+                        else await setPick(selectedDate, host);
+                    } catch (err) {
+                        console.error(err);
+                        toast("Pick failed (check Firestore rules)");
+                    }
+                });
+
+                pfpGrid.appendChild(btn);
+            });
+        }
+
+        function renderHostBar() {
+            if (!selectedDate) { hostBar.style.display = "none"; return; }
+            hostBar.style.display = "flex";
+            hostBarDate.textContent = prettyDate(selectedDate);
+
+            const picks = picksForDate(selectedDate).slice()
+                .sort((a, b) => (a.hostName || "").localeCompare(b.hostName || ""));
+
+            hostChips.innerHTML = "";
+
+            if (!picks.length) {
+                const empty = document.createElement("div");
+                empty.className = "chip";
+                empty.innerHTML = `<b style="color:rgba(238,241,246,.75)">No hosts picked yet</b>`;
+                hostChips.appendChild(empty);
+            } else {
+                picks.forEach(p => {
+                    const chip = document.createElement("div");
+                    chip.className = "chip";
+                    chip.innerHTML = `
+                <img src="${escapeHTML(p.hostImg || "")}" alt="${escapeHTML(p.hostName || "")}" onerror="this.style.opacity='.35'" />
+                <b>${escapeHTML(p.hostName || "Host")}</b>
+              `;
+                    hostChips.appendChild(chip);
+                });
+            }
+
+            if (session) {
+                const mine = myHostEntry();
+                clearMyPickBtn.style.display = (mine && isPicked(selectedDate, mine.id)) ? "inline-flex" : "none";
+            } else {
+                clearMyPickBtn.style.display = "none";
+            }
+        }
+
+        clearMyPickBtn.addEventListener("click", async () => {
+            if (!session || !selectedDate) return;
+            const mine = myHostEntry();
+            if (!mine) { toast("Your name is not in HOSTS list"); return; }
+            try {
+                await removePick(selectedDate, mine.id);
+                toast("Removed your pick");
+            } catch (err) {
+                console.error(err);
+                toast("Could not remove pick");
+            }
+        });
+
+        function renderCalendar() {
+            monthTitle.textContent = monthLabel(viewDate);
+            calGrid.innerHTML = "";
+
+            const first = startOfMonth(viewDate);
+            const lead = mondayIndex(first.getDay());
+            const cells = 42;
+
+            const startCellDate = new Date(first);
+            startCellDate.setDate(first.getDate() - lead);
+
+            for (let i = 0; i < cells; i++) {
+                const cellDate = new Date(startCellDate);
+                cellDate.setDate(startCellDate.getDate() + i);
+                const iso = toISODate(cellDate);
+                const inMonth = cellDate.getMonth() === viewDate.getMonth();
+
+                const dayEvents = events.filter(e => e.date === iso);
+                const dayAvail = avail.filter(a => a.date === iso);
+                const dayPicks = hostPicks.filter(p => p.date === iso);
+
+                const div = document.createElement("div");
+                div.className = "day" + (inMonth ? "" : " muted");
+
+                if (selectedDate === iso) {
+                    div.style.borderColor = "rgba(114,137,218,.65)";
+                    div.style.background = "rgba(114,137,218,.10)";
+                }
+
+                const head = document.createElement("div");
+                head.className = "dayHead";
+
+                const num = document.createElement("div");
+                num.className = "dayNum";
+                num.textContent = String(cellDate.getDate());
+
+                const badge = document.createElement("div");
+                const parts = [];
+                if (dayEvents.length) parts.push("E " + dayEvents.length);
+                if (dayAvail.length) parts.push("A " + dayAvail.length);
+                if (dayPicks.length) parts.push("H " + dayPicks.length);
+                badge.className = "badge" + (dayEvents.length ? " brand" : ((dayAvail.length || dayPicks.length) ? " ok" : ""));
+                badge.textContent = parts.length ? parts.join(" ") : "";
+
+                head.appendChild(num);
+                head.appendChild(badge);
+
+                const list = document.createElement("div");
+                list.className = "miniList";
+
+                dayEvents.slice(0, 2).forEach(ev => {
+                    const it = document.createElement("div");
+                    it.className = "miniItem";
+                    it.textContent = ev.host ? (ev.title + " - " + ev.host) : ev.title;
+                    list.appendChild(it);
+                });
+
+                if (dayPicks.length) {
+                    const it = document.createElement("div");
+                    it.className = "miniItem";
+                    const icons = dayPicks.slice(0, 3).map(p =>
+                        `<img src="${escapeHTML(p.hostImg)}"
+                      title="${escapeHTML(p.hostName)}"
+                      style="width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.18);margin-right:-6px;vertical-align:middle;background:rgba(255,255,255,.06)"
+                      onerror="this.style.opacity='.35'">`
+                    ).join("");
+                    const extra = dayPicks.length > 3 ? ` <span style="color:rgba(238,241,246,.65)">+${dayPicks.length - 3}</span>` : "";
+                    it.innerHTML = `<span style="color:rgba(238,241,246,.65)">Hosts:</span> ${icons}${extra}`;
+                    list.appendChild(it);
+                }
+
+                if (dayEvents.length > 2) {
+                    const it = document.createElement("div");
+                    it.className = "miniItem";
+                    it.innerHTML = "<span>+" + (dayEvents.length - 2) + " more</span>";
+                    list.appendChild(it);
+                }
+
+                div.appendChild(head);
+                div.appendChild(list);
+
+                // ✅ CHANGE: only ADMINS get the popup modal
+                div.addEventListener("click", () => {
+                    selectedDate = iso;
+                    renderCalendar();
+                    renderDetails();
+                    renderHostPicker();
+                    renderHostBar();
+
+                    if (viewMode) return;
+
+                    // if not logged in, still allow login flow
+                    if (!session) {
+                        pendingOpenDate = iso;
+                        openLogin();
+                        return;
+                    }
+
+                    // staff: view only (NO modal)
+                    if (session.role !== "admin") return;
+
+                    openDayModal(iso);
+                });
+
+                calGrid.appendChild(div);
+            }
+        }
+
+        function renderDetails() {
+            selectedDateText.textContent = selectedDate ? prettyDate(selectedDate) : "None";
+            detailList.innerHTML = "";
+            renderHostBar();
+            renderHostPicker();
+
+            if (!session) {
+                detailList.innerHTML =
+                    '<div class="item"><div>' +
+                    '<h4>Login required</h4>' +
+                    '<p>Staff can view. Admins can add events and add availability.</p>' +
+                    '<div class="meta">This version syncs through Firestore.</div>' +
+                    '</div></div>';
+                return;
+            }
+
+            if (!selectedDate) {
+                detailList.innerHTML =
+                    '<div class="item"><div>' +
+                    '<h4>Pick a date</h4>' +
+                    '<p>Click any day to see events and availability.</p>' +
+                    '</div></div>';
+                return;
+            }
+
+            const dayEvents = events.filter(e => e.date === selectedDate);
+            const dayAvail = avail.filter(a => a.date === selectedDate);
+            const dayPicks = picksForDate(selectedDate);
+
+            // picked hosts
+            const picksCard = document.createElement("div");
+            picksCard.className = "item";
+            const picksLeft = document.createElement("div");
+            picksLeft.style.flex = "1";
+            picksLeft.innerHTML =
+                `<h4>Picked hosts (${dayPicks.length})</h4>` +
+                (dayPicks.length ? `<p>${escapeHTML(dayPicks.map(p => p.hostName).join(", "))}</p>` : `<p>No host picks yet.</p>`);
+            const picksRight = document.createElement("div");
+            picksRight.innerHTML = `<div class="badge ok">Host picks</div>`;
+            picksCard.appendChild(picksLeft);
+            picksCard.appendChild(picksRight);
+            detailList.appendChild(picksCard);
+
+            // events
+            const evCard = document.createElement("div");
+            evCard.className = "item";
+            const evLeft = document.createElement("div");
+            evLeft.style.flex = "1";
+
+            const evTitle = document.createElement("h4");
+            evTitle.textContent = "Official events (" + dayEvents.length + ")";
+            evLeft.appendChild(evTitle);
+
+            if (!dayEvents.length) {
+                const p = document.createElement("p");
+                p.textContent = "No official events on this day yet.";
+                evLeft.appendChild(p);
+            } else {
+                dayEvents.slice().sort((a, b) => (a.time || "").localeCompare(b.time || "")).forEach(ev => {
+                    const wrap = document.createElement("div");
+                    wrap.style.marginTop = "10px";
+                    wrap.style.padding = "10px";
+                    wrap.style.borderRadius = "12px";
+                    wrap.style.border = "1px solid rgba(255,255,255,.10)";
+                    wrap.style.background = "rgba(0,0,0,.16)";
+
+                    const hostLine = ev.host ? ("Host: " + ev.host) : "Host: Unassigned";
+
+                    wrap.innerHTML =
+                        `<b>${escapeHTML(ev.title)}</b>` +
+                        `<div class="meta">${escapeHTML(ev.time || "Time TBA")} • ${escapeHTML(ev.location || "Location TBA")} • ${escapeHTML(hostLine)}</div>` +
+                        (ev.note ? `<p style="margin:8px 0 0;font-size:12px;color:var(--muted)">${escapeHTML(ev.note)}</p>` : "");
+
+                    if (!viewMode && session.role === "admin") {
+                        const controls = document.createElement("div");
+                        controls.style.marginTop = "10px";
+                        controls.style.display = "flex";
+                        controls.style.gap = "8px";
+                        controls.style.flexWrap = "wrap";
+
+                        const setHostBtn = document.createElement("button");
+                        setHostBtn.className = "btn small primary";
+                        setHostBtn.textContent = "Set host";
+                        setHostBtn.onclick = async () => {
+                            const name = prompt("Host name:", ev.host || "");
+                            if (name === null) return;
+                            await upsertEvent({ ...ev, host: name.trim() });
+                            toast("Host updated");
+                        };
+
+                        const delBtn = document.createElement("button");
+                        delBtn.className = "btn small danger";
+                        delBtn.textContent = "Remove";
+                        delBtn.onclick = async () => {
+                            await removeEvent(ev.id);
+                            toast("Event removed");
+                        };
+
+                        controls.appendChild(setHostBtn);
+                        controls.appendChild(delBtn);
+                        wrap.appendChild(controls);
+                    }
+
+                    evLeft.appendChild(wrap);
+                });
+            }
+
+            const evRight = document.createElement("div");
+            evRight.innerHTML = (session.role === "admin") ? '<div class="badge brand">Admin</div>' : '<div class="badge">Staff</div>';
+
+            evCard.appendChild(evLeft);
+            evCard.appendChild(evRight);
+            detailList.appendChild(evCard);
+
+            // availability
+            const avCard = document.createElement("div");
+            avCard.className = "item";
+            const avLeft = document.createElement("div");
+            avLeft.style.flex = "1";
+
+            const avTitle = document.createElement("h4");
+            avTitle.textContent = "Staff availability (" + dayAvail.length + ")";
+            avLeft.appendChild(avTitle);
+
+            if (!dayAvail.length) {
+                const p = document.createElement("p");
+                p.textContent = "No availability added yet.";
+                avLeft.appendChild(p);
+            } else {
+                dayAvail.forEach(a => {
+                    const line = document.createElement("div");
+                    line.style.marginTop = "10px";
+                    line.style.padding = "10px";
+                    line.style.borderRadius = "12px";
+                    line.style.border = "1px solid rgba(255,255,255,.10)";
+                    line.style.background = "rgba(0,0,0,.16)";
+                    line.innerHTML = `<b class="okText">${escapeHTML(a.name)}</b><div class="meta">${escapeHTML(a.note || "Available to host")}</div>`;
+
+                    // ✅ CHANGE: only admins can remove availability now
+                    if (!viewMode && session.role === "admin") {
+                        const del = document.createElement("button");
+                        del.className = "btn small danger";
+                        del.textContent = "Remove";
+                        del.style.marginTop = "10px";
+                        del.onclick = async () => { await removeAvail(a.id); toast("Availability removed"); };
+                        line.appendChild(del);
+                    }
+
+                    avLeft.appendChild(line);
+                });
+            }
+
+            const avRight = document.createElement("div");
+            avRight.innerHTML = '<div class="badge ok">Availability</div>';
+            avCard.appendChild(avLeft);
+            avCard.appendChild(avRight);
+            detailList.appendChild(avCard);
+        }
+
+        function openLogin() {
+            loginBackdrop.style.display = "flex";
+            const saved = localStorage.getItem(KEY_SAVED_NAME) || "";
+            loginName.value = saved || (session ? session.name : "");
+            loginCode.value = "";
+
+            // clickable staff code stays visible
+            codeHelp.textContent = "• Staff: " + CODES.staff;
+
+            setTimeout(() => loginName.focus(), 50);
+        }
+        function closeLogin() { loginBackdrop.style.display = "none"; }
+
+        function openDayModal(iso) {
+            // ✅ Admin only
+            if (!session || viewMode || session.role !== "admin") return;
+
+            dayBackdrop.style.display = "flex";
+            dayModalTitle.textContent = prettyDate(iso);
+            dayModalSub.textContent = "Admin: add an official event and add availability.";
+
+            dayModalBody.innerHTML =
+                '<div class="row" style="justify-content:space-between;align-items:center;margin-bottom:10px">' +
+                '<div class="pill">Selected: <b>' + iso + '</b></div>' +
+                '<button class="btn" id="closeDayModal" type="button">Close</button>' +
+                '</div>' +
+
+                '<div class="kv">' +
+                '<div class="t">Add official event</div>' +
+                '<div style="height:10px"></div>' +
+                '<div class="field"><label>Event title</label><input id="evTitle" placeholder="e.g. Time Trial" maxlength="50"></div>' +
+                '<div class="row">' +
+                '<div class="field" style="flex:1;min-width:160px"><label>Time (optional)</label><input id="evTime" placeholder="e.g. 6:00PM AEST" maxlength="30"></div>' +
+                '<div class="field" style="flex:1;min-width:160px"><label>Location (optional)</label><input id="evLoc" placeholder="e.g. Spider cave" maxlength="40"></div>' +
+                '</div>' +
+                '<div class="field"><label>Host (optional)</label><input id="evHost" placeholder="e.g. Nugg" maxlength="24"></div>' +
+                '<div class="field"><label>Notes (optional)</label><textarea id="evNote" placeholder="Extra details..."></textarea></div>' +
+                '<button class="btn ok" id="saveEvent" type="button">Add event</button>' +
+                '</div>' +
+
+                '<div class="divider"></div>' +
+
+                '<div class="kv">' +
+                '<div class="t">Add availability (admin entry)</div>' +
+                '<div style="height:10px"></div>' +
+                '<div class="field"><label>Name</label><input id="avName" placeholder="e.g. Nugg" maxlength="24"></div>' +
+                '<div class="field"><label>Note (optional)</label><input id="avNote" placeholder="e.g. Can host after 5pm" maxlength="60"></div>' +
+                '<button class="btn primary" id="saveAvail" type="button">Add availability</button>' +
+                '</div>';
+
+            document.getElementById("closeDayModal").onclick = () => dayBackdrop.style.display = "none";
+
+            document.getElementById("saveEvent").onclick = async () => {
+                const title = (document.getElementById("evTitle").value || "").trim();
+                const time = (document.getElementById("evTime").value || "").trim();
+                const loc = (document.getElementById("evLoc").value || "").trim();
+                const host = (document.getElementById("evHost").value || "").trim();
+                const note = (document.getElementById("evNote").value || "").trim();
+                if (!title) { toast("Event title required"); return; }
+                const ev = { id: uid(), date: iso, title, time, location: loc, host, note };
+                await upsertEvent(ev);
+                toast("Event added");
+                dayBackdrop.style.display = "none";
+            };
+
+            document.getElementById("saveAvail").onclick = async () => {
+                const name = (document.getElementById("avName").value || "").trim();
+                const note = (document.getElementById("avNote").value || "").trim();
+                if (!name) { toast("Name required"); return; }
+                const a = { id: uid(), date: iso, name, note };
+                await upsertAvail(a);
+                toast("Availability added");
+                dayBackdrop.style.display = "none";
+            };
+        }
+
+        // UI events
+        btnLogin.addEventListener("click", openLogin);
+        btnLogout.addEventListener("click", () => {
+            session = null;
+            saveJSON(KEY_SESSION, null);
+            toast("Logged out");
+            renderTop(); renderCalendar(); renderDetails();
+        });
+
+        document.getElementById("loginCancel").addEventListener("click", closeLogin);
+        loginBackdrop.addEventListener("click", (e) => { if (e.target === loginBackdrop) closeLogin(); });
+        dayBackdrop.addEventListener("click", (e) => { if (e.target === dayBackdrop) dayBackdrop.style.display = "none"; });
+
+        clearSavedNameBtn.addEventListener("click", () => {
+            localStorage.removeItem(KEY_SAVED_NAME);
+            loginName.value = "";
+            toast("Saved name cleared");
+            loginName.focus();
+        });
+
+        // clickable staff code
+        codeHelp.addEventListener("click", fillPassword);
+
+        document.getElementById("loginGo").addEventListener("click", () => {
+            const name = (loginName.value || "").trim();
+            const code = (loginCode.value || "").trim();
+            if (!name) { toast("Enter a display name"); return; }
+
+            let role = null;
+            if (code === CODES.admin) role = "admin";
+            if (code === CODES.staff) role = role || "staff";
+            if (!role) { toast("Wrong code"); return; }
+
+            session = { role, name };
+            saveJSON(KEY_SESSION, session);
+            localStorage.setItem(KEY_SAVED_NAME, name);
+
+            closeLogin();
+            toast("Logged in as " + role);
+            renderTop(); renderCalendar(); renderDetails();
+
+            // if an admin clicked a date before login, open modal after login
+            if (pendingOpenDate && !viewMode && role === "admin") {
+                const d = pendingOpenDate;
+                pendingOpenDate = null;
+                openDayModal(d);
+            } else {
+                pendingOpenDate = null;
+            }
+        });
+
+        document.getElementById("prevMonth").addEventListener("click", () => {
+            viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1);
+            renderCalendar();
+        });
+        document.getElementById("nextMonth").addEventListener("click", () => {
+            viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1);
+            renderCalendar();
+        });
+        document.getElementById("todayBtn").addEventListener("click", () => {
+            viewDate = new Date();
+            selectedDate = toISODate(new Date());
+            renderCalendar(); renderDetails();
+
+            if (viewMode) return;
+
+            if (!session) {
+                pendingOpenDate = selectedDate;
+                openLogin();
+                return;
+            }
+
+            // admin-only popup
+            if (session.role === "admin") openDayModal(selectedDate);
+        });
+
+        // Admin-only buttons (safe guards too)
+        addEventBtn.addEventListener("click", () => {
+            if (viewMode) return;
+            if (!session) { pendingOpenDate = selectedDate || toISODate(new Date()); openLogin(); return; }
+            if (session.role !== "admin") return;
+            if (!selectedDate) selectedDate = toISODate(new Date());
+            openDayModal(selectedDate);
+        });
+        addAvailBtn.addEventListener("click", () => {
+            if (viewMode) return;
+            if (!session) { pendingOpenDate = selectedDate || toISODate(new Date()); openLogin(); return; }
+            if (session.role !== "admin") return;
+            if (!selectedDate) selectedDate = toISODate(new Date());
+            openDayModal(selectedDate);
+        });
+
+        viewModeBtn.addEventListener("click", () => {
+            viewMode = !viewMode;
+            saveJSON(KEY_VIEWMODE, viewMode);
+            toast("View mode " + (viewMode ? "ON" : "OFF"));
+            renderTop(); renderCalendar(); renderDetails();
+        });
+
+        clearAllBtn.addEventListener("click", async () => {
+            if (!session || session.role !== "admin") return;
+
+            const ok = confirm(
+                "CLEAR ALL?\n\nThis deletes:\n- All Events\n- All Availability\n- All Host Picks\n\nThis cannot be undone."
+            );
+            if (!ok) return;
+
+            try {
+                const [evSnap, avSnap, pkSnap] = await Promise.all([
+                    getDocs(eventsCol),
+                    getDocs(availCol),
+                    getDocs(picksCol),
+                ]);
+
+                const deletes = [];
+                evSnap.forEach(d => deletes.push(deleteDoc(doc(db, "events", d.id))));
+                avSnap.forEach(d => deletes.push(deleteDoc(doc(db, "availability", d.id))));
+                pkSnap.forEach(d => deletes.push(deleteDoc(doc(db, "host_picks", d.id))));
+                await Promise.all(deletes);
+
+                toast("Cleared everything");
+            } catch (err) {
+                console.error(err);
+                toast("Clear failed (check Firestore rules)");
+            }
+        });
+
+        resetBtn.addEventListener("click", () => {
+            if (!session || session.role !== "admin") return;
+            saveJSON(KEY_EVENTS, []);
+            saveJSON(KEY_AVAIL, []);
+            saveJSON(KEY_PICKS, []);
+            toast("Local cache cleared");
+        });
+
+        function startListeners() {
+            storageNote.textContent = "Syncing with Firebase (Firestore)...";
+
+            onSnapshot(eventsCol, (snap) => {
+                events = snap.docs.map(d => d.data());
+                saveJSON(KEY_EVENTS, events);
+                renderCalendar();
+                renderDetails();
+                storageNote.textContent = "Synced with Firebase (Firestore)";
+            });
+
+            onSnapshot(availCol, (snap) => {
+                avail = snap.docs.map(d => d.data());
+                saveJSON(KEY_AVAIL, avail);
+                renderCalendar();
+                renderDetails();
+            });
+
+            onSnapshot(picksCol, (snap) => {
+                hostPicks = snap.docs.map(d => d.data());
+                saveJSON(KEY_PICKS, hostPicks);
+                renderCalendar();
+                renderDetails();
+                renderHostPicker();
+                renderHostBar();
+            });
+        }
+
+        function boot() {
+            selectedDate = toISODate(new Date());
+            renderTop();
+            renderCalendar();
+            renderDetails();
+            startListeners();
+
+            if (session && !session.name) {
+                session = null;
+                saveJSON(KEY_SESSION, null);
+            }
+        }
+
+        boot();
+    </script>
 </body>
 </html>
