@@ -17,6 +17,7 @@
             --brand: #7289da;
             --danger: #ff6b6b;
             --ok: #39d98a;
+            --warn: #f5c04f;
             --shadow: 0 18px 60px rgba(0,0,0,.45);
             --radius: 16px;
         }
@@ -34,7 +35,7 @@
             color: var(--text);
             min-height: 100vh;
             overflow-x: hidden;
-            padding-bottom: 110px;
+            padding-bottom: 130px;
         }
 
         .wrap {
@@ -162,6 +163,13 @@
         }
 
         .btn.ok:hover { background: rgba(57,217,138,.18); }
+
+        .btn.warn {
+            background: rgba(245,192,79,.14);
+            border-color: rgba(245,192,79,.35);
+        }
+
+        .btn.warn:hover { background: rgba(245,192,79,.18); }
 
         .btn.ghost { background: transparent; }
 
@@ -328,6 +336,12 @@
             background: rgba(57,217,138,.12);
         }
 
+        .badge.warn {
+            border-color: rgba(245,192,79,.35);
+            color: rgba(255,239,194,.92);
+            background: rgba(245,192,79,.12);
+        }
+
         .miniList {
             display: flex;
             flex-direction: column;
@@ -417,6 +431,48 @@
             font-size: 11px;
             color: var(--muted);
             margin-top: 6px;
+            overflow-wrap: anywhere;
+        }
+
+        .pickEntry {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,.10);
+            background: rgba(0,0,0,.16);
+        }
+
+        .pickEntryLeft {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .pickEntryLeft img {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.06);
+        }
+
+        .pickEntryName {
+            font-size: 13px;
+            font-weight: 700;
+            overflow-wrap: anywhere;
+        }
+
+        .pickEntryMeta {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 4px;
             overflow-wrap: anywhere;
         }
 
@@ -599,7 +655,7 @@
         }
 
         .modal {
-            width: min(540px, 100%);
+            width: min(560px, 100%);
             border: 1px solid var(--stroke);
             background: rgba(20,22,26,.96);
             border-radius: 20px;
@@ -670,13 +726,13 @@
             flex-wrap: wrap;
         }
 
-        .authTabs {
+        .authTabs, .settingsTabs {
             display: flex;
             gap: 8px;
             margin-bottom: 14px;
         }
 
-        .authTab {
+        .authTab, .settingsTab {
             flex: 1;
             text-align: center;
             padding: 10px 12px;
@@ -688,7 +744,7 @@
             font-weight: 700;
         }
 
-        .authTab.active {
+        .authTab.active, .settingsTab.active {
             border-color: rgba(114,137,218,.45);
             background: rgba(114,137,218,.18);
         }
@@ -714,6 +770,25 @@
             border-radius: 14px;
             border: 1px dashed rgba(255,255,255,.14);
             background: rgba(255,255,255,.03);
+        }
+
+        .settingsPanel {
+            display: none;
+        }
+
+        .settingsPanel.active {
+            display: block;
+        }
+
+        .infoBox {
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,.10);
+            background: rgba(255,255,255,.04);
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 12px;
+            line-height: 1.4;
         }
 
         @media (max-width: 1200px) {
@@ -745,6 +820,7 @@
 
             .userTop {
                 justify-content: space-between;
+                flex-wrap: wrap;
             }
 
             .cardHead,
@@ -861,6 +937,10 @@
             .miniItem {
                 font-size: 9px;
             }
+
+            .authTabs, .settingsTabs {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -879,7 +959,7 @@
                 <img id="topAvatar" class="topAvatar" alt="Profile">
                 <div class="row" style="align-items:center;justify-content:flex-end">
                     <div class="pill" id="rolePill" style="display:none;">Role: <b>STAFF</b></div>
-                    <button class="btn ghost" id="btnProfile" style="display:none;">Profile</button>
+                    <button class="btn ghost" id="btnSettings" style="display:none;">Settings</button>
                     <button class="btn ghost" id="btnLogin" style="display:none;">Login</button>
                     <button class="btn" id="btnLogout" style="display:none;">Logout</button>
                 </div>
@@ -927,7 +1007,7 @@
                         <div class="kv">
                             <div class="t">Selected date</div>
                             <div class="v" id="selectedDateText">None</div>
-                            <p class="tiny" id="selectedHint" style="margin-top:8px;">Staff can view and pick themselves. Admins can edit.</p>
+                            <p class="tiny" id="selectedHint" style="margin-top:8px;">Staff can view and pick themselves. Admins can edit and remove any pick.</p>
                         </div>
 
                         <div class="kv" id="pfpPickerBox" style="display:none;">
@@ -962,7 +1042,7 @@
         </div>
     </div>
 
-    <!-- LOGIN / REGISTER -->
+    <!-- AUTH MODAL -->
     <div class="modalBackdrop" id="authBackdrop">
         <div class="modal" role="dialog" aria-modal="true">
             <div class="modalTop">
@@ -1000,34 +1080,79 @@
         </div>
     </div>
 
-    <!-- PROFILE SETUP -->
-    <div class="modalBackdrop" id="profileBackdrop">
+    <!-- SETTINGS MODAL -->
+    <div class="modalBackdrop" id="settingsBackdrop">
         <div class="modal" role="dialog" aria-modal="true">
             <div class="modalTop">
-                <h3>Your profile</h3>
-                <p>Set your display name and profile picture. If you skip the picture, a default one will be used.</p>
+                <h3>Settings</h3>
+                <p>Update your profile and account details.</p>
             </div>
             <div class="modalBody">
-                <div class="field">
-                    <label>Display name</label>
-                    <input id="profileName" maxlength="24" placeholder="e.g. Nugg">
+                <div class="settingsTabs">
+                    <div class="settingsTab active" id="settingsProfileTab">Profile</div>
+                    <div class="settingsTab" id="settingsAccountTab">Account</div>
                 </div>
 
-                <div class="field">
-                    <label>Profile picture</label>
-                    <div class="avatarPreviewWrap">
-                        <img id="profilePreview" class="avatarPreview" alt="Preview">
-                        <div class="row">
-                            <input id="profileFile" type="file" accept="image/*" style="max-width:220px;">
-                            <button class="btn small" id="removeProfilePic" type="button">Use default</button>
-                        </div>
+                <div class="settingsPanel active" id="settingsProfilePanel">
+                    <div class="field">
+                        <label>Display name</label>
+                        <input id="profileName" maxlength="24" placeholder="e.g. Nugg">
                     </div>
-                    <div class="tiny">Small image works best.</div>
+
+                    <div class="field">
+                        <label>Profile picture</label>
+                        <div class="avatarPreviewWrap">
+                            <img id="profilePreview" class="avatarPreview" alt="Preview">
+                            <div class="row">
+                                <input id="profileFile" type="file" accept="image/*" style="max-width:220px;">
+                                <button class="btn small" id="removeProfilePic" type="button">Use default</button>
+                            </div>
+                        </div>
+                        <div class="tiny">Small image works best.</div>
+                    </div>
+
+                    <div class="modalActions">
+                        <button class="btn primary" id="saveProfileBtn" type="button">Save profile</button>
+                    </div>
+                </div>
+
+                <div class="settingsPanel" id="settingsAccountPanel">
+                    <div class="infoBox">
+                        To change your email or password, enter your current password first. This helps keep the account secure.
+                    </div>
+
+                    <div class="field">
+                        <label>Current email</label>
+                        <input id="accountCurrentEmail" type="email" disabled>
+                    </div>
+
+                    <div class="field">
+                        <label>New email</label>
+                        <input id="accountNewEmail" type="email" placeholder="Leave blank to keep current email">
+                    </div>
+
+                    <div class="field">
+                        <label>Current password</label>
+                        <input id="accountCurrentPassword" type="password" placeholder="Required for email/password changes">
+                    </div>
+
+                    <div class="field">
+                        <label>New password</label>
+                        <input id="accountNewPassword" type="password" placeholder="Leave blank to keep current password">
+                    </div>
+
+                    <div class="field">
+                        <label>Confirm new password</label>
+                        <input id="accountNewPassword2" type="password" placeholder="Confirm new password">
+                    </div>
+
+                    <div class="modalActions">
+                        <button class="btn warn" id="saveAccountBtn" type="button">Save account changes</button>
+                    </div>
                 </div>
 
                 <div class="modalActions">
-                    <button class="btn" id="profileClose" type="button">Close</button>
-                    <button class="btn primary" id="profileSave" type="button">Save profile</button>
+                    <button class="btn" id="settingsClose" type="button">Close</button>
                 </div>
             </div>
         </div>
@@ -1053,7 +1178,11 @@
             onAuthStateChanged,
             signInWithEmailAndPassword,
             createUserWithEmailAndPassword,
-            signOut
+            signOut,
+            updateEmail,
+            updatePassword,
+            EmailAuthProvider,
+            reauthenticateWithCredential
         } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
 
         import {
@@ -1080,10 +1209,10 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        const KEY_EVENTS = "staffCal.events.v2";
-        const KEY_AVAIL = "staffCal.availability.v2";
-        const KEY_PICKS = "staffCal.hostPicks.v2";
-        const KEY_VIEWMODE = "staffCal.viewMode.v2";
+        const KEY_EVENTS = "staffCal.events.v3";
+        const KEY_AVAIL = "staffCal.availability.v3";
+        const KEY_PICKS = "staffCal.hostPicks.v3";
+        const KEY_VIEWMODE = "staffCal.viewMode.v3";
 
         function saveJSON(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
         function loadJSON(key, fallback) {
@@ -1137,7 +1266,7 @@
             t.textContent = msg;
             t.style.display = "block";
             clearTimeout(toast._tm);
-            toast._tm = setTimeout(() => t.style.display = "none", 2300);
+            toast._tm = setTimeout(() => t.style.display = "none", 2600);
         }
 
         function initialsFromName(name) {
@@ -1233,16 +1362,26 @@
             };
         }
 
-        function currentHostEntry() {
-            if (!session) return null;
-            const host = hosts.find(h => h.uid === session.uid);
-            return host || null;
-        }
-
         function canClickHost(host) {
             if (!session) return false;
             if (session.role === "admin") return true;
             return host.uid === session.uid;
+        }
+
+        async function upsertEvent(ev) {
+            await setDoc(doc(db, "events", ev.id), ev, { merge: true });
+        }
+
+        async function removeEvent(id) {
+            await deleteDoc(doc(db, "events", id));
+        }
+
+        async function upsertAvail(a) {
+            await setDoc(doc(db, "availability", a.id), a, { merge: true });
+        }
+
+        async function removeAvail(id) {
+            await deleteDoc(doc(db, "availability", id));
         }
 
         function pickDocId(dateIso, hostUid) {
@@ -1265,6 +1404,11 @@
             await deleteDoc(doc(db, "host_picks", pickDocId(dateIso, hostUid)));
         }
 
+        async function clearPicksForDate(dateIso) {
+            const picks = hostPicks.filter(p => p.date === dateIso);
+            await Promise.all(picks.map(p => removePick(dateIso, p.hostUid)));
+        }
+
         function picksForDate(dateIso) {
             return hostPicks.filter(p => p.date === dateIso);
         }
@@ -1273,28 +1417,12 @@
             return hostPicks.some(p => p.date === dateIso && p.hostUid === hostUid);
         }
 
-        async function upsertEvent(ev) {
-            await setDoc(doc(db, "events", ev.id), ev, { merge: true });
-        }
-
-        async function removeEvent(id) {
-            await deleteDoc(doc(db, "events", id));
-        }
-
-        async function upsertAvail(a) {
-            await setDoc(doc(db, "availability", a.id), a, { merge: true });
-        }
-
-        async function removeAvail(id) {
-            await deleteDoc(doc(db, "availability", id));
-        }
-
         const whoLine = document.getElementById("whoLine");
         const topAvatar = document.getElementById("topAvatar");
         const rolePill = document.getElementById("rolePill");
+        const btnSettings = document.getElementById("btnSettings");
         const btnLogin = document.getElementById("btnLogin");
         const btnLogout = document.getElementById("btnLogout");
-        const btnProfile = document.getElementById("btnProfile");
         const calGrid = document.getElementById("calGrid");
         const monthTitle = document.getElementById("monthTitle");
         const selectedDateText = document.getElementById("selectedDateText");
@@ -1322,10 +1450,19 @@
         const confirmField = document.getElementById("confirmField");
         const authGo = document.getElementById("authGo");
 
-        const profileBackdrop = document.getElementById("profileBackdrop");
+        const settingsBackdrop = document.getElementById("settingsBackdrop");
+        const settingsProfileTab = document.getElementById("settingsProfileTab");
+        const settingsAccountTab = document.getElementById("settingsAccountTab");
+        const settingsProfilePanel = document.getElementById("settingsProfilePanel");
+        const settingsAccountPanel = document.getElementById("settingsAccountPanel");
         const profileName = document.getElementById("profileName");
         const profileFile = document.getElementById("profileFile");
         const profilePreview = document.getElementById("profilePreview");
+        const accountCurrentEmail = document.getElementById("accountCurrentEmail");
+        const accountNewEmail = document.getElementById("accountNewEmail");
+        const accountCurrentPassword = document.getElementById("accountCurrentPassword");
+        const accountNewPassword = document.getElementById("accountNewPassword");
+        const accountNewPassword2 = document.getElementById("accountNewPassword2");
 
         const dayBackdrop = document.getElementById("dayBackdrop");
         const dayModalTitle = document.getElementById("dayModalTitle");
@@ -1350,25 +1487,30 @@
             authBackdrop.style.display = "none";
         }
 
-        function openProfileModal(force = false) {
+        function setSettingsTab(tab) {
+            const profileActive = tab === "profile";
+            settingsProfileTab.classList.toggle("active", profileActive);
+            settingsAccountTab.classList.toggle("active", !profileActive);
+            settingsProfilePanel.classList.toggle("active", profileActive);
+            settingsAccountPanel.classList.toggle("active", !profileActive);
+        }
+
+        function openSettings() {
             if (!session) return;
             profileName.value = session.name || "";
             profileImageData = session.photoURL || "";
             profilePreview.src = profilePhotoOrDefault(session);
-            profileBackdrop.style.display = "flex";
-            if (force) {
-                document.getElementById("profileClose").style.display = "none";
-            } else {
-                document.getElementById("profileClose").style.display = "inline-block";
-            }
+            accountCurrentEmail.value = session.email || "";
+            accountNewEmail.value = "";
+            accountCurrentPassword.value = "";
+            accountNewPassword.value = "";
+            accountNewPassword2.value = "";
+            setSettingsTab("profile");
+            settingsBackdrop.style.display = "flex";
         }
 
-        function closeProfileModal() {
-            profileBackdrop.style.display = "none";
-        }
-
-        function needsProfileSetup() {
-            return !!session && (!session.name || session.name.trim().length < 2);
+        function closeSettings() {
+            settingsBackdrop.style.display = "none";
         }
 
         function renderTop() {
@@ -1376,7 +1518,7 @@
                 whoLine.textContent = "Login required";
                 topAvatar.style.display = "none";
                 rolePill.style.display = "none";
-                btnProfile.style.display = "none";
+                btnSettings.style.display = "none";
                 btnLogin.style.display = "inline-block";
                 btnLogout.style.display = "none";
                 addEventBtn.style.display = "none";
@@ -1393,7 +1535,7 @@
             topAvatar.style.display = "block";
             rolePill.style.display = "inline-flex";
             rolePill.innerHTML = `Role: <b>${escapeHTML(session.role.toUpperCase())}</b>`;
-            btnProfile.style.display = "inline-block";
+            btnSettings.style.display = "inline-block";
             btnLogin.style.display = "none";
             btnLogout.style.display = "inline-block";
             viewModeBtn.style.display = "inline-block";
@@ -1407,7 +1549,7 @@
             sideSub.textContent = viewMode
                 ? "View mode: no edit popup"
                 : (session.role === "admin"
-                    ? "Admin: manage events, availability, and hosts"
+                    ? "Admin: manage events, availability, and all picks"
                     : "Staff: view dates and pick yourself as host");
         }
 
@@ -1625,13 +1767,79 @@
 
             const picksCard = document.createElement("div");
             picksCard.className = "item";
-            picksCard.innerHTML = `
-                <div style="flex:1">
-                    <h4>Picked hosts (${dayPicks.length})</h4>
-                    <p>${dayPicks.length ? escapeHTML(dayPicks.map(p => p.hostName).join(", ")) : "No host picks yet."}</p>
-                </div>
-                <div class="badge ok">Host picks</div>
-            `;
+
+            const picksLeft = document.createElement("div");
+            picksLeft.style.flex = "1";
+            picksLeft.innerHTML = `<h4>Picked hosts (${dayPicks.length})</h4>`;
+
+            if (!dayPicks.length) {
+                const p = document.createElement("p");
+                p.textContent = "No host picks yet.";
+                picksLeft.appendChild(p);
+            } else {
+                dayPicks.forEach(pick => {
+                    const row = document.createElement("div");
+                    row.className = "pickEntry";
+                    row.innerHTML = `
+                        <div class="pickEntryLeft">
+                            <img src="${escapeHTML(pick.hostImg || defaultAvatarDataURL(pick.hostName || "U"))}" alt="${escapeHTML(pick.hostName || "Host")}">
+                            <div>
+                                <div class="pickEntryName">${escapeHTML(pick.hostName || "Host")}</div>
+                                <div class="pickEntryMeta">${escapeHTML(pick.email || "")}</div>
+                            </div>
+                        </div>
+                    `;
+
+                    const actions = document.createElement("div");
+                    actions.className = "row";
+
+                    const isMine = session && pick.hostUid === session.uid;
+
+                    if (!viewMode && (session.role === "admin" || isMine)) {
+                        const removeBtn = document.createElement("button");
+                        removeBtn.className = "btn small danger";
+                        removeBtn.textContent = session.role === "admin" && !isMine ? "Remove pick" : "Remove";
+                        removeBtn.onclick = async () => {
+                            try {
+                                await removePick(selectedDate, pick.hostUid);
+                                toast("Pick removed");
+                            } catch (err) {
+                                console.error(err);
+                                toast("Could not remove pick");
+                            }
+                        };
+                        actions.appendChild(removeBtn);
+                    }
+
+                    row.appendChild(actions);
+                    picksLeft.appendChild(row);
+                });
+            }
+
+            const picksRight = document.createElement("div");
+            picksRight.className = "row";
+            picksRight.innerHTML = `<div class="badge ok">Host picks</div>`;
+
+            if (!viewMode && session.role === "admin" && dayPicks.length) {
+                const clearBtn = document.createElement("button");
+                clearBtn.className = "btn small danger";
+                clearBtn.textContent = "Clear date picks";
+                clearBtn.onclick = async () => {
+                    const ok = confirm("Remove all host picks for this date?");
+                    if (!ok) return;
+                    try {
+                        await clearPicksForDate(selectedDate);
+                        toast("Cleared picks");
+                    } catch (err) {
+                        console.error(err);
+                        toast("Could not clear picks");
+                    }
+                };
+                picksRight.appendChild(clearBtn);
+            }
+
+            picksCard.appendChild(picksLeft);
+            picksCard.appendChild(picksRight);
             detailList.appendChild(picksCard);
 
             const evCard = document.createElement("div");
@@ -1695,7 +1903,11 @@
                 });
             }
 
+            const evRight = document.createElement("div");
+            evRight.innerHTML = (session.role === "admin") ? '<div class="badge brand">Admin</div>' : '<div class="badge">Staff</div>';
+
             evCard.appendChild(evLeft);
+            evCard.appendChild(evRight);
             detailList.appendChild(evCard);
 
             const avCard = document.createElement("div");
@@ -1737,7 +1949,10 @@
                 });
             }
 
+            const avRight = document.createElement("div");
+            avRight.innerHTML = '<div class="badge warn">Availability</div>';
             avCard.appendChild(avLeft);
+            avCard.appendChild(avRight);
             detailList.appendChild(avCard);
         }
 
@@ -1902,13 +2117,13 @@
             }
         });
 
-        btnProfile.addEventListener("click", () => openProfileModal(false));
+        btnSettings.addEventListener("click", openSettings);
 
         tabLogin.addEventListener("click", () => setAuthMode("login"));
         tabRegister.addEventListener("click", () => setAuthMode("register"));
         document.getElementById("authClose").addEventListener("click", closeAuth);
 
-        document.getElementById("authGo").addEventListener("click", async () => {
+        authGo.addEventListener("click", async () => {
             const email = (authEmail.value || "").trim();
             const password = authPassword.value || "";
             const password2 = authPassword2.value || "";
@@ -1934,8 +2149,8 @@
                     closeAuth();
                     toast("Account created");
                 } catch (err) {
-                    console.error(err);
-                    toast(err?.message?.includes("email-already-in-use") ? "Email already in use" : "Could not register");
+                    console.error("REGISTER ERROR:", err);
+                    toast(err.code || err.message || "Could not register");
                 }
                 return;
             }
@@ -1945,12 +2160,14 @@
                 closeAuth();
                 toast("Logged in");
             } catch (err) {
-                console.error(err);
-                toast("Login failed");
+                console.error("LOGIN ERROR:", err);
+                toast(err.code || err.message || "Login failed");
             }
         });
 
-        document.getElementById("profileClose").addEventListener("click", closeProfileModal);
+        settingsProfileTab.addEventListener("click", () => setSettingsTab("profile"));
+        settingsAccountTab.addEventListener("click", () => setSettingsTab("account"));
+        document.getElementById("settingsClose").addEventListener("click", closeSettings);
 
         profileFile.addEventListener("change", async () => {
             const file = profileFile.files?.[0];
@@ -1977,7 +2194,7 @@
             }
         });
 
-        document.getElementById("profileSave").addEventListener("click", async () => {
+        document.getElementById("saveProfileBtn").addEventListener("click", async () => {
             if (!session) return;
 
             const name = (profileName.value || "").trim();
@@ -2004,7 +2221,6 @@
                 };
 
                 topAvatar.src = profilePhotoOrDefault(session);
-                closeProfileModal();
                 renderTop();
                 renderHostPicker();
                 renderDetails();
@@ -2012,6 +2228,65 @@
             } catch (err) {
                 console.error(err);
                 toast("Could not save profile");
+            }
+        });
+
+        document.getElementById("saveAccountBtn").addEventListener("click", async () => {
+            const user = auth.currentUser;
+            if (!user || !session) return;
+
+            const newEmail = (accountNewEmail.value || "").trim();
+            const currentPassword = accountCurrentPassword.value || "";
+            const newPassword = accountNewPassword.value || "";
+            const newPassword2 = accountNewPassword2.value || "";
+
+            if (!newEmail && !newPassword) {
+                toast("No account changes entered");
+                return;
+            }
+
+            if (!currentPassword) {
+                toast("Enter your current password");
+                return;
+            }
+
+            if (newPassword && newPassword.length < 6) {
+                toast("New password must be at least 6 characters");
+                return;
+            }
+
+            if (newPassword && newPassword !== newPassword2) {
+                toast("New passwords do not match");
+                return;
+            }
+
+            try {
+                const credential = EmailAuthProvider.credential(user.email, currentPassword);
+                await reauthenticateWithCredential(user, credential);
+
+                if (newEmail) {
+                    await updateEmail(user, newEmail);
+                }
+
+                if (newPassword) {
+                    await updatePassword(user, newPassword);
+                }
+
+                await setDoc(doc(db, "users", session.uid), {
+                    email: newEmail || user.email || session.email || ""
+                }, { merge: true });
+
+                session.email = newEmail || user.email || session.email || "";
+                accountCurrentEmail.value = session.email;
+                accountNewEmail.value = "";
+                accountCurrentPassword.value = "";
+                accountNewPassword.value = "";
+                accountNewPassword2.value = "";
+
+                toast("Account updated");
+            } catch (err) {
+                console.error("ACCOUNT UPDATE ERROR:", err);
+                toast(err.code || err.message || "Could not update account");
             }
         });
 
@@ -2129,10 +2404,8 @@
             if (e.target === authBackdrop) closeAuth();
         });
 
-        profileBackdrop.addEventListener("click", (e) => {
-            if (e.target === profileBackdrop && document.getElementById("profileClose").style.display !== "none") {
-                closeProfileModal();
-            }
+        settingsBackdrop.addEventListener("click", (e) => {
+            if (e.target === settingsBackdrop) closeSettings();
         });
 
         dayBackdrop.addEventListener("click", (e) => {
@@ -2154,10 +2427,6 @@
                 renderCalendar();
                 renderDetails();
                 startListeners();
-
-                if (needsProfileSetup()) {
-                    openProfileModal(true);
-                }
 
                 if (pendingOpenDate && session?.role === "admin" && !viewMode) {
                     const dateToOpen = pendingOpenDate;
