@@ -1,1282 +1,2458 @@
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-    import {
-        getAuth,
-        onAuthStateChanged,
-        signInWithEmailAndPassword,
-        createUserWithEmailAndPassword,
-        signOut,
-        updateEmail,
-        updatePassword,
-        EmailAuthProvider,
-        reauthenticateWithCredential
-    } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Staff Calendar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
-    import {
-        getFirestore,
-        collection,
-        doc,
-        setDoc,
-        getDoc,
-        getDocs,
-        deleteDoc,
-        onSnapshot
-    } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyD3PvEamzNh4_fYIRAG9YxfVDZyucBC2b4",
-        authDomain: "staff-calendar-b25d4.firebaseapp.com",
-        projectId: "staff-calendar-b25d4",
-        storageBucket: "staff-calendar-b25d4.firebasestorage.app",
-        messagingSenderId: "771150169498",
-        appId: "1:771150169498:web:707d19b860fff00572a623"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    const KEY_EVENTS = "staffCal.events.v3";
-    const KEY_AVAIL = "staffCal.availability.v3";
-    const KEY_PICKS = "staffCal.hostPicks.v3";
-    const KEY_VIEWMODE = "staffCal.viewMode.v3";
-
-    function saveJSON(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
-    function loadJSON(key, fallback) {
-        try {
-            const raw = localStorage.getItem(key);
-            return raw ? JSON.parse(raw) : fallback;
-        } catch {
-            return fallback;
-        }
-    }
-
-    let session = null;
-    let usersMap = new Map();
-    let hosts = [];
-    let events = loadJSON(KEY_EVENTS, []);
-    let avail = loadJSON(KEY_AVAIL, []);
-    let hostPicks = loadJSON(KEY_PICKS, []);
-    let viewMode = loadJSON(KEY_VIEWMODE, false);
-
-    let viewDate = new Date();
-    let selectedDate = null;
-    let pendingOpenDate = null;
-    let authMode = "login";
-    let profileImageData = null;
-    let unsubscribers = [];
-
-    function uid() { return Math.random().toString(16).slice(2) + Date.now().toString(16); }
-    function pad2(n) { return String(n).padStart(2, "0"); }
-    function toISODate(d) { return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
-    function fromISODate(s) { const p = s.split("-").map(Number); return new Date(p[0], p[1] - 1, p[2]); }
-    function startOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
-    function monthLabel(d) { return d.toLocaleString(undefined, { month: "long", year: "numeric" }); }
-    function mondayIndex(jsDay) { return (jsDay + 6) % 7; }
-    function prettyDate(iso) {
-        const d = fromISODate(iso);
-        return d.toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" });
-    }
-
-    function escapeHTML(s) {
-        return String(s).replace(/[&<>"']/g, c => ({
-            "&": "&amp;",
-            "<": "&lt;",
-            ">": "&gt;",
-            '"': "&quot;",
-            "'": "&#39;"
-        }[c]));
-    }
-
-    function toast(msg) {
-        const t = document.getElementById("toast");
-        t.textContent = msg;
-        t.style.display = "block";
-        clearTimeout(toast._tm);
-        toast._tm = setTimeout(() => t.style.display = "none", 2600);
-    }
-
-    function initialsFromName(name) {
-        const clean = String(name || "").trim();
-        if (!clean) return "U";
-        const parts = clean.split(/\s+/).slice(0, 2);
-        return parts.map(p => p[0]?.toUpperCase() || "").join("") || "U";
-    }
-
-    function defaultAvatarDataURL(name) {
-        const initials = initialsFromName(name);
-        const svg = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
-                <defs>
-                    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-                        <stop stop-color="#7289da"/>
-                        <stop offset="1" stop-color="#39d98a"/>
-                    </linearGradient>
-                </defs>
-                <rect width="160" height="160" rx="34" fill="url(#g)"/>
-                <text x="80" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="54" font-weight="700" fill="white">${initials}</text>
-            </svg>
-        `;
-        return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
-    }
-
-    async function fileToAvatarDataURL(file) {
-        const img = await new Promise((resolve, reject) => {
-            const fr = new FileReader();
-            fr.onload = () => {
-                const image = new Image();
-                image.onload = () => resolve(image);
-                image.onerror = reject;
-                image.src = fr.result;
-            };
-            fr.onerror = reject;
-            fr.readAsDataURL(file);
-        });
-
-        const size = 180;
-        const canvas = document.createElement("canvas");
-        canvas.width = size;
-        canvas.height = size;
-        const ctx = canvas.getContext("2d");
-
-        const sw = img.width;
-        const sh = img.height;
-        const side = Math.min(sw, sh);
-        const sx = (sw - side) / 2;
-        const sy = (sh - side) / 2;
-
-        ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
-        return canvas.toDataURL("image/jpeg", 0.82);
-    }
-
-    function profilePhotoOrDefault(userLike) {
-        return userLike?.photoURL || defaultAvatarDataURL(userLike?.name || userLike?.displayName || userLike?.email || "User");
-    }
-
-    async function ensureUserDoc(firebaseUser) {
-        const ref = doc(db, "users", firebaseUser.uid);
-        const snap = await getDoc(ref);
-
-        if (!snap.exists()) {
-            const fallbackName = (firebaseUser.email || "User").split("@")[0];
-            await setDoc(ref, {
-                name: fallbackName,
-                email: firebaseUser.email || "",
-                role: "staff",
-                photoURL: "",
-                createdAt: Date.now()
-            }, { merge: true });
-        }
-    }
-
-    async function loadSessionFromAuth(firebaseUser) {
-        if (!firebaseUser) {
-            session = null;
-            return;
+    <style>
+        :root {
+            --bg: #0f1115;
+            --panel: rgba(255,255,255,.06);
+            --panel2: rgba(255,255,255,.09);
+            --stroke: rgba(255,255,255,.12);
+            --text: #eef1f6;
+            --muted: rgba(238,241,246,.7);
+            --brand: #7289da;
+            --danger: #ff6b6b;
+            --ok: #39d98a;
+            --warn: #f5c04f;
+            --shadow: 0 18px 60px rgba(0,0,0,.45);
+            --radius: 16px;
         }
 
-        await ensureUserDoc(firebaseUser);
+        * { box-sizing: border-box; }
 
-        const snap = await getDoc(doc(db, "users", firebaseUser.uid));
-        const data = snap.exists() ? snap.data() : {};
-
-        session = {
-            uid: firebaseUser.uid,
-            email: firebaseUser.email || "",
-            name: data.name || (firebaseUser.email || "User").split("@")[0],
-            role: data.role || "staff",
-            photoURL: data.photoURL || ""
-        };
-    }
-
-    function canClickHost(host) {
-        if (!session) return false;
-        if (session.role === "admin") return true;
-        return host.uid === session.uid;
-    }
-
-    async function upsertEvent(ev) {
-        await setDoc(doc(db, "events", ev.id), ev, { merge: true });
-    }
-
-    async function removeEvent(id) {
-        await deleteDoc(doc(db, "events", id));
-    }
-
-    async function upsertAvail(a) {
-        await setDoc(doc(db, "availability", a.id), a, { merge: true });
-    }
-
-    async function removeAvail(id) {
-        await deleteDoc(doc(db, "availability", id));
-    }
-
-    function pickDocId(dateIso, hostUid) {
-        return `${dateIso}_${hostUid}`;
-    }
-
-    async function setPick(dateIso, host) {
-        const id = pickDocId(dateIso, host.uid);
-        await setDoc(doc(db, "host_picks", id), {
-            id,
-            date: dateIso,
-            hostUid: host.uid,
-            hostName: host.name,
-            hostImg: profilePhotoOrDefault(host)
-        }, { merge: true });
-    }
-
-    async function removePick(dateIso, hostUid) {
-        await deleteDoc(doc(db, "host_picks", pickDocId(dateIso, hostUid)));
-    }
-
-    async function clearPicksForDate(dateIso) {
-        const picks = hostPicks.filter(p => p.date === dateIso);
-        await Promise.all(picks.map(p => removePick(dateIso, p.hostUid)));
-    }
-
-    function picksForDate(dateIso) {
-        return hostPicks.filter(p => p.date === dateIso);
-    }
-
-    function isPicked(dateIso, hostUid) {
-        return hostPicks.some(p => p.date === dateIso && p.hostUid === hostUid);
-    }
-
-    const whoLine = document.getElementById("whoLine");
-    const topAvatar = document.getElementById("topAvatar");
-    const rolePill = document.getElementById("rolePill");
-    const btnSettings = document.getElementById("btnSettings");
-    const btnLogin = document.getElementById("btnLogin");
-    const btnLogout = document.getElementById("btnLogout");
-    const calGrid = document.getElementById("calGrid");
-    const monthTitle = document.getElementById("monthTitle");
-    const selectedDateText = document.getElementById("selectedDateText");
-    const detailList = document.getElementById("detailList");
-    const sideSub = document.getElementById("sideSub");
-    const addEventBtn = document.getElementById("addEventBtn");
-    const addAvailBtn = document.getElementById("addAvailBtn");
-    const resetBtn = document.getElementById("resetBtn");
-    const storageNote = document.getElementById("storageNote");
-    const viewModeBtn = document.getElementById("viewModeBtn");
-    const clearAllBtn = document.getElementById("clearAllBtn");
-    const pfpPickerBox = document.getElementById("pfpPickerBox");
-    const pfpGrid = document.getElementById("pfpGrid");
-    const hostBar = document.getElementById("hostBar");
-    const hostBarDate = document.getElementById("hostBarDate");
-    const hostChips = document.getElementById("hostChips");
-    const clearMyPickBtn = document.getElementById("clearMyPickBtn");
-
-    const authBackdrop = document.getElementById("authBackdrop");
-    const tabLogin = document.getElementById("tabLogin");
-    const tabRegister = document.getElementById("tabRegister");
-    const authEmail = document.getElementById("authEmail");
-    const authPassword = document.getElementById("authPassword");
-    const authPassword2 = document.getElementById("authPassword2");
-    const confirmField = document.getElementById("confirmField");
-    const authGo = document.getElementById("authGo");
-
-    const settingsBackdrop = document.getElementById("settingsBackdrop");
-    const settingsProfileTab = document.getElementById("settingsProfileTab");
-    const settingsAccountTab = document.getElementById("settingsAccountTab");
-    const settingsProfilePanel = document.getElementById("settingsProfilePanel");
-    const settingsAccountPanel = document.getElementById("settingsAccountPanel");
-    const profileName = document.getElementById("profileName");
-    const profileFile = document.getElementById("profileFile");
-    const profilePreview = document.getElementById("profilePreview");
-    const accountCurrentEmail = document.getElementById("accountCurrentEmail");
-    const accountNewEmail = document.getElementById("accountNewEmail");
-    const accountCurrentPassword = document.getElementById("accountCurrentPassword");
-    const accountNewPassword = document.getElementById("accountNewPassword");
-    const accountNewPassword2 = document.getElementById("accountNewPassword2");
-
-    const dayBackdrop = document.getElementById("dayBackdrop");
-    const dayModalTitle = document.getElementById("dayModalTitle");
-    const dayModalSub = document.getElementById("dayModalSub");
-    const dayModalBody = document.getElementById("dayModalBody");
-
-    function setAuthMode(mode) {
-        authMode = mode;
-        const loginActive = mode === "login";
-        tabLogin.classList.toggle("active", loginActive);
-        tabRegister.classList.toggle("active", !loginActive);
-        confirmField.style.display = loginActive ? "none" : "block";
-        authGo.textContent = loginActive ? "Login" : "Register";
-    }
-
-    function openAuth() {
-        setAuthMode("login");
-        authBackdrop.style.display = "flex";
-    }
-
-    function closeAuth() {
-        authBackdrop.style.display = "none";
-    }
-
-    function setSettingsTab(tab) {
-        const profileActive = tab === "profile";
-        settingsProfileTab.classList.toggle("active", profileActive);
-        settingsAccountTab.classList.toggle("active", !profileActive);
-        settingsProfilePanel.classList.toggle("active", profileActive);
-        settingsAccountPanel.classList.toggle("active", !profileActive);
-    }
-
-    function openSettings() {
-        if (!session) return;
-        profileName.value = session.name || "";
-        profileImageData = session.photoURL || "";
-        profilePreview.src = profilePhotoOrDefault(session);
-        accountCurrentEmail.value = session.email || "";
-        accountNewEmail.value = "";
-        accountCurrentPassword.value = "";
-        accountNewPassword.value = "";
-        accountNewPassword2.value = "";
-        setSettingsTab("profile");
-        settingsBackdrop.style.display = "flex";
-    }
-
-    function closeSettings() {
-        settingsBackdrop.style.display = "none";
-    }
-
-    function renderTop() {
-        if (!session) {
-            whoLine.textContent = "Login required";
-            topAvatar.style.display = "none";
-            rolePill.style.display = "none";
-            btnSettings.style.display = "none";
-            btnLogin.style.display = "inline-block";
-            btnLogout.style.display = "none";
-            addEventBtn.style.display = "none";
-            addAvailBtn.style.display = "none";
-            resetBtn.style.display = "none";
-            viewModeBtn.style.display = "none";
-            clearAllBtn.style.display = "none";
-            sideSub.textContent = "Log in to view and manage the calendar";
-            return;
+        body {
+            margin: 0;
+            font-family: Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+            background:
+                radial-gradient(1200px 700px at 20% -10%, rgba(114,137,218,.22), transparent 60%),
+                radial-gradient(900px 600px at 95% 0%, rgba(57,217,138,.12), transparent 60%),
+                radial-gradient(900px 600px at 60% 110%, rgba(255,107,107,.12), transparent 60%),
+                var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-bottom: 130px;
         }
 
-        whoLine.textContent = `Logged in as ${session.name}`;
-        topAvatar.src = profilePhotoOrDefault(session);
-        topAvatar.style.display = "block";
-        rolePill.style.display = "inline-flex";
-        rolePill.innerHTML = `Role: <b>${escapeHTML(session.role.toUpperCase())}</b>`;
-        btnSettings.style.display = "inline-block";
-        btnLogin.style.display = "none";
-        btnLogout.style.display = "inline-block";
-        viewModeBtn.style.display = "inline-block";
-        viewModeBtn.textContent = "View: " + (viewMode ? "ON" : "OFF");
-
-        clearAllBtn.style.display = (session.role === "admin") ? "inline-block" : "none";
-        resetBtn.style.display = (session.role === "admin") ? "inline-block" : "none";
-        addEventBtn.style.display = (session.role === "admin" && !viewMode) ? "inline-block" : "none";
-        addAvailBtn.style.display = (session.role === "admin" && !viewMode) ? "inline-block" : "none";
-
-        sideSub.textContent = viewMode
-            ? "View mode: no edit popup"
-            : (session.role === "admin"
-                ? "Admin: manage events, availability, and all picks"
-                : "Staff: view dates and pick yourself as host");
-    }
-
-    function renderHostPicker() {
-        const show = !!session && !!selectedDate && !viewMode && hosts.length > 0;
-        pfpPickerBox.style.display = show ? "block" : "none";
-        if (!show) return;
-
-        pfpGrid.innerHTML = "";
-
-        hosts.forEach(host => {
-            const btn = document.createElement("div");
-            btn.className = "pfpBtn";
-            if (isPicked(selectedDate, host.uid)) btn.classList.add("active");
-
-            const allowed = canClickHost(host);
-            btn.setAttribute("aria-disabled", allowed ? "false" : "true");
-
-            btn.innerHTML = `
-                <img class="pfpImg" src="${escapeHTML(profilePhotoOrDefault(host))}" alt="${escapeHTML(host.name)}" />
-                <div class="pfpName">${escapeHTML(host.name)}</div>
-            `;
-
-            btn.addEventListener("click", async (e) => {
-                e.stopPropagation();
-
-                if (!allowed) {
-                    toast("You can only pick your own profile");
-                    return;
-                }
-
-                try {
-                    if (isPicked(selectedDate, host.uid)) {
-                        await removePick(selectedDate, host.uid);
-                    } else {
-                        await setPick(selectedDate, host);
-                    }
-                } catch (err) {
-                    console.error(err);
-                    toast("Could not update host pick");
-                }
-            });
-
-            pfpGrid.appendChild(btn);
-        });
-    }
-
-    function renderHostBar() {
-        if (!selectedDate) {
-            hostBar.style.display = "none";
-            return;
+        .wrap {
+            width: min(1700px, calc(100vw - 24px));
+            margin: 0 auto;
+            padding: 12px;
         }
 
-        hostBar.style.display = "flex";
-        hostBarDate.textContent = prettyDate(selectedDate);
-
-        const picks = picksForDate(selectedDate).slice().sort((a, b) => (a.hostName || "").localeCompare(b.hostName || ""));
-        hostChips.innerHTML = "";
-
-        if (!picks.length) {
-            const empty = document.createElement("div");
-            empty.className = "chip";
-            empty.innerHTML = `<b style="color:rgba(238,241,246,.75)">No hosts picked yet</b>`;
-            hostChips.appendChild(empty);
-        } else {
-            picks.forEach(p => {
-                const chip = document.createElement("div");
-                chip.className = "chip";
-                chip.innerHTML = `
-                    <img src="${escapeHTML(p.hostImg || defaultAvatarDataURL(p.hostName || "U"))}" alt="${escapeHTML(p.hostName || "Host")}" />
-                    <b>${escapeHTML(p.hostName || "Host")}</b>
-                `;
-                hostChips.appendChild(chip);
-            });
+        .topbar {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border: 1px solid var(--stroke);
+            background: var(--panel);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 10px;
+            backdrop-filter: blur(10px);
+            z-index: 10;
         }
 
-        if (session) {
-            clearMyPickBtn.style.display = isPicked(selectedDate, session.uid) ? "inline-flex" : "none";
-        } else {
-            clearMyPickBtn.style.display = "none";
+        .brand {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            min-width: 0;
         }
-    }
 
-    function renderCalendar() {
-        monthTitle.textContent = monthLabel(viewDate);
-        calGrid.innerHTML = "";
+        .logo {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(114,137,218,1), rgba(57,217,138,1));
+            box-shadow: 0 10px 30px rgba(114,137,218,.25);
+            flex: 0 0 auto;
+        }
 
-        const first = startOfMonth(viewDate);
-        const lead = mondayIndex(first.getDay());
-        const startCellDate = new Date(first);
-        startCellDate.setDate(first.getDate() - lead);
+        .brandText {
+            min-width: 0;
+        }
 
-        for (let i = 0; i < 42; i++) {
-            const cellDate = new Date(startCellDate);
-            cellDate.setDate(startCellDate.getDate() + i);
-            const iso = toISODate(cellDate);
-            const inMonth = cellDate.getMonth() === viewDate.getMonth();
+        .brand h1 {
+            font-size: 14px;
+            margin: 0;
+            letter-spacing: .2px;
+        }
 
-            const dayEvents = events.filter(e => e.date === iso);
-            const dayAvail = avail.filter(a => a.date === iso);
-            const dayPicks = hostPicks.filter(p => p.date === iso);
+        .brand p {
+            font-size: 12px;
+            margin: 0;
+            color: var(--muted);
+            overflow-wrap: anywhere;
+        }
 
-            const div = document.createElement("div");
-            div.className = "day" + (inMonth ? "" : " muted");
+        .userTop {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
 
-            if (selectedDate === iso) {
-                div.style.borderColor = "rgba(114,137,218,.65)";
-                div.style.background = "rgba(114,137,218,.10)";
+        .topAvatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.05);
+            display: none;
+        }
+
+        .pill {
+            font-size: 12px;
+            color: var(--text);
+            padding: 7px 10px;
+            border: 1px solid var(--stroke);
+            background: rgba(255,255,255,.05);
+            border-radius: 999px;
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+            overflow-wrap: anywhere;
+        }
+
+        .pill b { font-weight: 700; }
+
+        .btn {
+            border: 1px solid var(--stroke);
+            background: rgba(255,255,255,.06);
+            color: var(--text);
+            padding: 10px 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: .15s transform,.15s background,.15s opacity;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .btn:hover { background: rgba(255,255,255,.10); }
+        .btn:active { transform: translateY(1px); }
+        .btn[disabled] { opacity: .55; cursor: not-allowed; }
+
+        .btn.primary {
+            background: rgba(114,137,218,.22);
+            border-color: rgba(114,137,218,.45);
+        }
+
+        .btn.primary:hover { background: rgba(114,137,218,.28); }
+
+        .btn.danger {
+            background: rgba(255,107,107,.14);
+            border-color: rgba(255,107,107,.35);
+        }
+
+        .btn.danger:hover { background: rgba(255,107,107,.18); }
+
+        .btn.ok {
+            background: rgba(57,217,138,.14);
+            border-color: rgba(57,217,138,.35);
+        }
+
+        .btn.ok:hover { background: rgba(57,217,138,.18); }
+
+        .btn.warn {
+            background: rgba(245,192,79,.14);
+            border-color: rgba(245,192,79,.35);
+        }
+
+        .btn.warn:hover { background: rgba(245,192,79,.18); }
+
+        .btn.ghost { background: transparent; }
+
+        .btn.small {
+            padding: 8px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+            gap: 16px;
+            margin-top: 14px;
+            align-items: start;
+        }
+
+        .card {
+            border: 1px solid var(--stroke);
+            background: var(--panel);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        .cardHead {
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+            flex-wrap: wrap;
+        }
+
+        .cardHead h2 {
+            margin: 0;
+            font-size: 13px;
+        }
+
+        .cardHead p {
+            margin: 0;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .cardBody {
+            padding: 14px 16px;
+            min-width: 0;
+        }
+
+        .calTop {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+            background: rgba(255,255,255,.03);
+            flex-wrap: wrap;
+        }
+
+        .calTopLeft {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .monthTitle {
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: .2px;
+        }
+
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7,1fr);
+            gap: 8px;
+            padding: 10px 16px 0 16px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .weekdays div {
+            padding: 6px 8px;
+            text-align: center;
+        }
+
+        .calGrid {
+            display: grid;
+            grid-template-columns: repeat(7,1fr);
+            gap: 8px;
+            padding: 8px 16px 16px 16px;
+        }
+
+        .day {
+            min-height: 145px;
+            border: 1px solid rgba(255,255,255,.10);
+            background: rgba(255,255,255,.04);
+            border-radius: 14px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            cursor: pointer;
+            transition: .12s background,.12s transform,.12s border-color;
+            min-width: 0;
+        }
+
+        .day:hover {
+            background: rgba(255,255,255,.06);
+            border-color: rgba(114,137,218,.35);
+        }
+
+        .day:active { transform: translateY(1px); }
+        .day.muted { opacity: .45; }
+
+        .dayHead {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--muted);
+            gap: 8px;
+        }
+
+        .dayNum {
+            font-weight: 800;
+            color: var(--text);
+            font-size: 13px;
+        }
+
+        .badge {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.14);
+            background: rgba(0,0,0,.18);
+            color: var(--muted);
+            display: inline-flex;
+            gap: 6px;
+            align-items: center;
+            max-width: 100%;
+            overflow-wrap: anywhere;
+        }
+
+        .badge.brand {
+            border-color: rgba(114,137,218,.35);
+            color: rgba(220,230,255,.92);
+            background: rgba(114,137,218,.12);
+        }
+
+        .badge.ok {
+            border-color: rgba(57,217,138,.35);
+            color: rgba(204,255,230,.92);
+            background: rgba(57,217,138,.12);
+        }
+
+        .badge.warn {
+            border-color: rgba(245,192,79,.35);
+            color: rgba(255,239,194,.92);
+            background: rgba(245,192,79,.12);
+        }
+
+        .miniList {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        .miniItem {
+            font-size: 12px;
+            padding: 7px 8px;
+            border-radius: 12px;
+            background: rgba(0,0,0,.18);
+            border: 1px solid rgba(255,255,255,.10);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+        }
+
+        .miniItem span { color: var(--muted); }
+
+        .divider {
+            height: 1px;
+            background: rgba(255,255,255,.08);
+            margin: 12px 0;
+        }
+
+        .kvs {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .kv {
+            padding: 12px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,.10);
+            background: rgba(255,255,255,.04);
+        }
+
+        .kv .t {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .kv .v {
+            font-size: 13px;
+            font-weight: 700;
+            margin-top: 6px;
+            overflow-wrap: anywhere;
+        }
+
+        .list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .item {
+            padding: 12px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,.10);
+            background: rgba(255,255,255,.04);
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .item h4 {
+            margin: 0;
+            font-size: 13px;
+            overflow-wrap: anywhere;
+        }
+
+        .item p {
+            margin: 6px 0 0;
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.35;
+            overflow-wrap: anywhere;
+        }
+
+        .item .meta {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 6px;
+            overflow-wrap: anywhere;
+        }
+
+        .pickEntry {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,.10);
+            background: rgba(0,0,0,.16);
+        }
+
+        .pickEntryLeft {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .pickEntryLeft img {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.06);
+        }
+
+        .pickEntryName {
+            font-size: 13px;
+            font-weight: 700;
+            overflow-wrap: anywhere;
+        }
+
+        .pickEntryMeta {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 4px;
+            overflow-wrap: anywhere;
+        }
+
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 18px;
+            transform: translateX(-50%);
+            padding: 10px 12px;
+            border-radius: 999px;
+            background: rgba(0,0,0,.55);
+            border: 1px solid rgba(255,255,255,.14);
+            color: var(--text);
+            font-size: 12px;
+            display: none;
+            z-index: 20000;
+            backdrop-filter: blur(10px);
+            max-width: min(720px, calc(100vw - 30px));
+            overflow-wrap: anywhere;
+        }
+
+        .tiny {
+            font-size: 11px;
+            color: var(--muted);
+            overflow-wrap: anywhere;
+        }
+
+        .rightActions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .okText { color: rgba(190,255,220,.95); }
+
+        .pfpGrid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0,1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .pfpBtn {
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(0,0,0,.14);
+            border-radius: 14px;
+            padding: 10px 8px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            transition: .12s transform,.12s background,.12s border-color;
+            user-select: none;
+            min-height: 100px;
+            min-width: 0;
+        }
+
+        .pfpBtn:hover {
+            background: rgba(255,255,255,.06);
+            border-color: rgba(114,137,218,.35);
+        }
+
+        .pfpBtn:active { transform: translateY(1px); }
+
+        .pfpBtn[aria-disabled="true"] {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+
+        .pfpBtn.active {
+            border-color: rgba(57,217,138,.55);
+            background: rgba(57,217,138,.10);
+        }
+
+        .pfpImg {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            object-fit: cover;
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.06);
+        }
+
+        .pfpName {
+            font-size: 11px;
+            color: var(--text);
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.15;
+            overflow-wrap: anywhere;
+        }
+
+        .hostBar {
+            position: fixed;
+            left: 50%;
+            bottom: 12px;
+            transform: translateX(-50%);
+            width: min(1200px, calc(100vw - 18px));
+            border: 1px solid var(--stroke);
+            background: rgba(20,22,26,.84);
+            backdrop-filter: blur(10px);
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            z-index: 1500;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 14px;
+        }
+
+        .hostBarLeft {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 180px;
+        }
+
+        .hostBarTitle {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .hostBarDate {
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .hostChips {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            overflow-x: auto;
+            padding-bottom: 2px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.14);
+            background: rgba(0,0,0,.18);
+            white-space: nowrap;
+        }
+
+        .chip img {
+            width: 26px;
+            height: 26px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.06);
+        }
+
+        .chip b { font-size: 12px; }
+
+        .hostBarRight {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .modalBackdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.55);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 9999;
+            backdrop-filter: blur(6px);
+        }
+
+        .modal {
+            width: min(560px, 100%);
+            border: 1px solid var(--stroke);
+            background: rgba(20,22,26,.96);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            max-height: calc(100vh - 32px);
+            overflow-y: auto;
+        }
+
+        .modalTop {
+            padding: 18px;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+        }
+
+        .modalTop h3 {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .modalTop p {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .modalBody {
+            padding: 16px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .field label {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        input, textarea {
+            font: inherit;
+            color: var(--text);
+            background: rgba(255,255,255,.06);
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 12px;
+            padding: 11px 12px;
+            outline: none;
+            min-width: 0;
+        }
+
+        textarea {
+            min-height: 74px;
+            resize: vertical;
+        }
+
+        input:focus, textarea:focus {
+            border-color: rgba(114,137,218,.55);
+        }
+
+        .modalActions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .authTabs, .settingsTabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .authTab, .settingsTab {
+            flex: 1;
+            text-align: center;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,.10);
+            background: rgba(255,255,255,.04);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .authTab.active, .settingsTab.active {
+            border-color: rgba(114,137,218,.45);
+            background: rgba(114,137,218,.18);
+        }
+
+        .avatarPreviewWrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .avatarPreview {
+            width: 74px;
+            height: 74px;
+            border-radius: 20px;
+            object-fit: cover;
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.05);
+        }
+
+        .emptyState {
+            padding: 16px;
+            border-radius: 14px;
+            border: 1px dashed rgba(255,255,255,.14);
+            background: rgba(255,255,255,.03);
+        }
+
+        .settingsPanel {
+            display: none;
+        }
+
+        .settingsPanel.active {
+            display: block;
+        }
+
+        .infoBox {
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,.10);
+            background: rgba(255,255,255,.04);
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 1200px) {
+            .grid {
+                grid-template-columns: 1fr;
             }
 
-            const head = document.createElement("div");
-            head.className = "dayHead";
-
-            const num = document.createElement("div");
-            num.className = "dayNum";
-            num.textContent = String(cellDate.getDate());
-
-            const badge = document.createElement("div");
-            const parts = [];
-            if (dayEvents.length) parts.push("E " + dayEvents.length);
-            if (dayAvail.length) parts.push("A " + dayAvail.length);
-            if (dayPicks.length) parts.push("H " + dayPicks.length);
-            badge.className = "badge" + (dayEvents.length ? " brand" : ((dayAvail.length || dayPicks.length) ? " ok" : ""));
-            badge.textContent = parts.length ? parts.join(" ") : "";
-
-            head.appendChild(num);
-            head.appendChild(badge);
-
-            const list = document.createElement("div");
-            list.className = "miniList";
-
-            dayEvents.slice(0, 2).forEach(ev => {
-                const it = document.createElement("div");
-                it.className = "miniItem";
-                it.textContent = ev.host ? `${ev.title} - ${ev.host}` : ev.title;
-                list.appendChild(it);
-            });
-
-            if (dayPicks.length) {
-                const it = document.createElement("div");
-                it.className = "miniItem";
-                const icons = dayPicks.slice(0, 3).map(p =>
-                    `<img src="${escapeHTML(p.hostImg || defaultAvatarDataURL(p.hostName || "U"))}"
-                          title="${escapeHTML(p.hostName || "Host")}"
-                          style="width:20px;height:20px;border-radius:50%;border:1px solid rgba(255,255,255,.18);margin-right:-6px;vertical-align:middle;background:rgba(255,255,255,.06)">`
-                ).join("");
-                const extra = dayPicks.length > 3 ? ` <span>+${dayPicks.length - 3}</span>` : "";
-                it.innerHTML = `<span>Hosts:</span> ${icons}${extra}`;
-                list.appendChild(it);
+            .topbar {
+                position: static;
             }
-
-            if (dayEvents.length > 2) {
-                const it = document.createElement("div");
-                it.className = "miniItem";
-                it.innerHTML = `<span>+${dayEvents.length - 2} more</span>`;
-                list.appendChild(it);
-            }
-
-            div.appendChild(head);
-            div.appendChild(list);
-
-            div.addEventListener("click", () => {
-                selectedDate = iso;
-                renderCalendar();
-                renderDetails();
-                renderHostPicker();
-                renderHostBar();
-
-                if (viewMode) return;
-
-                if (!session) {
-                    pendingOpenDate = iso;
-                    openAuth();
-                    return;
-                }
-
-                if (session.role !== "admin") return;
-
-                openDayModal(iso);
-            });
-
-            calGrid.appendChild(div);
         }
-    }
 
-    function renderDetails() {
-        selectedDateText.textContent = selectedDate ? prettyDate(selectedDate) : "None";
-        detailList.innerHTML = "";
-        renderHostBar();
-        renderHostPicker();
+        @media (max-width: 760px) {
+            body {
+                padding-bottom: 150px;
+            }
 
-        if (!session) {
-            detailList.innerHTML = `
-                <div class="emptyState">
-                    <b>Login required</b>
-                    <p style="margin:8px 0 0;color:var(--muted);font-size:12px;">Create an account or log in to use the calendar.</p>
+            .wrap {
+                width: min(100vw - 10px, 100%);
+                padding: 8px;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+                padding: 12px;
+            }
+
+            .userTop {
+                justify-content: space-between;
+                flex-wrap: wrap;
+            }
+
+            .cardHead,
+            .calTop {
+                padding: 12px;
+            }
+
+            .cardBody {
+                padding: 12px;
+            }
+
+            .weekdays {
+                gap: 4px;
+                padding: 8px 8px 0 8px;
+                font-size: 11px;
+            }
+
+            .weekdays div {
+                padding: 4px 2px;
+            }
+
+            .calGrid {
+                gap: 4px;
+                padding: 6px 8px 10px 8px;
+            }
+
+            .day {
+                min-height: 92px;
+                padding: 6px;
+                border-radius: 12px;
+                gap: 4px;
+            }
+
+            .dayNum {
+                font-size: 12px;
+            }
+
+            .miniItem {
+                font-size: 10px;
+                padding: 5px 6px;
+                border-radius: 10px;
+            }
+
+            .badge {
+                font-size: 9px;
+                padding: 3px 6px;
+            }
+
+            .pfpGrid {
+                grid-template-columns: repeat(2, minmax(0,1fr));
+            }
+
+            .hostBar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+                padding: 10px 12px;
+                border-radius: 16px;
+            }
+
+            .hostBarLeft {
+                min-width: 0;
+            }
+
+            .hostBarRight {
+                justify-content: flex-end;
+            }
+
+            .modal {
+                width: 100%;
+                border-radius: 18px;
+            }
+
+            .modalTop,
+            .modalBody {
+                padding: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .btn,
+            .btn.small {
+                font-size: 12px;
+            }
+
+            .monthTitle {
+                font-size: 13px;
+            }
+
+            .brand h1 {
+                font-size: 13px;
+            }
+
+            .brand p {
+                font-size: 11px;
+            }
+
+            .topAvatar {
+                width: 34px;
+                height: 34px;
+                border-radius: 10px;
+            }
+
+            .logo {
+                width: 34px;
+                height: 34px;
+                border-radius: 10px;
+            }
+
+            .day {
+                min-height: 82px;
+            }
+
+            .miniItem {
+                font-size: 9px;
+            }
+
+            .authTabs, .settingsTabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="topbar">
+            <div class="brand">
+                <div class="logo"></div>
+                <div class="brandText">
+                    <h1>Staff Calendar</h1>
+                    <p id="whoLine">Loading...</p>
                 </div>
-            `;
-            return;
-        }
+            </div>
 
-        if (!selectedDate) {
-            detailList.innerHTML = `
-                <div class="emptyState">
-                    <b>Pick a date</b>
-                    <p style="margin:8px 0 0;color:var(--muted);font-size:12px;">Tap or click a day to view events and host picks.</p>
+            <div class="userTop">
+                <img id="topAvatar" class="topAvatar" alt="Profile">
+                <div class="row" style="align-items:center;justify-content:flex-end">
+                    <div class="pill" id="rolePill" style="display:none;">Role: <b>STAFF</b></div>
+                    <button class="btn ghost" id="btnSettings" style="display:none;">Settings</button>
+                    <button class="btn ghost" id="btnLogin" style="display:none;">Login</button>
+                    <button class="btn" id="btnLogout" style="display:none;">Logout</button>
                 </div>
-            `;
-            return;
-        }
+            </div>
+        </div>
 
-        const dayEvents = events.filter(e => e.date === selectedDate);
-        const dayAvail = avail.filter(a => a.date === selectedDate);
-        const dayPicks = picksForDate(selectedDate);
+        <div class="grid">
+            <div class="card">
+                <div class="calTop">
+                    <div class="calTopLeft">
+                        <button class="btn small" id="prevMonth">◀</button>
+                        <button class="btn small" id="todayBtn">Today</button>
+                        <button class="btn small" id="nextMonth">▶</button>
+                        <div class="monthTitle" id="monthTitle">March 2026</div>
+                    </div>
+                    <div>
+                        <span class="pill" id="viewHint">Tap or click a day</span>
+                    </div>
+                </div>
 
-        const picksCard = document.createElement("div");
-        picksCard.className = "item";
+                <div class="weekdays">
+                    <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+                </div>
 
-        const picksLeft = document.createElement("div");
-        picksLeft.style.flex = "1";
-        picksLeft.innerHTML = `<h4>Picked hosts (${dayPicks.length})</h4>`;
+                <div class="calGrid" id="calGrid"></div>
+            </div>
 
-        if (!dayPicks.length) {
-            const p = document.createElement("p");
-            p.textContent = "No host picks yet.";
-            picksLeft.appendChild(p);
-        } else {
-            dayPicks.forEach(pick => {
-                const row = document.createElement("div");
-                row.className = "pickEntry";
-                row.innerHTML = `
-                    <div class="pickEntryLeft">
-                        <img src="${escapeHTML(pick.hostImg || defaultAvatarDataURL(pick.hostName || "U"))}" alt="${escapeHTML(pick.hostName || "Host")}">
-                        <div>
-                            <div class="pickEntryName">${escapeHTML(pick.hostName || "Host")}</div>
-                            <div class="pickEntryMeta">Email hidden for privacy</div>
+            <div class="card">
+                <div class="cardHead">
+                    <div>
+                        <h2>Details</h2>
+                        <p id="sideSub">Staff: view only • Admin: manage calendar</p>
+                    </div>
+
+                    <div class="rightActions">
+                        <button class="btn small" id="viewModeBtn" style="display:none;">View: OFF</button>
+                        <button class="btn small danger" id="clearAllBtn" style="display:none;">Clear ALL</button>
+                        <button class="btn small ok" id="addEventBtn" style="display:none;">+ Add event</button>
+                        <button class="btn small primary" id="addAvailBtn" style="display:none;">+ Add availability</button>
+                    </div>
+                </div>
+
+                <div class="cardBody">
+                    <div class="kvs">
+                        <div class="kv">
+                            <div class="t">Selected date</div>
+                            <div class="v" id="selectedDateText">None</div>
+                            <p class="tiny" id="selectedHint" style="margin-top:8px;">Staff can view and pick themselves. Admins can edit and remove any pick.</p>
+                        </div>
+
+                        <div class="kv" id="pfpPickerBox" style="display:none;">
+                            <div class="t">Who is hosting</div>
+                            <div class="tiny" style="margin-top:8px">Staff can only click their own profile. Admins can click anyone.</div>
+                            <div class="pfpGrid" id="pfpGrid"></div>
                         </div>
                     </div>
-                `;
 
-                const actions = document.createElement("div");
-                actions.className = "row";
+                    <div class="divider"></div>
+                    <div class="list" id="detailList"></div>
 
-                const isMine = session && pick.hostUid === session.uid;
+                    <div class="divider"></div>
 
-                if (!viewMode && (session.role === "admin" || isMine)) {
-                    const removeBtn = document.createElement("button");
-                    removeBtn.className = "btn small danger";
-                    removeBtn.textContent = session.role === "admin" && !isMine ? "Remove pick" : "Remove";
-                    removeBtn.onclick = async () => {
-                        try {
-                            await removePick(selectedDate, pick.hostUid);
-                            toast("Pick removed");
-                        } catch (err) {
-                            console.error(err);
-                            toast("Could not remove pick");
-                        }
-                    };
-                    actions.appendChild(removeBtn);
-                }
-
-                row.appendChild(actions);
-                picksLeft.appendChild(row);
-            });
-        }
-
-        const picksRight = document.createElement("div");
-        picksRight.className = "row";
-        picksRight.innerHTML = `<div class="badge ok">Host picks</div>`;
-
-        if (!viewMode && session.role === "admin" && dayPicks.length) {
-            const clearBtn = document.createElement("button");
-            clearBtn.className = "btn small danger";
-            clearBtn.textContent = "Clear date picks";
-            clearBtn.onclick = async () => {
-                const ok = confirm("Remove all host picks for this date?");
-                if (!ok) return;
-                try {
-                    await clearPicksForDate(selectedDate);
-                    toast("Cleared picks");
-                } catch (err) {
-                    console.error(err);
-                    toast("Could not clear picks");
-                }
-            };
-            picksRight.appendChild(clearBtn);
-        }
-
-        picksCard.appendChild(picksLeft);
-        picksCard.appendChild(picksRight);
-        detailList.appendChild(picksCard);
-
-        const evCard = document.createElement("div");
-        evCard.className = "item";
-        const evLeft = document.createElement("div");
-        evLeft.style.flex = "1";
-        evLeft.innerHTML = `<h4>Official events (${dayEvents.length})</h4>`;
-
-        if (!dayEvents.length) {
-            const p = document.createElement("p");
-            p.textContent = "No official events on this day yet.";
-            evLeft.appendChild(p);
-        } else {
-            dayEvents.slice().sort((a, b) => (a.time || "").localeCompare(b.time || "")).forEach(ev => {
-                const wrap = document.createElement("div");
-                wrap.style.marginTop = "10px";
-                wrap.style.padding = "10px";
-                wrap.style.borderRadius = "12px";
-                wrap.style.border = "1px solid rgba(255,255,255,.10)";
-                wrap.style.background = "rgba(0,0,0,.16)";
-
-                const hostLine = ev.host ? `Host: ${ev.host}` : "Host: Unassigned";
-
-                wrap.innerHTML = `
-                    <b>${escapeHTML(ev.title)}</b>
-                    <div class="meta">${escapeHTML(ev.time || "Time TBA")} • ${escapeHTML(ev.location || "Location TBA")} • ${escapeHTML(hostLine)}</div>
-                    ${ev.note ? `<p style="margin:8px 0 0;font-size:12px;color:var(--muted)">${escapeHTML(ev.note)}</p>` : ""}
-                `;
-
-                if (!viewMode && session.role === "admin") {
-                    const controls = document.createElement("div");
-                    controls.style.marginTop = "10px";
-                    controls.style.display = "flex";
-                    controls.style.gap = "8px";
-                    controls.style.flexWrap = "wrap";
-
-                    const setHostBtn = document.createElement("button");
-                    setHostBtn.className = "btn small primary";
-                    setHostBtn.textContent = "Set host";
-                    setHostBtn.onclick = async () => {
-                        const name = prompt("Host name:", ev.host || "");
-                        if (name === null) return;
-                        await upsertEvent({ ...ev, host: name.trim() });
-                        toast("Host updated");
-                    };
-
-                    const delBtn = document.createElement("button");
-                    delBtn.className = "btn small danger";
-                    delBtn.textContent = "Remove";
-                    delBtn.onclick = async () => {
-                        await removeEvent(ev.id);
-                        toast("Event removed");
-                    };
-
-                    controls.appendChild(setHostBtn);
-                    controls.appendChild(delBtn);
-                    wrap.appendChild(controls);
-                }
-
-                evLeft.appendChild(wrap);
-            });
-        }
-
-        const evRight = document.createElement("div");
-        evRight.innerHTML = (session.role === "admin") ? '<div class="badge brand">Admin</div>' : '<div class="badge">Staff</div>';
-
-        evCard.appendChild(evLeft);
-        evCard.appendChild(evRight);
-        detailList.appendChild(evCard);
-
-        const avCard = document.createElement("div");
-        avCard.className = "item";
-        const avLeft = document.createElement("div");
-        avLeft.style.flex = "1";
-        avLeft.innerHTML = `<h4>Staff availability (${dayAvail.length})</h4>`;
-
-        if (!dayAvail.length) {
-            const p = document.createElement("p");
-            p.textContent = "No availability added yet.";
-            avLeft.appendChild(p);
-        } else {
-            dayAvail.forEach(a => {
-                const line = document.createElement("div");
-                line.style.marginTop = "10px";
-                line.style.padding = "10px";
-                line.style.borderRadius = "12px";
-                line.style.border = "1px solid rgba(255,255,255,.10)";
-                line.style.background = "rgba(0,0,0,.16)";
-                line.innerHTML = `
-                    <b class="okText">${escapeHTML(a.name)}</b>
-                    <div class="meta">${escapeHTML(a.note || "Available to host")}</div>
-                `;
-
-                if (!viewMode && session.role === "admin") {
-                    const del = document.createElement("button");
-                    del.className = "btn small danger";
-                    del.textContent = "Remove";
-                    del.style.marginTop = "10px";
-                    del.onclick = async () => {
-                        await removeAvail(a.id);
-                        toast("Availability removed");
-                    };
-                    line.appendChild(del);
-                }
-
-                avLeft.appendChild(line);
-            });
-        }
-
-        const avRight = document.createElement("div");
-        avRight.innerHTML = '<div class="badge warn">Availability</div>';
-        avCard.appendChild(avLeft);
-        avCard.appendChild(avRight);
-        detailList.appendChild(avCard);
-    }
-
-    function openDayModal(iso) {
-        if (!session || viewMode || session.role !== "admin") return;
-
-        dayBackdrop.style.display = "flex";
-        dayModalTitle.textContent = prettyDate(iso);
-        dayModalSub.textContent = "Admin: add an official event or add staff availability.";
-
-        dayModalBody.innerHTML = `
-            <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:10px">
-                <div class="pill">Selected: <b>${escapeHTML(iso)}</b></div>
-                <button class="btn" id="closeDayModal" type="button">Close</button>
-            </div>
-
-            <div class="kv">
-                <div class="t">Add official event</div>
-                <div style="height:10px"></div>
-                <div class="field"><label>Event title</label><input id="evTitle" placeholder="e.g. Time Trial" maxlength="50"></div>
-                <div class="row">
-                    <div class="field" style="flex:1;min-width:160px"><label>Time (optional)</label><input id="evTime" placeholder="e.g. 6:00PM AEST" maxlength="30"></div>
-                    <div class="field" style="flex:1;min-width:160px"><label>Location (optional)</label><input id="evLoc" placeholder="e.g. Spider cave" maxlength="40"></div>
+                    <div class="row" style="justify-content:space-between;align-items:center">
+                        <p class="tiny" id="storageNote">Syncing with Firebase...</p>
+                        <button class="btn small danger" id="resetBtn" style="display:none;">Reset local cache</button>
+                    </div>
                 </div>
-                <div class="field"><label>Host (optional)</label><input id="evHost" placeholder="e.g. Nugg" maxlength="24"></div>
-                <div class="field"><label>Notes (optional)</label><textarea id="evNote" placeholder="Extra details..."></textarea></div>
-                <button class="btn ok" id="saveEvent" type="button">Add event</button>
             </div>
+        </div>
+    </div>
 
-            <div class="divider"></div>
+    <div class="hostBar" id="hostBar">
+        <div class="hostBarLeft">
+            <div class="hostBarTitle">Hosting on</div>
+            <div class="hostBarDate" id="hostBarDate"></div>
+        </div>
+        <div class="hostChips" id="hostChips"></div>
+        <div class="hostBarRight">
+            <button class="btn small" id="clearMyPickBtn" style="display:none;">Remove my pick</button>
+        </div>
+    </div>
 
-            <div class="kv">
-                <div class="t">Add availability</div>
-                <div style="height:10px"></div>
-                <div class="field"><label>Name</label><input id="avName" placeholder="e.g. Nugg" maxlength="24"></div>
-                <div class="field"><label>Note (optional)</label><input id="avNote" placeholder="e.g. Can host after 5pm" maxlength="60"></div>
-                <button class="btn primary" id="saveAvail" type="button">Add availability</button>
+    <!-- AUTH MODAL -->
+    <div class="modalBackdrop" id="authBackdrop">
+        <div class="modal" role="dialog" aria-modal="true">
+            <div class="modalTop">
+                <h3>Account</h3>
+                <p>Create an account or log in. Each person gets their own secure login.</p>
             </div>
-        `;
+            <div class="modalBody">
+                <div class="authTabs">
+                    <div class="authTab active" id="tabLogin">Login</div>
+                    <div class="authTab" id="tabRegister">Register</div>
+                </div>
 
-        document.getElementById("closeDayModal").onclick = () => {
-            dayBackdrop.style.display = "none";
+                <div class="field">
+                    <label>Email</label>
+                    <input id="authEmail" type="email" placeholder="name@email.com" autocomplete="email">
+                </div>
+
+                <div class="field">
+                    <label>Password</label>
+                    <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
+                </div>
+
+                <div class="field" id="confirmField" style="display:none;">
+                    <label>Confirm password</label>
+                    <input id="authPassword2" type="password" placeholder="Confirm password" autocomplete="new-password">
+                </div>
+
+                <div class="tiny">Admins must still be set in Firestore. New accounts are staff by default.</div>
+
+                <div class="modalActions">
+                    <button class="btn" id="authClose" type="button">Close</button>
+                    <button class="btn primary" id="authGo" type="button">Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div class="modalBackdrop" id="settingsBackdrop">
+        <div class="modal" role="dialog" aria-modal="true">
+            <div class="modalTop">
+                <h3>Settings</h3>
+                <p>Update your profile and account details.</p>
+            </div>
+            <div class="modalBody">
+                <div class="settingsTabs">
+                    <div class="settingsTab active" id="settingsProfileTab">Profile</div>
+                    <div class="settingsTab" id="settingsAccountTab">Account</div>
+                </div>
+
+                <div class="settingsPanel active" id="settingsProfilePanel">
+                    <div class="field">
+                        <label>Display name</label>
+                        <input id="profileName" maxlength="24" placeholder="e.g. Nugg">
+                    </div>
+
+                    <div class="field">
+                        <label>Profile picture</label>
+                        <div class="avatarPreviewWrap">
+                            <img id="profilePreview" class="avatarPreview" alt="Preview">
+                            <div class="row">
+                                <input id="profileFile" type="file" accept="image/*" style="max-width:220px;">
+                                <button class="btn small" id="removeProfilePic" type="button">Use default</button>
+                            </div>
+                        </div>
+                        <div class="tiny">Small image works best.</div>
+                    </div>
+
+                    <div class="modalActions">
+                        <button class="btn primary" id="saveProfileBtn" type="button">Save profile</button>
+                    </div>
+                </div>
+
+                <div class="settingsPanel" id="settingsAccountPanel">
+                    <div class="infoBox">
+                        To change your email or password, enter your current password first. This helps keep the account secure.
+                    </div>
+
+                    <div class="field">
+                        <label>Current email</label>
+                        <input id="accountCurrentEmail" type="email" disabled>
+                    </div>
+
+                    <div class="field">
+                        <label>New email</label>
+                        <input id="accountNewEmail" type="email" placeholder="Leave blank to keep current email">
+                    </div>
+
+                    <div class="field">
+                        <label>Current password</label>
+                        <input id="accountCurrentPassword" type="password" placeholder="Required for email/password changes">
+                    </div>
+
+                    <div class="field">
+                        <label>New password</label>
+                        <input id="accountNewPassword" type="password" placeholder="Leave blank to keep current password">
+                    </div>
+
+                    <div class="field">
+                        <label>Confirm new password</label>
+                        <input id="accountNewPassword2" type="password" placeholder="Confirm new password">
+                    </div>
+
+                    <div class="modalActions">
+                        <button class="btn warn" id="saveAccountBtn" type="button">Save account changes</button>
+                    </div>
+                </div>
+
+                <div class="modalActions">
+                    <button class="btn" id="settingsClose" type="button">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DAY MODAL -->
+    <div class="modalBackdrop" id="dayBackdrop">
+        <div class="modal" role="dialog" aria-modal="true">
+            <div class="modalTop">
+                <h3 id="dayModalTitle"></h3>
+                <p id="dayModalSub"></p>
+            </div>
+            <div class="modalBody" id="dayModalBody"></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+        import {
+            getAuth,
+            onAuthStateChanged,
+            signInWithEmailAndPassword,
+            createUserWithEmailAndPassword,
+            signOut,
+            updateEmail,
+            updatePassword,
+            EmailAuthProvider,
+            reauthenticateWithCredential
+        } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+
+        import {
+            getFirestore,
+            collection,
+            doc,
+            setDoc,
+            getDoc,
+            getDocs,
+            deleteDoc,
+            onSnapshot
+        } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD3PvEamzNh4_fYIRAG9YxfVDZyucBC2b4",
+            authDomain: "staff-calendar-b25d4.firebaseapp.com",
+            projectId: "staff-calendar-b25d4",
+            storageBucket: "staff-calendar-b25d4.firebasestorage.app",
+            messagingSenderId: "771150169498",
+            appId: "1:771150169498:web:707d19b860fff00572a623"
         };
 
-        document.getElementById("saveEvent").onclick = async () => {
-            const title = (document.getElementById("evTitle").value || "").trim();
-            const time = (document.getElementById("evTime").value || "").trim();
-            const loc = (document.getElementById("evLoc").value || "").trim();
-            const host = (document.getElementById("evHost").value || "").trim();
-            const note = (document.getElementById("evNote").value || "").trim();
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-            if (!title) {
-                toast("Event title required");
-                return;
-            }
+        const KEY_EVENTS = "staffCal.events.v3";
+        const KEY_AVAIL = "staffCal.availability.v3";
+        const KEY_PICKS = "staffCal.hostPicks.v3";
+        const KEY_VIEWMODE = "staffCal.viewMode.v3";
 
-            await upsertEvent({
-                id: uid(),
-                date: iso,
-                title,
-                time,
-                location: loc,
-                host,
-                note
-            });
-
-            toast("Event added");
-            dayBackdrop.style.display = "none";
-        };
-
-        document.getElementById("saveAvail").onclick = async () => {
-            const name = (document.getElementById("avName").value || "").trim();
-            const note = (document.getElementById("avNote").value || "").trim();
-
-            if (!name) {
-                toast("Name required");
-                return;
-            }
-
-            await upsertAvail({
-                id: uid(),
-                date: iso,
-                name,
-                note
-            });
-
-            toast("Availability added");
-            dayBackdrop.style.display = "none";
-        };
-    }
-
-    function clearListeners() {
-        unsubscribers.forEach(fn => {
-            try { fn(); } catch {}
-        });
-        unsubscribers = [];
-    }
-
-    function startListeners() {
-        clearListeners();
-        storageNote.textContent = "Syncing with Firebase...";
-
-        unsubscribers.push(onSnapshot(collection(db, "users"), (snap) => {
-            usersMap.clear();
-            hosts = snap.docs.map(d => {
-                const data = d.data();
-                const user = {
-                    uid: d.id,
-                    name: data.name || "User",
-                    email: data.email || "",
-                    role: data.role || "staff",
-                    photoURL: data.photoURL || ""
-                };
-                usersMap.set(d.id, user);
-                return user;
-            }).sort((a, b) => a.name.localeCompare(b.name));
-
-            if (session && usersMap.has(session.uid)) {
-                const fresh = usersMap.get(session.uid);
-                session = { ...session, ...fresh };
-                renderTop();
-            }
-
-            renderHostPicker();
-            renderDetails();
-        }));
-
-        unsubscribers.push(onSnapshot(collection(db, "events"), (snap) => {
-            events = snap.docs.map(d => d.data());
-            saveJSON(KEY_EVENTS, events);
-            renderCalendar();
-            renderDetails();
-            storageNote.textContent = "Synced with Firebase";
-        }));
-
-        unsubscribers.push(onSnapshot(collection(db, "availability"), (snap) => {
-            avail = snap.docs.map(d => d.data());
-            saveJSON(KEY_AVAIL, avail);
-            renderCalendar();
-            renderDetails();
-        }));
-
-        unsubscribers.push(onSnapshot(collection(db, "host_picks"), (snap) => {
-            hostPicks = snap.docs.map(d => d.data());
-            saveJSON(KEY_PICKS, hostPicks);
-            renderCalendar();
-            renderDetails();
-            renderHostPicker();
-            renderHostBar();
-        }));
-    }
-
-    btnLogin.addEventListener("click", openAuth);
-
-    btnLogout.addEventListener("click", async () => {
-        try {
-            await signOut(auth);
-            toast("Logged out");
-        } catch (err) {
-            console.error(err);
-            toast("Logout failed");
-        }
-    });
-
-    btnSettings.addEventListener("click", openSettings);
-
-    tabLogin.addEventListener("click", () => setAuthMode("login"));
-    tabRegister.addEventListener("click", () => setAuthMode("register"));
-    document.getElementById("authClose").addEventListener("click", closeAuth);
-
-    authGo.addEventListener("click", async () => {
-        const email = (authEmail.value || "").trim();
-        const password = authPassword.value || "";
-        const password2 = authPassword2.value || "";
-
-        if (!email || !password) {
-            toast("Enter email and password");
-            return;
-        }
-
-        if (authMode === "register") {
-            if (password.length < 6) {
-                toast("Password must be at least 6 characters");
-                return;
-            }
-
-            if (password !== password2) {
-                toast("Passwords do not match");
-                return;
-            }
-
+        function saveJSON(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
+        function loadJSON(key, fallback) {
             try {
-                await createUserWithEmailAndPassword(auth, email, password);
-                closeAuth();
-                toast("Account created");
-            } catch (err) {
-                console.error("REGISTER ERROR:", err);
-                toast(err.code || err.message || "Could not register");
+                const raw = localStorage.getItem(key);
+                return raw ? JSON.parse(raw) : fallback;
+            } catch {
+                return fallback;
             }
-            return;
         }
 
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
-            closeAuth();
-            toast("Logged in");
-        } catch (err) {
-            console.error("LOGIN ERROR:", err);
-            toast(err.code || err.message || "Login failed");
-        }
-    });
+        let session = null;
+        let usersMap = new Map();
+        let hosts = [];
+        let events = loadJSON(KEY_EVENTS, []);
+        let avail = loadJSON(KEY_AVAIL, []);
+        let hostPicks = loadJSON(KEY_PICKS, []);
+        let viewMode = loadJSON(KEY_VIEWMODE, false);
 
-    settingsProfileTab.addEventListener("click", () => setSettingsTab("profile"));
-    settingsAccountTab.addEventListener("click", () => setSettingsTab("account"));
-    document.getElementById("settingsClose").addEventListener("click", closeSettings);
+        let viewDate = new Date();
+        let selectedDate = null;
+        let pendingOpenDate = null;
+        let authMode = "login";
+        let profileImageData = null;
+        let unsubscribers = [];
 
-    profileFile.addEventListener("change", async () => {
-        const file = profileFile.files?.[0];
-        if (!file) return;
-
-        try {
-            profileImageData = await fileToAvatarDataURL(file);
-            profilePreview.src = profileImageData;
-        } catch (err) {
-            console.error(err);
-            toast("Could not read image");
-        }
-    });
-
-    document.getElementById("removeProfilePic").addEventListener("click", () => {
-        profileImageData = "";
-        profileFile.value = "";
-        profilePreview.src = defaultAvatarDataURL(profileName.value || session?.name || "User");
-    });
-
-    profileName.addEventListener("input", () => {
-        if (!profileImageData) {
-            profilePreview.src = defaultAvatarDataURL(profileName.value || "User");
-        }
-    });
-
-    document.getElementById("saveProfileBtn").addEventListener("click", async () => {
-        if (!session) return;
-
-        const name = (profileName.value || "").trim();
-        if (name.length < 2) {
-            toast("Display name must be at least 2 characters");
-            return;
+        function uid() { return Math.random().toString(16).slice(2) + Date.now().toString(16); }
+        function pad2(n) { return String(n).padStart(2, "0"); }
+        function toISODate(d) { return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
+        function fromISODate(s) { const p = s.split("-").map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+        function startOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
+        function monthLabel(d) { return d.toLocaleString(undefined, { month: "long", year: "numeric" }); }
+        function mondayIndex(jsDay) { return (jsDay + 6) % 7; }
+        function prettyDate(iso) {
+            const d = fromISODate(iso);
+            return d.toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" });
         }
 
-        try {
-            const existing = await getDoc(doc(db, "users", session.uid));
-            const current = existing.exists() ? existing.data() : {};
-            await setDoc(doc(db, "users", session.uid), {
-                name,
-                email: session.email || current.email || "",
-                role: current.role || "staff",
-                photoURL: profileImageData || ""
-            }, { merge: true });
+        function escapeHTML(s) {
+            return String(s).replace(/[&<>"']/g, c => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            }[c]));
+        }
+
+        function toast(msg) {
+            const t = document.getElementById("toast");
+            t.textContent = msg;
+            t.style.display = "block";
+            clearTimeout(toast._tm);
+            toast._tm = setTimeout(() => t.style.display = "none", 2600);
+        }
+
+        function initialsFromName(name) {
+            const clean = String(name || "").trim();
+            if (!clean) return "U";
+            const parts = clean.split(/\s+/).slice(0, 2);
+            return parts.map(p => p[0]?.toUpperCase() || "").join("") || "U";
+        }
+
+        function defaultAvatarDataURL(name) {
+            const initials = initialsFromName(name);
+            const svg = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+                    <defs>
+                        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                            <stop stop-color="#7289da"/>
+                            <stop offset="1" stop-color="#39d98a"/>
+                        </linearGradient>
+                    </defs>
+                    <rect width="160" height="160" rx="34" fill="url(#g)"/>
+                    <text x="80" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="54" font-weight="700" fill="white">${initials}</text>
+                </svg>
+            `;
+            return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+        }
+
+        async function fileToAvatarDataURL(file) {
+            const img = await new Promise((resolve, reject) => {
+                const fr = new FileReader();
+                fr.onload = () => {
+                    const image = new Image();
+                    image.onload = () => resolve(image);
+                    image.onerror = reject;
+                    image.src = fr.result;
+                };
+                fr.onerror = reject;
+                fr.readAsDataURL(file);
+            });
+
+            const size = 180;
+            const canvas = document.createElement("canvas");
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext("2d");
+
+            const sw = img.width;
+            const sh = img.height;
+            const side = Math.min(sw, sh);
+            const sx = (sw - side) / 2;
+            const sy = (sh - side) / 2;
+
+            ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
+            return canvas.toDataURL("image/jpeg", 0.82);
+        }
+
+        function profilePhotoOrDefault(userLike) {
+            return userLike?.photoURL || defaultAvatarDataURL(userLike?.name || userLike?.displayName || userLike?.email || "User");
+        }
+
+        async function ensureUserDoc(firebaseUser) {
+            const ref = doc(db, "users", firebaseUser.uid);
+            const snap = await getDoc(ref);
+
+            if (!snap.exists()) {
+                const fallbackName = (firebaseUser.email || "User").split("@")[0];
+                await setDoc(ref, {
+                    name: fallbackName,
+                    email: firebaseUser.email || "",
+                    role: "staff",
+                    photoURL: "",
+                    createdAt: Date.now()
+                }, { merge: true });
+            }
+        }
+
+        async function loadSessionFromAuth(firebaseUser) {
+            if (!firebaseUser) {
+                session = null;
+                return;
+            }
+
+            await ensureUserDoc(firebaseUser);
+
+            const snap = await getDoc(doc(db, "users", firebaseUser.uid));
+            const data = snap.exists() ? snap.data() : {};
 
             session = {
-                ...session,
-                name,
-                photoURL: profileImageData || "",
-                role: current.role || session.role || "staff"
+                uid: firebaseUser.uid,
+                email: firebaseUser.email || "",
+                name: data.name || (firebaseUser.email || "User").split("@")[0],
+                role: data.role || "staff",
+                photoURL: data.photoURL || ""
             };
-
-            topAvatar.src = profilePhotoOrDefault(session);
-            renderTop();
-            renderHostPicker();
-            renderDetails();
-            toast("Profile saved");
-        } catch (err) {
-            console.error(err);
-            toast("Could not save profile");
-        }
-    });
-
-    document.getElementById("saveAccountBtn").addEventListener("click", async () => {
-        const user = auth.currentUser;
-        if (!user || !session) return;
-
-        const newEmail = (accountNewEmail.value || "").trim();
-        const currentPassword = accountCurrentPassword.value || "";
-        const newPassword = accountNewPassword.value || "";
-        const newPassword2 = accountNewPassword2.value || "";
-
-        if (!newEmail && !newPassword) {
-            toast("No account changes entered");
-            return;
         }
 
-        if (!currentPassword) {
-            toast("Enter your current password");
-            return;
+        function canClickHost(host) {
+            if (!session) return false;
+            if (session.role === "admin") return true;
+            return host.uid === session.uid;
         }
 
-        if (newPassword && newPassword.length < 6) {
-            toast("New password must be at least 6 characters");
-            return;
+        async function upsertEvent(ev) {
+            await setDoc(doc(db, "events", ev.id), ev, { merge: true });
         }
 
-        if (newPassword && newPassword !== newPassword2) {
-            toast("New passwords do not match");
-            return;
+        async function removeEvent(id) {
+            await deleteDoc(doc(db, "events", id));
         }
 
-        try {
-            const credential = EmailAuthProvider.credential(user.email, currentPassword);
-            await reauthenticateWithCredential(user, credential);
+        async function upsertAvail(a) {
+            await setDoc(doc(db, "availability", a.id), a, { merge: true });
+        }
 
-            if (newEmail) {
-                await updateEmail(user, newEmail);
-            }
+        async function removeAvail(id) {
+            await deleteDoc(doc(db, "availability", id));
+        }
 
-            if (newPassword) {
-                await updatePassword(user, newPassword);
-            }
+        function pickDocId(dateIso, hostUid) {
+            return `${dateIso}_${hostUid}`;
+        }
 
-            await setDoc(doc(db, "users", session.uid), {
-                email: newEmail || user.email || session.email || ""
+        async function setPick(dateIso, host) {
+            const id = pickDocId(dateIso, host.uid);
+            await setDoc(doc(db, "host_picks", id), {
+                id,
+                date: dateIso,
+                hostUid: host.uid,
+                hostName: host.name,
+                hostImg: profilePhotoOrDefault(host),
+                email: host.email || ""
             }, { merge: true });
+        }
 
-            session.email = newEmail || user.email || session.email || "";
-            accountCurrentEmail.value = session.email;
+        async function removePick(dateIso, hostUid) {
+            await deleteDoc(doc(db, "host_picks", pickDocId(dateIso, hostUid)));
+        }
+
+        async function clearPicksForDate(dateIso) {
+            const picks = hostPicks.filter(p => p.date === dateIso);
+            await Promise.all(picks.map(p => removePick(dateIso, p.hostUid)));
+        }
+
+        function picksForDate(dateIso) {
+            return hostPicks.filter(p => p.date === dateIso);
+        }
+
+        function isPicked(dateIso, hostUid) {
+            return hostPicks.some(p => p.date === dateIso && p.hostUid === hostUid);
+        }
+
+        const whoLine = document.getElementById("whoLine");
+        const topAvatar = document.getElementById("topAvatar");
+        const rolePill = document.getElementById("rolePill");
+        const btnSettings = document.getElementById("btnSettings");
+        const btnLogin = document.getElementById("btnLogin");
+        const btnLogout = document.getElementById("btnLogout");
+        const calGrid = document.getElementById("calGrid");
+        const monthTitle = document.getElementById("monthTitle");
+        const selectedDateText = document.getElementById("selectedDateText");
+        const detailList = document.getElementById("detailList");
+        const sideSub = document.getElementById("sideSub");
+        const addEventBtn = document.getElementById("addEventBtn");
+        const addAvailBtn = document.getElementById("addAvailBtn");
+        const resetBtn = document.getElementById("resetBtn");
+        const storageNote = document.getElementById("storageNote");
+        const viewModeBtn = document.getElementById("viewModeBtn");
+        const clearAllBtn = document.getElementById("clearAllBtn");
+        const pfpPickerBox = document.getElementById("pfpPickerBox");
+        const pfpGrid = document.getElementById("pfpGrid");
+        const hostBar = document.getElementById("hostBar");
+        const hostBarDate = document.getElementById("hostBarDate");
+        const hostChips = document.getElementById("hostChips");
+        const clearMyPickBtn = document.getElementById("clearMyPickBtn");
+
+        const authBackdrop = document.getElementById("authBackdrop");
+        const tabLogin = document.getElementById("tabLogin");
+        const tabRegister = document.getElementById("tabRegister");
+        const authEmail = document.getElementById("authEmail");
+        const authPassword = document.getElementById("authPassword");
+        const authPassword2 = document.getElementById("authPassword2");
+        const confirmField = document.getElementById("confirmField");
+        const authGo = document.getElementById("authGo");
+
+        const settingsBackdrop = document.getElementById("settingsBackdrop");
+        const settingsProfileTab = document.getElementById("settingsProfileTab");
+        const settingsAccountTab = document.getElementById("settingsAccountTab");
+        const settingsProfilePanel = document.getElementById("settingsProfilePanel");
+        const settingsAccountPanel = document.getElementById("settingsAccountPanel");
+        const profileName = document.getElementById("profileName");
+        const profileFile = document.getElementById("profileFile");
+        const profilePreview = document.getElementById("profilePreview");
+        const accountCurrentEmail = document.getElementById("accountCurrentEmail");
+        const accountNewEmail = document.getElementById("accountNewEmail");
+        const accountCurrentPassword = document.getElementById("accountCurrentPassword");
+        const accountNewPassword = document.getElementById("accountNewPassword");
+        const accountNewPassword2 = document.getElementById("accountNewPassword2");
+
+        const dayBackdrop = document.getElementById("dayBackdrop");
+        const dayModalTitle = document.getElementById("dayModalTitle");
+        const dayModalSub = document.getElementById("dayModalSub");
+        const dayModalBody = document.getElementById("dayModalBody");
+
+        function setAuthMode(mode) {
+            authMode = mode;
+            const loginActive = mode === "login";
+            tabLogin.classList.toggle("active", loginActive);
+            tabRegister.classList.toggle("active", !loginActive);
+            confirmField.style.display = loginActive ? "none" : "block";
+            authGo.textContent = loginActive ? "Login" : "Register";
+        }
+
+        function openAuth() {
+            setAuthMode("login");
+            authBackdrop.style.display = "flex";
+        }
+
+        function closeAuth() {
+            authBackdrop.style.display = "none";
+        }
+
+        function setSettingsTab(tab) {
+            const profileActive = tab === "profile";
+            settingsProfileTab.classList.toggle("active", profileActive);
+            settingsAccountTab.classList.toggle("active", !profileActive);
+            settingsProfilePanel.classList.toggle("active", profileActive);
+            settingsAccountPanel.classList.toggle("active", !profileActive);
+        }
+
+        function openSettings() {
+            if (!session) return;
+            profileName.value = session.name || "";
+            profileImageData = session.photoURL || "";
+            profilePreview.src = profilePhotoOrDefault(session);
+            accountCurrentEmail.value = session.email || "";
             accountNewEmail.value = "";
             accountCurrentPassword.value = "";
             accountNewPassword.value = "";
             accountNewPassword2.value = "";
-
-            toast("Account updated");
-        } catch (err) {
-            console.error("ACCOUNT UPDATE ERROR:", err);
-            toast(err.code || err.message || "Could not update account");
-        }
-    });
-
-    clearMyPickBtn.addEventListener("click", async () => {
-        if (!session || !selectedDate) return;
-
-        try {
-            await removePick(selectedDate, session.uid);
-            toast("Removed your pick");
-        } catch (err) {
-            console.error(err);
-            toast("Could not remove pick");
-        }
-    });
-
-    document.getElementById("prevMonth").addEventListener("click", () => {
-        viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1);
-        renderCalendar();
-    });
-
-    document.getElementById("nextMonth").addEventListener("click", () => {
-        viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1);
-        renderCalendar();
-    });
-
-    document.getElementById("todayBtn").addEventListener("click", () => {
-        viewDate = new Date();
-        selectedDate = toISODate(new Date());
-        renderCalendar();
-        renderDetails();
-
-        if (viewMode) return;
-
-        if (!session) {
-            pendingOpenDate = selectedDate;
-            openAuth();
-            return;
+            setSettingsTab("profile");
+            settingsBackdrop.style.display = "flex";
         }
 
-        if (session.role === "admin") {
-            openDayModal(selectedDate);
+        function closeSettings() {
+            settingsBackdrop.style.display = "none";
         }
-    });
 
-    addEventBtn.addEventListener("click", () => {
-        if (viewMode) return;
-        if (!session) {
-            pendingOpenDate = selectedDate || toISODate(new Date());
-            openAuth();
-            return;
-        }
-        if (session.role !== "admin") return;
-        if (!selectedDate) selectedDate = toISODate(new Date());
-        openDayModal(selectedDate);
-    });
-
-    addAvailBtn.addEventListener("click", () => {
-        if (viewMode) return;
-        if (!session) {
-            pendingOpenDate = selectedDate || toISODate(new Date());
-            openAuth();
-            return;
-        }
-        if (session.role !== "admin") return;
-        if (!selectedDate) selectedDate = toISODate(new Date());
-        openDayModal(selectedDate);
-    });
-
-    viewModeBtn.addEventListener("click", () => {
-        viewMode = !viewMode;
-        saveJSON(KEY_VIEWMODE, viewMode);
-        toast("View mode " + (viewMode ? "ON" : "OFF"));
-        renderTop();
-        renderCalendar();
-        renderDetails();
-    });
-
-    clearAllBtn.addEventListener("click", async () => {
-        if (!session || session.role !== "admin") return;
-
-        const ok = confirm(
-            "CLEAR ALL?\n\nThis deletes:\n- All Events\n- All Availability\n- All Host Picks\n\nThis cannot be undone."
-        );
-        if (!ok) return;
-
-        try {
-            const [evSnap, avSnap, pkSnap] = await Promise.all([
-                getDocs(collection(db, "events")),
-                getDocs(collection(db, "availability")),
-                getDocs(collection(db, "host_picks"))
-            ]);
-
-            const deletes = [];
-            evSnap.forEach(d => deletes.push(deleteDoc(doc(db, "events", d.id))));
-            avSnap.forEach(d => deletes.push(deleteDoc(doc(db, "availability", d.id))));
-            pkSnap.forEach(d => deletes.push(deleteDoc(doc(db, "host_picks", d.id))));
-            await Promise.all(deletes);
-
-            toast("Cleared everything");
-        } catch (err) {
-            console.error(err);
-            toast("Clear failed");
-        }
-    });
-
-    resetBtn.addEventListener("click", () => {
-        if (!session || session.role !== "admin") return;
-        saveJSON(KEY_EVENTS, []);
-        saveJSON(KEY_AVAIL, []);
-        saveJSON(KEY_PICKS, []);
-        toast("Local cache cleared");
-    });
-
-    authBackdrop.addEventListener("click", (e) => {
-        if (e.target === authBackdrop) closeAuth();
-    });
-
-    settingsBackdrop.addEventListener("click", (e) => {
-        if (e.target === settingsBackdrop) closeSettings();
-    });
-
-    dayBackdrop.addEventListener("click", (e) => {
-        if (e.target === dayBackdrop) dayBackdrop.style.display = "none";
-    });
-
-    onAuthStateChanged(auth, async (firebaseUser) => {
-        try {
-            if (!firebaseUser) {
-                session = null;
-                renderTop();
-                renderCalendar();
-                renderDetails();
+        function renderTop() {
+            if (!session) {
+                whoLine.textContent = "Login required";
+                topAvatar.style.display = "none";
+                rolePill.style.display = "none";
+                btnSettings.style.display = "none";
+                btnLogin.style.display = "inline-block";
+                btnLogout.style.display = "none";
+                addEventBtn.style.display = "none";
+                addAvailBtn.style.display = "none";
+                resetBtn.style.display = "none";
+                viewModeBtn.style.display = "none";
+                clearAllBtn.style.display = "none";
+                sideSub.textContent = "Log in to view and manage the calendar";
                 return;
             }
 
-            await loadSessionFromAuth(firebaseUser);
+            whoLine.textContent = `Logged in as ${session.name}`;
+            topAvatar.src = profilePhotoOrDefault(session);
+            topAvatar.style.display = "block";
+            rolePill.style.display = "inline-flex";
+            rolePill.innerHTML = `Role: <b>${escapeHTML(session.role.toUpperCase())}</b>`;
+            btnSettings.style.display = "inline-block";
+            btnLogin.style.display = "none";
+            btnLogout.style.display = "inline-block";
+            viewModeBtn.style.display = "inline-block";
+            viewModeBtn.textContent = "View: " + (viewMode ? "ON" : "OFF");
+
+            clearAllBtn.style.display = (session.role === "admin") ? "inline-block" : "none";
+            resetBtn.style.display = (session.role === "admin") ? "inline-block" : "none";
+            addEventBtn.style.display = (session.role === "admin" && !viewMode) ? "inline-block" : "none";
+            addAvailBtn.style.display = (session.role === "admin" && !viewMode) ? "inline-block" : "none";
+
+            sideSub.textContent = viewMode
+                ? "View mode: no edit popup"
+                : (session.role === "admin"
+                    ? "Admin: manage events, availability, and all picks"
+                    : "Staff: view dates and pick yourself as host");
+        }
+
+        function renderHostPicker() {
+            const show = !!session && !!selectedDate && !viewMode && hosts.length > 0;
+            pfpPickerBox.style.display = show ? "block" : "none";
+            if (!show) return;
+
+            pfpGrid.innerHTML = "";
+
+            hosts.forEach(host => {
+                const btn = document.createElement("div");
+                btn.className = "pfpBtn";
+                if (isPicked(selectedDate, host.uid)) btn.classList.add("active");
+
+                const allowed = canClickHost(host);
+                btn.setAttribute("aria-disabled", allowed ? "false" : "true");
+
+                btn.innerHTML = `
+                    <img class="pfpImg" src="${escapeHTML(profilePhotoOrDefault(host))}" alt="${escapeHTML(host.name)}" />
+                    <div class="pfpName">${escapeHTML(host.name)}</div>
+                `;
+
+                btn.addEventListener("click", async (e) => {
+                    e.stopPropagation();
+
+                    if (!allowed) {
+                        toast("You can only pick your own profile");
+                        return;
+                    }
+
+                    try {
+                        if (isPicked(selectedDate, host.uid)) {
+                            await removePick(selectedDate, host.uid);
+                        } else {
+                            await setPick(selectedDate, host);
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        toast("Could not update host pick");
+                    }
+                });
+
+                pfpGrid.appendChild(btn);
+            });
+        }
+
+        function renderHostBar() {
+            if (!selectedDate) {
+                hostBar.style.display = "none";
+                return;
+            }
+
+            hostBar.style.display = "flex";
+            hostBarDate.textContent = prettyDate(selectedDate);
+
+            const picks = picksForDate(selectedDate).slice().sort((a, b) => (a.hostName || "").localeCompare(b.hostName || ""));
+            hostChips.innerHTML = "";
+
+            if (!picks.length) {
+                const empty = document.createElement("div");
+                empty.className = "chip";
+                empty.innerHTML = `<b style="color:rgba(238,241,246,.75)">No hosts picked yet</b>`;
+                hostChips.appendChild(empty);
+            } else {
+                picks.forEach(p => {
+                    const chip = document.createElement("div");
+                    chip.className = "chip";
+                    chip.innerHTML = `
+                        <img src="${escapeHTML(p.hostImg || defaultAvatarDataURL(p.hostName || "U"))}" alt="${escapeHTML(p.hostName || "Host")}" />
+                        <b>${escapeHTML(p.hostName || "Host")}</b>
+                    `;
+                    hostChips.appendChild(chip);
+                });
+            }
+
+            if (session) {
+                clearMyPickBtn.style.display = isPicked(selectedDate, session.uid) ? "inline-flex" : "none";
+            } else {
+                clearMyPickBtn.style.display = "none";
+            }
+        }
+
+        function renderCalendar() {
+            monthTitle.textContent = monthLabel(viewDate);
+            calGrid.innerHTML = "";
+
+            const first = startOfMonth(viewDate);
+            const lead = mondayIndex(first.getDay());
+            const startCellDate = new Date(first);
+            startCellDate.setDate(first.getDate() - lead);
+
+            for (let i = 0; i < 42; i++) {
+                const cellDate = new Date(startCellDate);
+                cellDate.setDate(startCellDate.getDate() + i);
+                const iso = toISODate(cellDate);
+                const inMonth = cellDate.getMonth() === viewDate.getMonth();
+
+                const dayEvents = events.filter(e => e.date === iso);
+                const dayAvail = avail.filter(a => a.date === iso);
+                const dayPicks = hostPicks.filter(p => p.date === iso);
+
+                const div = document.createElement("div");
+                div.className = "day" + (inMonth ? "" : " muted");
+
+                if (selectedDate === iso) {
+                    div.style.borderColor = "rgba(114,137,218,.65)";
+                    div.style.background = "rgba(114,137,218,.10)";
+                }
+
+                const head = document.createElement("div");
+                head.className = "dayHead";
+
+                const num = document.createElement("div");
+                num.className = "dayNum";
+                num.textContent = String(cellDate.getDate());
+
+                const badge = document.createElement("div");
+                const parts = [];
+                if (dayEvents.length) parts.push("E " + dayEvents.length);
+                if (dayAvail.length) parts.push("A " + dayAvail.length);
+                if (dayPicks.length) parts.push("H " + dayPicks.length);
+                badge.className = "badge" + (dayEvents.length ? " brand" : ((dayAvail.length || dayPicks.length) ? " ok" : ""));
+                badge.textContent = parts.length ? parts.join(" ") : "";
+
+                head.appendChild(num);
+                head.appendChild(badge);
+
+                const list = document.createElement("div");
+                list.className = "miniList";
+
+                dayEvents.slice(0, 2).forEach(ev => {
+                    const it = document.createElement("div");
+                    it.className = "miniItem";
+                    it.textContent = ev.host ? `${ev.title} - ${ev.host}` : ev.title;
+                    list.appendChild(it);
+                });
+
+                if (dayPicks.length) {
+                    const it = document.createElement("div");
+                    it.className = "miniItem";
+                    const icons = dayPicks.slice(0, 3).map(p =>
+                        `<img src="${escapeHTML(p.hostImg || defaultAvatarDataURL(p.hostName || "U"))}"
+                              title="${escapeHTML(p.hostName || "Host")}"
+                              style="width:20px;height:20px;border-radius:50%;border:1px solid rgba(255,255,255,.18);margin-right:-6px;vertical-align:middle;background:rgba(255,255,255,.06)">`
+                    ).join("");
+                    const extra = dayPicks.length > 3 ? ` <span>+${dayPicks.length - 3}</span>` : "";
+                    it.innerHTML = `<span>Hosts:</span> ${icons}${extra}`;
+                    list.appendChild(it);
+                }
+
+                if (dayEvents.length > 2) {
+                    const it = document.createElement("div");
+                    it.className = "miniItem";
+                    it.innerHTML = `<span>+${dayEvents.length - 2} more</span>`;
+                    list.appendChild(it);
+                }
+
+                div.appendChild(head);
+                div.appendChild(list);
+
+                div.addEventListener("click", () => {
+                    selectedDate = iso;
+                    renderCalendar();
+                    renderDetails();
+                    renderHostPicker();
+                    renderHostBar();
+
+                    if (viewMode) return;
+
+                    if (!session) {
+                        pendingOpenDate = iso;
+                        openAuth();
+                        return;
+                    }
+
+                    if (session.role !== "admin") return;
+
+                    openDayModal(iso);
+                });
+
+                calGrid.appendChild(div);
+            }
+        }
+
+        function renderDetails() {
+            selectedDateText.textContent = selectedDate ? prettyDate(selectedDate) : "None";
+            detailList.innerHTML = "";
+            renderHostBar();
+            renderHostPicker();
+
+            if (!session) {
+                detailList.innerHTML = `
+                    <div class="emptyState">
+                        <b>Login required</b>
+                        <p style="margin:8px 0 0;color:var(--muted);font-size:12px;">Create an account or log in to use the calendar.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            if (!selectedDate) {
+                detailList.innerHTML = `
+                    <div class="emptyState">
+                        <b>Pick a date</b>
+                        <p style="margin:8px 0 0;color:var(--muted);font-size:12px;">Tap or click a day to view events and host picks.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const dayEvents = events.filter(e => e.date === selectedDate);
+            const dayAvail = avail.filter(a => a.date === selectedDate);
+            const dayPicks = picksForDate(selectedDate);
+
+            const picksCard = document.createElement("div");
+            picksCard.className = "item";
+
+            const picksLeft = document.createElement("div");
+            picksLeft.style.flex = "1";
+            picksLeft.innerHTML = `<h4>Picked hosts (${dayPicks.length})</h4>`;
+
+            if (!dayPicks.length) {
+                const p = document.createElement("p");
+                p.textContent = "No host picks yet.";
+                picksLeft.appendChild(p);
+            } else {
+                dayPicks.forEach(pick => {
+                    const row = document.createElement("div");
+                    row.className = "pickEntry";
+                    row.innerHTML = `
+                        <div class="pickEntryLeft">
+                            <img src="${escapeHTML(pick.hostImg || defaultAvatarDataURL(pick.hostName || "U"))}" alt="${escapeHTML(pick.hostName || "Host")}">
+                            <div>
+                                <div class="pickEntryName">${escapeHTML(pick.hostName || "Host")}</div>
+                                <div class="pickEntryMeta">${escapeHTML(pick.email || "")}</div>
+                            </div>
+                        </div>
+                    `;
+
+                    const actions = document.createElement("div");
+                    actions.className = "row";
+
+                    const isMine = session && pick.hostUid === session.uid;
+
+                    if (!viewMode && (session.role === "admin" || isMine)) {
+                        const removeBtn = document.createElement("button");
+                        removeBtn.className = "btn small danger";
+                        removeBtn.textContent = session.role === "admin" && !isMine ? "Remove pick" : "Remove";
+                        removeBtn.onclick = async () => {
+                            try {
+                                await removePick(selectedDate, pick.hostUid);
+                                toast("Pick removed");
+                            } catch (err) {
+                                console.error(err);
+                                toast("Could not remove pick");
+                            }
+                        };
+                        actions.appendChild(removeBtn);
+                    }
+
+                    row.appendChild(actions);
+                    picksLeft.appendChild(row);
+                });
+            }
+
+            const picksRight = document.createElement("div");
+            picksRight.className = "row";
+            picksRight.innerHTML = `<div class="badge ok">Host picks</div>`;
+
+            if (!viewMode && session.role === "admin" && dayPicks.length) {
+                const clearBtn = document.createElement("button");
+                clearBtn.className = "btn small danger";
+                clearBtn.textContent = "Clear date picks";
+                clearBtn.onclick = async () => {
+                    const ok = confirm("Remove all host picks for this date?");
+                    if (!ok) return;
+                    try {
+                        await clearPicksForDate(selectedDate);
+                        toast("Cleared picks");
+                    } catch (err) {
+                        console.error(err);
+                        toast("Could not clear picks");
+                    }
+                };
+                picksRight.appendChild(clearBtn);
+            }
+
+            picksCard.appendChild(picksLeft);
+            picksCard.appendChild(picksRight);
+            detailList.appendChild(picksCard);
+
+            const evCard = document.createElement("div");
+            evCard.className = "item";
+            const evLeft = document.createElement("div");
+            evLeft.style.flex = "1";
+            evLeft.innerHTML = `<h4>Official events (${dayEvents.length})</h4>`;
+
+            if (!dayEvents.length) {
+                const p = document.createElement("p");
+                p.textContent = "No official events on this day yet.";
+                evLeft.appendChild(p);
+            } else {
+                dayEvents.slice().sort((a, b) => (a.time || "").localeCompare(b.time || "")).forEach(ev => {
+                    const wrap = document.createElement("div");
+                    wrap.style.marginTop = "10px";
+                    wrap.style.padding = "10px";
+                    wrap.style.borderRadius = "12px";
+                    wrap.style.border = "1px solid rgba(255,255,255,.10)";
+                    wrap.style.background = "rgba(0,0,0,.16)";
+
+                    const hostLine = ev.host ? `Host: ${ev.host}` : "Host: Unassigned";
+
+                    wrap.innerHTML = `
+                        <b>${escapeHTML(ev.title)}</b>
+                        <div class="meta">${escapeHTML(ev.time || "Time TBA")} • ${escapeHTML(ev.location || "Location TBA")} • ${escapeHTML(hostLine)}</div>
+                        ${ev.note ? `<p style="margin:8px 0 0;font-size:12px;color:var(--muted)">${escapeHTML(ev.note)}</p>` : ""}
+                    `;
+
+                    if (!viewMode && session.role === "admin") {
+                        const controls = document.createElement("div");
+                        controls.style.marginTop = "10px";
+                        controls.style.display = "flex";
+                        controls.style.gap = "8px";
+                        controls.style.flexWrap = "wrap";
+
+                        const setHostBtn = document.createElement("button");
+                        setHostBtn.className = "btn small primary";
+                        setHostBtn.textContent = "Set host";
+                        setHostBtn.onclick = async () => {
+                            const name = prompt("Host name:", ev.host || "");
+                            if (name === null) return;
+                            await upsertEvent({ ...ev, host: name.trim() });
+                            toast("Host updated");
+                        };
+
+                        const delBtn = document.createElement("button");
+                        delBtn.className = "btn small danger";
+                        delBtn.textContent = "Remove";
+                        delBtn.onclick = async () => {
+                            await removeEvent(ev.id);
+                            toast("Event removed");
+                        };
+
+                        controls.appendChild(setHostBtn);
+                        controls.appendChild(delBtn);
+                        wrap.appendChild(controls);
+                    }
+
+                    evLeft.appendChild(wrap);
+                });
+            }
+
+            const evRight = document.createElement("div");
+            evRight.innerHTML = (session.role === "admin") ? '<div class="badge brand">Admin</div>' : '<div class="badge">Staff</div>';
+
+            evCard.appendChild(evLeft);
+            evCard.appendChild(evRight);
+            detailList.appendChild(evCard);
+
+            const avCard = document.createElement("div");
+            avCard.className = "item";
+            const avLeft = document.createElement("div");
+            avLeft.style.flex = "1";
+            avLeft.innerHTML = `<h4>Staff availability (${dayAvail.length})</h4>`;
+
+            if (!dayAvail.length) {
+                const p = document.createElement("p");
+                p.textContent = "No availability added yet.";
+                avLeft.appendChild(p);
+            } else {
+                dayAvail.forEach(a => {
+                    const line = document.createElement("div");
+                    line.style.marginTop = "10px";
+                    line.style.padding = "10px";
+                    line.style.borderRadius = "12px";
+                    line.style.border = "1px solid rgba(255,255,255,.10)";
+                    line.style.background = "rgba(0,0,0,.16)";
+                    line.innerHTML = `
+                        <b class="okText">${escapeHTML(a.name)}</b>
+                        <div class="meta">${escapeHTML(a.note || "Available to host")}</div>
+                    `;
+
+                    if (!viewMode && session.role === "admin") {
+                        const del = document.createElement("button");
+                        del.className = "btn small danger";
+                        del.textContent = "Remove";
+                        del.style.marginTop = "10px";
+                        del.onclick = async () => {
+                            await removeAvail(a.id);
+                            toast("Availability removed");
+                        };
+                        line.appendChild(del);
+                    }
+
+                    avLeft.appendChild(line);
+                });
+            }
+
+            const avRight = document.createElement("div");
+            avRight.innerHTML = '<div class="badge warn">Availability</div>';
+            avCard.appendChild(avLeft);
+            avCard.appendChild(avRight);
+            detailList.appendChild(avCard);
+        }
+
+        function openDayModal(iso) {
+            if (!session || viewMode || session.role !== "admin") return;
+
+            dayBackdrop.style.display = "flex";
+            dayModalTitle.textContent = prettyDate(iso);
+            dayModalSub.textContent = "Admin: add an official event or add staff availability.";
+
+            dayModalBody.innerHTML = `
+                <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:10px">
+                    <div class="pill">Selected: <b>${escapeHTML(iso)}</b></div>
+                    <button class="btn" id="closeDayModal" type="button">Close</button>
+                </div>
+
+                <div class="kv">
+                    <div class="t">Add official event</div>
+                    <div style="height:10px"></div>
+                    <div class="field"><label>Event title</label><input id="evTitle" placeholder="e.g. Time Trial" maxlength="50"></div>
+                    <div class="row">
+                        <div class="field" style="flex:1;min-width:160px"><label>Time (optional)</label><input id="evTime" placeholder="e.g. 6:00PM AEST" maxlength="30"></div>
+                        <div class="field" style="flex:1;min-width:160px"><label>Location (optional)</label><input id="evLoc" placeholder="e.g. Spider cave" maxlength="40"></div>
+                    </div>
+                    <div class="field"><label>Host (optional)</label><input id="evHost" placeholder="e.g. Nugg" maxlength="24"></div>
+                    <div class="field"><label>Notes (optional)</label><textarea id="evNote" placeholder="Extra details..."></textarea></div>
+                    <button class="btn ok" id="saveEvent" type="button">Add event</button>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="kv">
+                    <div class="t">Add availability</div>
+                    <div style="height:10px"></div>
+                    <div class="field"><label>Name</label><input id="avName" placeholder="e.g. Nugg" maxlength="24"></div>
+                    <div class="field"><label>Note (optional)</label><input id="avNote" placeholder="e.g. Can host after 5pm" maxlength="60"></div>
+                    <button class="btn primary" id="saveAvail" type="button">Add availability</button>
+                </div>
+            `;
+
+            document.getElementById("closeDayModal").onclick = () => {
+                dayBackdrop.style.display = "none";
+            };
+
+            document.getElementById("saveEvent").onclick = async () => {
+                const title = (document.getElementById("evTitle").value || "").trim();
+                const time = (document.getElementById("evTime").value || "").trim();
+                const loc = (document.getElementById("evLoc").value || "").trim();
+                const host = (document.getElementById("evHost").value || "").trim();
+                const note = (document.getElementById("evNote").value || "").trim();
+
+                if (!title) {
+                    toast("Event title required");
+                    return;
+                }
+
+                await upsertEvent({
+                    id: uid(),
+                    date: iso,
+                    title,
+                    time,
+                    location: loc,
+                    host,
+                    note
+                });
+
+                toast("Event added");
+                dayBackdrop.style.display = "none";
+            };
+
+            document.getElementById("saveAvail").onclick = async () => {
+                const name = (document.getElementById("avName").value || "").trim();
+                const note = (document.getElementById("avNote").value || "").trim();
+
+                if (!name) {
+                    toast("Name required");
+                    return;
+                }
+
+                await upsertAvail({
+                    id: uid(),
+                    date: iso,
+                    name,
+                    note
+                });
+
+                toast("Availability added");
+                dayBackdrop.style.display = "none";
+            };
+        }
+
+        function clearListeners() {
+            unsubscribers.forEach(fn => {
+                try { fn(); } catch {}
+            });
+            unsubscribers = [];
+        }
+
+        function startListeners() {
+            clearListeners();
+            storageNote.textContent = "Syncing with Firebase...";
+
+            unsubscribers.push(onSnapshot(collection(db, "users"), (snap) => {
+                usersMap.clear();
+                hosts = snap.docs.map(d => {
+                    const data = d.data();
+                    const user = {
+                        uid: d.id,
+                        name: data.name || "User",
+                        email: data.email || "",
+                        role: data.role || "staff",
+                        photoURL: data.photoURL || ""
+                    };
+                    usersMap.set(d.id, user);
+                    return user;
+                }).sort((a, b) => a.name.localeCompare(b.name));
+
+                if (session && usersMap.has(session.uid)) {
+                    const fresh = usersMap.get(session.uid);
+                    session = { ...session, ...fresh };
+                    renderTop();
+                }
+
+                renderHostPicker();
+                renderDetails();
+            }));
+
+            unsubscribers.push(onSnapshot(collection(db, "events"), (snap) => {
+                events = snap.docs.map(d => d.data());
+                saveJSON(KEY_EVENTS, events);
+                renderCalendar();
+                renderDetails();
+                storageNote.textContent = "Synced with Firebase";
+            }));
+
+            unsubscribers.push(onSnapshot(collection(db, "availability"), (snap) => {
+                avail = snap.docs.map(d => d.data());
+                saveJSON(KEY_AVAIL, avail);
+                renderCalendar();
+                renderDetails();
+            }));
+
+            unsubscribers.push(onSnapshot(collection(db, "host_picks"), (snap) => {
+                hostPicks = snap.docs.map(d => d.data());
+                saveJSON(KEY_PICKS, hostPicks);
+                renderCalendar();
+                renderDetails();
+                renderHostPicker();
+                renderHostBar();
+            }));
+        }
+
+        btnLogin.addEventListener("click", openAuth);
+
+        btnLogout.addEventListener("click", async () => {
+            try {
+                await signOut(auth);
+                toast("Logged out");
+            } catch (err) {
+                console.error(err);
+                toast("Logout failed");
+            }
+        });
+
+        btnSettings.addEventListener("click", openSettings);
+
+        tabLogin.addEventListener("click", () => setAuthMode("login"));
+        tabRegister.addEventListener("click", () => setAuthMode("register"));
+        document.getElementById("authClose").addEventListener("click", closeAuth);
+
+        authGo.addEventListener("click", async () => {
+            const email = (authEmail.value || "").trim();
+            const password = authPassword.value || "";
+            const password2 = authPassword2.value || "";
+
+            if (!email || !password) {
+                toast("Enter email and password");
+                return;
+            }
+
+            if (authMode === "register") {
+                if (password.length < 6) {
+                    toast("Password must be at least 6 characters");
+                    return;
+                }
+
+                if (password !== password2) {
+                    toast("Passwords do not match");
+                    return;
+                }
+
+                try {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                    closeAuth();
+                    toast("Account created");
+                } catch (err) {
+                    console.error("REGISTER ERROR:", err);
+                    toast(err.code || err.message || "Could not register");
+                }
+                return;
+            }
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                closeAuth();
+                toast("Logged in");
+            } catch (err) {
+                console.error("LOGIN ERROR:", err);
+                toast(err.code || err.message || "Login failed");
+            }
+        });
+
+        settingsProfileTab.addEventListener("click", () => setSettingsTab("profile"));
+        settingsAccountTab.addEventListener("click", () => setSettingsTab("account"));
+        document.getElementById("settingsClose").addEventListener("click", closeSettings);
+
+        profileFile.addEventListener("change", async () => {
+            const file = profileFile.files?.[0];
+            if (!file) return;
+
+            try {
+                profileImageData = await fileToAvatarDataURL(file);
+                profilePreview.src = profileImageData;
+            } catch (err) {
+                console.error(err);
+                toast("Could not read image");
+            }
+        });
+
+        document.getElementById("removeProfilePic").addEventListener("click", () => {
+            profileImageData = "";
+            profileFile.value = "";
+            profilePreview.src = defaultAvatarDataURL(profileName.value || session?.name || "User");
+        });
+
+        profileName.addEventListener("input", () => {
+            if (!profileImageData) {
+                profilePreview.src = defaultAvatarDataURL(profileName.value || "User");
+            }
+        });
+
+        document.getElementById("saveProfileBtn").addEventListener("click", async () => {
+            if (!session) return;
+
+            const name = (profileName.value || "").trim();
+            if (name.length < 2) {
+                toast("Display name must be at least 2 characters");
+                return;
+            }
+
+            try {
+                const existing = await getDoc(doc(db, "users", session.uid));
+                const current = existing.exists() ? existing.data() : {};
+                await setDoc(doc(db, "users", session.uid), {
+                    name,
+                    email: session.email || current.email || "",
+                    role: current.role || "staff",
+                    photoURL: profileImageData || ""
+                }, { merge: true });
+
+                session = {
+                    ...session,
+                    name,
+                    photoURL: profileImageData || "",
+                    role: current.role || session.role || "staff"
+                };
+
+                topAvatar.src = profilePhotoOrDefault(session);
+                renderTop();
+                renderHostPicker();
+                renderDetails();
+                toast("Profile saved");
+            } catch (err) {
+                console.error(err);
+                toast("Could not save profile");
+            }
+        });
+
+        document.getElementById("saveAccountBtn").addEventListener("click", async () => {
+            const user = auth.currentUser;
+            if (!user || !session) return;
+
+            const newEmail = (accountNewEmail.value || "").trim();
+            const currentPassword = accountCurrentPassword.value || "";
+            const newPassword = accountNewPassword.value || "";
+            const newPassword2 = accountNewPassword2.value || "";
+
+            if (!newEmail && !newPassword) {
+                toast("No account changes entered");
+                return;
+            }
+
+            if (!currentPassword) {
+                toast("Enter your current password");
+                return;
+            }
+
+            if (newPassword && newPassword.length < 6) {
+                toast("New password must be at least 6 characters");
+                return;
+            }
+
+            if (newPassword && newPassword !== newPassword2) {
+                toast("New passwords do not match");
+                return;
+            }
+
+            try {
+                const credential = EmailAuthProvider.credential(user.email, currentPassword);
+                await reauthenticateWithCredential(user, credential);
+
+                if (newEmail) {
+                    await updateEmail(user, newEmail);
+                }
+
+                if (newPassword) {
+                    await updatePassword(user, newPassword);
+                }
+
+                await setDoc(doc(db, "users", session.uid), {
+                    email: newEmail || user.email || session.email || ""
+                }, { merge: true });
+
+                session.email = newEmail || user.email || session.email || "";
+                accountCurrentEmail.value = session.email;
+                accountNewEmail.value = "";
+                accountCurrentPassword.value = "";
+                accountNewPassword.value = "";
+                accountNewPassword2.value = "";
+
+                toast("Account updated");
+            } catch (err) {
+                console.error("ACCOUNT UPDATE ERROR:", err);
+                toast(err.code || err.message || "Could not update account");
+            }
+        });
+
+        clearMyPickBtn.addEventListener("click", async () => {
+            if (!session || !selectedDate) return;
+
+            try {
+                await removePick(selectedDate, session.uid);
+                toast("Removed your pick");
+            } catch (err) {
+                console.error(err);
+                toast("Could not remove pick");
+            }
+        });
+
+        document.getElementById("prevMonth").addEventListener("click", () => {
+            viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1);
+            renderCalendar();
+        });
+
+        document.getElementById("nextMonth").addEventListener("click", () => {
+            viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1);
+            renderCalendar();
+        });
+
+        document.getElementById("todayBtn").addEventListener("click", () => {
+            viewDate = new Date();
+            selectedDate = toISODate(new Date());
+            renderCalendar();
+            renderDetails();
+
+            if (viewMode) return;
+
+            if (!session) {
+                pendingOpenDate = selectedDate;
+                openAuth();
+                return;
+            }
+
+            if (session.role === "admin") {
+                openDayModal(selectedDate);
+            }
+        });
+
+        addEventBtn.addEventListener("click", () => {
+            if (viewMode) return;
+            if (!session) {
+                pendingOpenDate = selectedDate || toISODate(new Date());
+                openAuth();
+                return;
+            }
+            if (session.role !== "admin") return;
+            if (!selectedDate) selectedDate = toISODate(new Date());
+            openDayModal(selectedDate);
+        });
+
+        addAvailBtn.addEventListener("click", () => {
+            if (viewMode) return;
+            if (!session) {
+                pendingOpenDate = selectedDate || toISODate(new Date());
+                openAuth();
+                return;
+            }
+            if (session.role !== "admin") return;
+            if (!selectedDate) selectedDate = toISODate(new Date());
+            openDayModal(selectedDate);
+        });
+
+        viewModeBtn.addEventListener("click", () => {
+            viewMode = !viewMode;
+            saveJSON(KEY_VIEWMODE, viewMode);
+            toast("View mode " + (viewMode ? "ON" : "OFF"));
+            renderTop();
+            renderCalendar();
+            renderDetails();
+        });
+
+        clearAllBtn.addEventListener("click", async () => {
+            if (!session || session.role !== "admin") return;
+
+            const ok = confirm(
+                "CLEAR ALL?\n\nThis deletes:\n- All Events\n- All Availability\n- All Host Picks\n\nThis cannot be undone."
+            );
+            if (!ok) return;
+
+            try {
+                const [evSnap, avSnap, pkSnap] = await Promise.all([
+                    getDocs(collection(db, "events")),
+                    getDocs(collection(db, "availability")),
+                    getDocs(collection(db, "host_picks"))
+                ]);
+
+                const deletes = [];
+                evSnap.forEach(d => deletes.push(deleteDoc(doc(db, "events", d.id))));
+                avSnap.forEach(d => deletes.push(deleteDoc(doc(db, "availability", d.id))));
+                pkSnap.forEach(d => deletes.push(deleteDoc(doc(db, "host_picks", d.id))));
+                await Promise.all(deletes);
+
+                toast("Cleared everything");
+            } catch (err) {
+                console.error(err);
+                toast("Clear failed");
+            }
+        });
+
+        resetBtn.addEventListener("click", () => {
+            if (!session || session.role !== "admin") return;
+            saveJSON(KEY_EVENTS, []);
+            saveJSON(KEY_AVAIL, []);
+            saveJSON(KEY_PICKS, []);
+            toast("Local cache cleared");
+        });
+
+        authBackdrop.addEventListener("click", (e) => {
+            if (e.target === authBackdrop) closeAuth();
+        });
+
+        settingsBackdrop.addEventListener("click", (e) => {
+            if (e.target === settingsBackdrop) closeSettings();
+        });
+
+        dayBackdrop.addEventListener("click", (e) => {
+            if (e.target === dayBackdrop) dayBackdrop.style.display = "none";
+        });
+
+        onAuthStateChanged(auth, async (firebaseUser) => {
+            try {
+                if (!firebaseUser) {
+                    session = null;
+                    renderTop();
+                    renderCalendar();
+                    renderDetails();
+                    return;
+                }
+
+                await loadSessionFromAuth(firebaseUser);
+                renderTop();
+                renderCalendar();
+                renderDetails();
+                startListeners();
+
+                if (pendingOpenDate && session?.role === "admin" && !viewMode) {
+                    const dateToOpen = pendingOpenDate;
+                    pendingOpenDate = null;
+                    selectedDate = dateToOpen;
+                    renderCalendar();
+                    renderDetails();
+                    openDayModal(dateToOpen);
+                } else {
+                    pendingOpenDate = null;
+                }
+            } catch (err) {
+                console.error(err);
+                toast("Could not load account");
+            }
+        });
+
+        function boot() {
+            selectedDate = toISODate(new Date());
             renderTop();
             renderCalendar();
             renderDetails();
             startListeners();
-
-            if (pendingOpenDate && session?.role === "admin" && !viewMode) {
-                const dateToOpen = pendingOpenDate;
-                pendingOpenDate = null;
-                selectedDate = dateToOpen;
-                renderCalendar();
-                renderDetails();
-                openDayModal(dateToOpen);
-            } else {
-                pendingOpenDate = null;
-            }
-        } catch (err) {
-            console.error(err);
-            toast("Could not load account");
         }
-    });
 
-    function boot() {
-        selectedDate = toISODate(new Date());
-        renderTop();
-        renderCalendar();
-        renderDetails();
-        startListeners();
-    }
-
-    boot();
-</script>
+        boot();
+    </script>
+</body>
+</html>
