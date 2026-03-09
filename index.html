@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Staff Calendar</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -21,14 +21,16 @@
             --radius: 16px;
         }
 
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
             font-family: Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
-            background: radial-gradient(1200px 700px at 20% -10%, rgba(114,137,218,.22), transparent 60%), radial-gradient(900px 600px at 95% 0%, rgba(57,217,138,.12), transparent 60%), radial-gradient(900px 600px at 60% 110%, rgba(255,107,107,.12), transparent 60%), var(--bg);
+            background:
+                radial-gradient(1200px 700px at 20% -10%, rgba(114,137,218,.22), transparent 60%),
+                radial-gradient(900px 600px at 95% 0%, rgba(57,217,138,.12), transparent 60%),
+                radial-gradient(900px 600px at 60% 110%, rgba(255,107,107,.12), transparent 60%),
+                var(--bg);
             color: var(--text);
             min-height: 100vh;
             overflow-x: hidden;
@@ -36,9 +38,9 @@
         }
 
         .wrap {
-            width: min(1700px, calc(100vw - 48px));
+            width: min(1700px, calc(100vw - 24px));
             margin: 0 auto;
-            padding: 24px;
+            padding: 12px;
         }
 
         .topbar {
@@ -46,13 +48,13 @@
             gap: 14px;
             align-items: center;
             justify-content: space-between;
-            padding: 16px 18px;
+            padding: 14px 16px;
             border: 1px solid var(--stroke);
             background: var(--panel);
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             position: sticky;
-            top: 14px;
+            top: 10px;
             backdrop-filter: blur(10px);
             z-index: 10;
         }
@@ -61,6 +63,7 @@
             display: flex;
             gap: 12px;
             align-items: center;
+            min-width: 0;
         }
 
         .logo {
@@ -69,6 +72,11 @@
             border-radius: 12px;
             background: linear-gradient(135deg, rgba(114,137,218,1), rgba(57,217,138,1));
             box-shadow: 0 10px 30px rgba(114,137,218,.25);
+            flex: 0 0 auto;
+        }
+
+        .brandText {
+            min-width: 0;
         }
 
         .brand h1 {
@@ -81,6 +89,24 @@
             font-size: 12px;
             margin: 0;
             color: var(--muted);
+            overflow-wrap: anywhere;
+        }
+
+        .userTop {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .topAvatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.05);
+            display: none;
         }
 
         .pill {
@@ -96,9 +122,7 @@
             overflow-wrap: anywhere;
         }
 
-            .pill b {
-                font-weight: 700;
-            }
+        .pill b { font-weight: 700; }
 
         .btn {
             border: 1px solid var(--stroke);
@@ -109,79 +133,56 @@
             font-weight: 600;
             font-size: 13px;
             cursor: pointer;
-            transition: .15s transform,.15s background;
+            transition: .15s transform,.15s background,.15s opacity;
             user-select: none;
             white-space: nowrap;
         }
 
-            .btn:hover {
-                background: rgba(255,255,255,.10);
-            }
+        .btn:hover { background: rgba(255,255,255,.10); }
+        .btn:active { transform: translateY(1px); }
+        .btn[disabled] { opacity: .55; cursor: not-allowed; }
 
-            .btn:active {
-                transform: translateY(1px);
-            }
+        .btn.primary {
+            background: rgba(114,137,218,.22);
+            border-color: rgba(114,137,218,.45);
+        }
 
-            .btn.primary {
-                background: rgba(114,137,218,.22);
-                border-color: rgba(114,137,218,.45);
-            }
+        .btn.primary:hover { background: rgba(114,137,218,.28); }
 
-                .btn.primary:hover {
-                    background: rgba(114,137,218,.28);
-                }
+        .btn.danger {
+            background: rgba(255,107,107,.14);
+            border-color: rgba(255,107,107,.35);
+        }
 
-            .btn.danger {
-                background: rgba(255,107,107,.14);
-                border-color: rgba(255,107,107,.35);
-            }
+        .btn.danger:hover { background: rgba(255,107,107,.18); }
 
-                .btn.danger:hover {
-                    background: rgba(255,107,107,.18);
-                }
+        .btn.ok {
+            background: rgba(57,217,138,.14);
+            border-color: rgba(57,217,138,.35);
+        }
 
-            .btn.ok {
-                background: rgba(57,217,138,.14);
-                border-color: rgba(57,217,138,.35);
-            }
+        .btn.ok:hover { background: rgba(57,217,138,.18); }
 
-                .btn.ok:hover {
-                    background: rgba(57,217,138,.18);
-                }
+        .btn.ghost { background: transparent; }
 
-            .btn.ghost {
-                background: transparent;
-            }
-
-            .btn.small {
-                padding: 8px 10px;
-                border-radius: 12px;
-                font-size: 12px;
-            }
+        .btn.small {
+            padding: 8px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
 
         .row {
             display: flex;
-            gap: 14px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
         .grid {
             display: grid;
             grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-            gap: 18px;
+            gap: 16px;
             margin-top: 14px;
             align-items: start;
-            width: 100%;
-        }
-
-        @media (max-width:1200px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-
-            .topbar {
-                position: static;
-            }
         }
 
         .card {
@@ -201,106 +202,22 @@
             gap: 10px;
             border-bottom: 1px solid rgba(255,255,255,.08);
             flex-wrap: wrap;
-            min-width: 0;
         }
 
-            .cardHead h2 {
-                margin: 0;
-                font-size: 13px;
-            }
+        .cardHead h2 {
+            margin: 0;
+            font-size: 13px;
+        }
 
-            .cardHead p {
-                margin: 0;
-                font-size: 12px;
-                color: var(--muted);
-                overflow-wrap: anywhere;
-            }
+        .cardHead p {
+            margin: 0;
+            font-size: 12px;
+            color: var(--muted);
+        }
 
         .cardBody {
             padding: 14px 16px;
             min-width: 0;
-        }
-
-        .modalBackdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,.55);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            z-index: 9999;
-            backdrop-filter: blur(6px);
-        }
-
-        .modal {
-            width: min(520px, 100%);
-            border: 1px solid var(--stroke);
-            background: rgba(20,22,26,.95);
-            border-radius: 20px;
-            box-shadow: var(--shadow);
-            overflow: hidden;
-        }
-
-        .modalTop {
-            padding: 18px;
-            border-bottom: 1px solid rgba(255,255,255,.08);
-        }
-
-            .modalTop h3 {
-                margin: 0;
-                font-size: 14px;
-            }
-
-            .modalTop p {
-                margin: 8px 0 0;
-                color: var(--muted);
-                font-size: 12px;
-                line-height: 1.35;
-                overflow-wrap: anywhere;
-            }
-
-        .modalBody {
-            padding: 16px;
-        }
-
-        .field {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-
-            .field label {
-                font-size: 12px;
-                color: var(--muted);
-            }
-
-        input, textarea {
-            font: inherit;
-            color: var(--text);
-            background: rgba(255,255,255,.06);
-            border: 1px solid rgba(255,255,255,.12);
-            border-radius: 12px;
-            padding: 10px 12px;
-            outline: none;
-            min-width: 0;
-        }
-
-        textarea {
-            min-height: 74px;
-            resize: vertical;
-        }
-
-            input:focus, textarea:focus {
-                border-color: rgba(114,137,218,.55);
-            }
-
-        .modalActions {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            margin-top: 12px;
         }
 
         .calTop {
@@ -312,7 +229,6 @@
             border-bottom: 1px solid rgba(255,255,255,.08);
             background: rgba(255,255,255,.03);
             flex-wrap: wrap;
-            min-width: 0;
         }
 
         .calTopLeft {
@@ -337,20 +253,20 @@
             font-size: 12px;
         }
 
-            .weekdays div {
-                padding: 6px 8px;
-            }
+        .weekdays div {
+            padding: 6px 8px;
+            text-align: center;
+        }
 
         .calGrid {
             display: grid;
             grid-template-columns: repeat(7,1fr);
             gap: 8px;
             padding: 8px 16px 16px 16px;
-            min-width: 0;
         }
 
         .day {
-            min-height: 150px;
+            min-height: 145px;
             border: 1px solid rgba(255,255,255,.10);
             background: rgba(255,255,255,.04);
             border-radius: 14px;
@@ -363,18 +279,13 @@
             min-width: 0;
         }
 
-            .day:hover {
-                background: rgba(255,255,255,.06);
-                border-color: rgba(114,137,218,.35);
-            }
+        .day:hover {
+            background: rgba(255,255,255,.06);
+            border-color: rgba(114,137,218,.35);
+        }
 
-            .day:active {
-                transform: translateY(1px);
-            }
-
-            .day.muted {
-                opacity: .45;
-            }
+        .day:active { transform: translateY(1px); }
+        .day.muted { opacity: .45; }
 
         .dayHead {
             display: flex;
@@ -382,7 +293,7 @@
             justify-content: space-between;
             font-size: 12px;
             color: var(--muted);
-            min-width: 0;
+            gap: 8px;
         }
 
         .dayNum {
@@ -405,17 +316,17 @@
             overflow-wrap: anywhere;
         }
 
-            .badge.brand {
-                border-color: rgba(114,137,218,.35);
-                color: rgba(220,230,255,.92);
-                background: rgba(114,137,218,.12);
-            }
+        .badge.brand {
+            border-color: rgba(114,137,218,.35);
+            color: rgba(220,230,255,.92);
+            background: rgba(114,137,218,.12);
+        }
 
-            .badge.ok {
-                border-color: rgba(57,217,138,.35);
-                color: rgba(204,255,230,.92);
-                background: rgba(57,217,138,.12);
-            }
+        .badge.ok {
+            border-color: rgba(57,217,138,.35);
+            color: rgba(204,255,230,.92);
+            background: rgba(57,217,138,.12);
+        }
 
         .miniList {
             display: flex;
@@ -437,9 +348,7 @@
             min-width: 0;
         }
 
-            .miniItem span {
-                color: var(--muted);
-            }
+        .miniItem span { color: var(--muted); }
 
         .divider {
             height: 1px;
@@ -451,7 +360,6 @@
             display: grid;
             grid-template-columns: 1fr;
             gap: 10px;
-            min-width: 0;
         }
 
         .kv {
@@ -459,25 +367,24 @@
             border-radius: 14px;
             border: 1px solid rgba(255,255,255,.10);
             background: rgba(255,255,255,.04);
-            min-width: 0;
         }
 
-            .kv .t {
-                font-size: 12px;
-                color: var(--muted);
-            }
+        .kv .t {
+            font-size: 12px;
+            color: var(--muted);
+        }
 
-            .kv .v {
-                font-size: 13px;
-                font-weight: 700;
-                margin-top: 6px;
-            }
+        .kv .v {
+            font-size: 13px;
+            font-weight: 700;
+            margin-top: 6px;
+            overflow-wrap: anywhere;
+        }
 
         .list {
             display: flex;
             flex-direction: column;
             gap: 10px;
-            min-width: 0;
         }
 
         .item {
@@ -490,29 +397,28 @@
             justify-content: space-between;
             gap: 10px;
             flex-wrap: wrap;
-            min-width: 0;
         }
 
-            .item h4 {
-                margin: 0;
-                font-size: 13px;
-                overflow-wrap: anywhere;
-            }
+        .item h4 {
+            margin: 0;
+            font-size: 13px;
+            overflow-wrap: anywhere;
+        }
 
-            .item p {
-                margin: 6px 0 0;
-                font-size: 12px;
-                color: var(--muted);
-                line-height: 1.35;
-                overflow-wrap: anywhere;
-            }
+        .item p {
+            margin: 6px 0 0;
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.35;
+            overflow-wrap: anywhere;
+        }
 
-            .item .meta {
-                font-size: 11px;
-                color: var(--muted);
-                margin-top: 6px;
-                overflow-wrap: anywhere;
-            }
+        .item .meta {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 6px;
+            overflow-wrap: anywhere;
+        }
 
         .toast {
             position: fixed;
@@ -545,22 +451,13 @@
             justify-content: flex-end;
         }
 
-        .okText {
-            color: rgba(190,255,220,.95);
-        }
+        .okText { color: rgba(190,255,220,.95); }
 
         .pfpGrid {
             display: grid;
             grid-template-columns: repeat(3, minmax(0,1fr));
             gap: 10px;
             margin-top: 10px;
-            min-width: 0;
-        }
-
-        @media (max-width:520px) {
-            .pfpGrid {
-                grid-template-columns: repeat(2, minmax(0,1fr));
-            }
         }
 
         .pfpBtn {
@@ -575,32 +472,30 @@
             gap: 8px;
             transition: .12s transform,.12s background,.12s border-color;
             user-select: none;
-            min-height: 96px;
+            min-height: 100px;
             min-width: 0;
         }
 
-            .pfpBtn:hover {
-                background: rgba(255,255,255,.06);
-                border-color: rgba(114,137,218,.35);
-            }
+        .pfpBtn:hover {
+            background: rgba(255,255,255,.06);
+            border-color: rgba(114,137,218,.35);
+        }
 
-            .pfpBtn:active {
-                transform: translateY(1px);
-            }
+        .pfpBtn:active { transform: translateY(1px); }
 
-            .pfpBtn[aria-disabled="true"] {
-                opacity: .45;
-                cursor: not-allowed;
-            }
+        .pfpBtn[aria-disabled="true"] {
+            opacity: .45;
+            cursor: not-allowed;
+        }
 
-            .pfpBtn.active {
-                border-color: rgba(57,217,138,.55);
-                background: rgba(57,217,138,.10);
-            }
+        .pfpBtn.active {
+            border-color: rgba(57,217,138,.55);
+            background: rgba(57,217,138,.10);
+        }
 
         .pfpImg {
-            width: 44px;
-            height: 44px;
+            width: 46px;
+            height: 46px;
             border-radius: 14px;
             object-fit: cover;
             border: 1px solid rgba(255,255,255,.12);
@@ -612,17 +507,18 @@
             color: var(--text);
             font-weight: 700;
             text-align: center;
-            line-height: 1.1;
+            line-height: 1.15;
+            overflow-wrap: anywhere;
         }
 
         .hostBar {
             position: fixed;
             left: 50%;
-            bottom: 14px;
+            bottom: 12px;
             transform: translateX(-50%);
-            width: min(1200px, calc(100vw - 28px));
+            width: min(1200px, calc(100vw - 18px));
             border: 1px solid var(--stroke);
-            background: rgba(20,22,26,.78);
+            background: rgba(20,22,26,.84);
             backdrop-filter: blur(10px);
             border-radius: 18px;
             box-shadow: var(--shadow);
@@ -632,14 +528,13 @@
             justify-content: space-between;
             gap: 12px;
             padding: 12px 14px;
-            min-width: 0;
         }
 
         .hostBarLeft {
             display: flex;
             flex-direction: column;
             gap: 4px;
-            min-width: 220px;
+            min-width: 180px;
         }
 
         .hostBarTitle {
@@ -673,18 +568,16 @@
             white-space: nowrap;
         }
 
-            .chip img {
-                width: 26px;
-                height: 26px;
-                border-radius: 10px;
-                object-fit: cover;
-                border: 1px solid rgba(255,255,255,.12);
-                background: rgba(255,255,255,.06);
-            }
+        .chip img {
+            width: 26px;
+            height: 26px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.06);
+        }
 
-            .chip b {
-                font-size: 12px;
-            }
+        .chip b { font-size: 12px; }
 
         .hostBarRight {
             display: flex;
@@ -692,24 +585,304 @@
             align-items: center;
             flex-wrap: wrap;
         }
+
+        .modalBackdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.55);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 9999;
+            backdrop-filter: blur(6px);
+        }
+
+        .modal {
+            width: min(540px, 100%);
+            border: 1px solid var(--stroke);
+            background: rgba(20,22,26,.96);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            max-height: calc(100vh - 32px);
+            overflow-y: auto;
+        }
+
+        .modalTop {
+            padding: 18px;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+        }
+
+        .modalTop h3 {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .modalTop p {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .modalBody {
+            padding: 16px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .field label {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        input, textarea {
+            font: inherit;
+            color: var(--text);
+            background: rgba(255,255,255,.06);
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 12px;
+            padding: 11px 12px;
+            outline: none;
+            min-width: 0;
+        }
+
+        textarea {
+            min-height: 74px;
+            resize: vertical;
+        }
+
+        input:focus, textarea:focus {
+            border-color: rgba(114,137,218,.55);
+        }
+
+        .modalActions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .authTabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .authTab {
+            flex: 1;
+            text-align: center;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,.10);
+            background: rgba(255,255,255,.04);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .authTab.active {
+            border-color: rgba(114,137,218,.45);
+            background: rgba(114,137,218,.18);
+        }
+
+        .avatarPreviewWrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .avatarPreview {
+            width: 74px;
+            height: 74px;
+            border-radius: 20px;
+            object-fit: cover;
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.05);
+        }
+
+        .emptyState {
+            padding: 16px;
+            border-radius: 14px;
+            border: 1px dashed rgba(255,255,255,.14);
+            background: rgba(255,255,255,.03);
+        }
+
+        @media (max-width: 1200px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                position: static;
+            }
+        }
+
+        @media (max-width: 760px) {
+            body {
+                padding-bottom: 150px;
+            }
+
+            .wrap {
+                width: min(100vw - 10px, 100%);
+                padding: 8px;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+                padding: 12px;
+            }
+
+            .userTop {
+                justify-content: space-between;
+            }
+
+            .cardHead,
+            .calTop {
+                padding: 12px;
+            }
+
+            .cardBody {
+                padding: 12px;
+            }
+
+            .weekdays {
+                gap: 4px;
+                padding: 8px 8px 0 8px;
+                font-size: 11px;
+            }
+
+            .weekdays div {
+                padding: 4px 2px;
+            }
+
+            .calGrid {
+                gap: 4px;
+                padding: 6px 8px 10px 8px;
+            }
+
+            .day {
+                min-height: 92px;
+                padding: 6px;
+                border-radius: 12px;
+                gap: 4px;
+            }
+
+            .dayNum {
+                font-size: 12px;
+            }
+
+            .miniItem {
+                font-size: 10px;
+                padding: 5px 6px;
+                border-radius: 10px;
+            }
+
+            .badge {
+                font-size: 9px;
+                padding: 3px 6px;
+            }
+
+            .pfpGrid {
+                grid-template-columns: repeat(2, minmax(0,1fr));
+            }
+
+            .hostBar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+                padding: 10px 12px;
+                border-radius: 16px;
+            }
+
+            .hostBarLeft {
+                min-width: 0;
+            }
+
+            .hostBarRight {
+                justify-content: flex-end;
+            }
+
+            .modal {
+                width: 100%;
+                border-radius: 18px;
+            }
+
+            .modalTop,
+            .modalBody {
+                padding: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .btn,
+            .btn.small {
+                font-size: 12px;
+            }
+
+            .monthTitle {
+                font-size: 13px;
+            }
+
+            .brand h1 {
+                font-size: 13px;
+            }
+
+            .brand p {
+                font-size: 11px;
+            }
+
+            .topAvatar {
+                width: 34px;
+                height: 34px;
+                border-radius: 10px;
+            }
+
+            .logo {
+                width: 34px;
+                height: 34px;
+                border-radius: 10px;
+            }
+
+            .day {
+                min-height: 82px;
+            }
+
+            .miniItem {
+                font-size: 9px;
+            }
+        }
     </style>
 </head>
-
 <body>
     <div class="wrap">
         <div class="topbar">
             <div class="brand">
                 <div class="logo"></div>
-                <div>
+                <div class="brandText">
                     <h1>Staff Calendar</h1>
-                    <p id="whoLine">Checking login...</p>
+                    <p id="whoLine">Loading...</p>
                 </div>
             </div>
 
-            <div class="row" style="align-items:center;justify-content:flex-end">
-                <div class="pill" id="rolePill" style="display:none;">Role: <b>STAFF</b></div>
-                <button class="btn ghost" id="btnLogin" style="display:none;">Login with Discord</button>
-                <button class="btn" id="btnLogout" style="display:none;">Logout</button>
+            <div class="userTop">
+                <img id="topAvatar" class="topAvatar" alt="Profile">
+                <div class="row" style="align-items:center;justify-content:flex-end">
+                    <div class="pill" id="rolePill" style="display:none;">Role: <b>STAFF</b></div>
+                    <button class="btn ghost" id="btnProfile" style="display:none;">Profile</button>
+                    <button class="btn ghost" id="btnLogin" style="display:none;">Login</button>
+                    <button class="btn" id="btnLogout" style="display:none;">Logout</button>
+                </div>
             </div>
         </div>
 
@@ -722,8 +895,8 @@
                         <button class="btn small" id="nextMonth">▶</button>
                         <div class="monthTitle" id="monthTitle">March 2026</div>
                     </div>
-                    <div class="calTopRight">
-                        <span class="pill" id="viewHint">Click a day to open</span>
+                    <div>
+                        <span class="pill" id="viewHint">Tap or click a day</span>
                     </div>
                 </div>
 
@@ -737,7 +910,7 @@
             <div class="card">
                 <div class="cardHead">
                     <div>
-                        <h2 id="sideTitle">Details</h2>
+                        <h2>Details</h2>
                         <p id="sideSub">Staff: view only • Admin: manage calendar</p>
                     </div>
 
@@ -754,16 +927,12 @@
                         <div class="kv">
                             <div class="t">Selected date</div>
                             <div class="v" id="selectedDateText">None</div>
-                            <p class="tiny" id="selectedHint" style="margin-top:8px;">
-                                Tip: Staff can view. Admins can add/edit.
-                            </p>
+                            <p class="tiny" id="selectedHint" style="margin-top:8px;">Staff can view and pick themselves. Admins can edit.</p>
                         </div>
 
                         <div class="kv" id="pfpPickerBox" style="display:none;">
-                            <div class="t">Pick who is hosting (click PFP)</div>
-                            <div class="tiny" style="margin-top:8px">
-                                Staff can only click their own PFP • Admin can click anyone
-                            </div>
+                            <div class="t">Who is hosting</div>
+                            <div class="tiny" style="margin-top:8px">Staff can only click their own profile. Admins can click anyone.</div>
                             <div class="pfpGrid" id="pfpGrid"></div>
                         </div>
                     </div>
@@ -774,7 +943,7 @@
                     <div class="divider"></div>
 
                     <div class="row" style="justify-content:space-between;align-items:center">
-                        <p class="tiny" id="storageNote">Synced with Firebase (Firestore)</p>
+                        <p class="tiny" id="storageNote">Syncing with Firebase...</p>
                         <button class="btn small danger" id="resetBtn" style="display:none;">Reset local cache</button>
                     </div>
                 </div>
@@ -793,20 +962,78 @@
         </div>
     </div>
 
-    <div class="modalBackdrop" id="loginBackdrop">
+    <!-- LOGIN / REGISTER -->
+    <div class="modalBackdrop" id="authBackdrop">
         <div class="modal" role="dialog" aria-modal="true">
             <div class="modalTop">
-                <h3>Login with Discord</h3>
-                <p>Use your Discord account to sign in.</p>
+                <h3>Account</h3>
+                <p>Create an account or log in. Each person gets their own secure login.</p>
             </div>
             <div class="modalBody">
-                <div class="modalActions" style="justify-content:center">
-                    <button class="btn primary" id="loginGo" type="button">Login with Discord</button>
+                <div class="authTabs">
+                    <div class="authTab active" id="tabLogin">Login</div>
+                    <div class="authTab" id="tabRegister">Register</div>
+                </div>
+
+                <div class="field">
+                    <label>Email</label>
+                    <input id="authEmail" type="email" placeholder="name@email.com" autocomplete="email">
+                </div>
+
+                <div class="field">
+                    <label>Password</label>
+                    <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
+                </div>
+
+                <div class="field" id="confirmField" style="display:none;">
+                    <label>Confirm password</label>
+                    <input id="authPassword2" type="password" placeholder="Confirm password" autocomplete="new-password">
+                </div>
+
+                <div class="tiny">Admins must still be set in Firestore. New accounts are staff by default.</div>
+
+                <div class="modalActions">
+                    <button class="btn" id="authClose" type="button">Close</button>
+                    <button class="btn primary" id="authGo" type="button">Login</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- PROFILE SETUP -->
+    <div class="modalBackdrop" id="profileBackdrop">
+        <div class="modal" role="dialog" aria-modal="true">
+            <div class="modalTop">
+                <h3>Your profile</h3>
+                <p>Set your display name and profile picture. If you skip the picture, a default one will be used.</p>
+            </div>
+            <div class="modalBody">
+                <div class="field">
+                    <label>Display name</label>
+                    <input id="profileName" maxlength="24" placeholder="e.g. Nugg">
+                </div>
+
+                <div class="field">
+                    <label>Profile picture</label>
+                    <div class="avatarPreviewWrap">
+                        <img id="profilePreview" class="avatarPreview" alt="Preview">
+                        <div class="row">
+                            <input id="profileFile" type="file" accept="image/*" style="max-width:220px;">
+                            <button class="btn small" id="removeProfilePic" type="button">Use default</button>
+                        </div>
+                    </div>
+                    <div class="tiny">Small image works best.</div>
+                </div>
+
+                <div class="modalActions">
+                    <button class="btn" id="profileClose" type="button">Close</button>
+                    <button class="btn primary" id="profileSave" type="button">Save profile</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DAY MODAL -->
     <div class="modalBackdrop" id="dayBackdrop">
         <div class="modal" role="dialog" aria-modal="true">
             <div class="modalTop">
@@ -822,7 +1049,22 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
         import {
-            getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, getDocs
+            getAuth,
+            onAuthStateChanged,
+            signInWithEmailAndPassword,
+            createUserWithEmailAndPassword,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+
+        import {
+            getFirestore,
+            collection,
+            doc,
+            setDoc,
+            getDoc,
+            getDocs,
+            deleteDoc,
+            onSnapshot
         } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -835,34 +1077,27 @@
         };
 
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const db = getFirestore(app);
 
-        const HOSTS = [
-            { id: "nugg", name: "Nugg", img: "https://media.discordapp.net/attachments/1470700666895863900/1479031716755669062/pfp5.png.png?ex=69aa8f20&is=69a93da0&hm=1ec57ffc74e8ad041a78d6cf409fbba116615df48490073131cf8797fb52a2ff&=&format=webp&quality=lossless" },
-            { id: "dafound1", name: "Dafound1", img: "https://media.discordapp.net/attachments/1470700666895863900/1479031716458008638/pfp4.png.png?ex=69aa8f20&is=69a93da0&hm=43434b26efd48c47611def6509506c43f9d556d780e5b84e95d4230df286e008&=&format=webp&quality=lossless" },
-            { id: "glitch", name: "Glitch", img: "https://media.discordapp.net/attachments/1470700666895863900/1479031718026547261/pfp8.png.png?ex=69aa8f20&is=69a93da0&hm=8978687d57b9ef34978367232fc407313ad8a9022364e9381193642095f01675&=&format=webp&quality=lossless" },
-            { id: "artistred", name: "ArtistRed", img: "https://cdn.discordapp.com/attachments/1470700666895863900/1479032495755366491/content.png?ex=69aa8fda&is=69a93e5a&hm=4ff378f5844e60fa69d6004e13d22adf026c4dfa61ebdabafae1018c2469a785&" },
-            { id: "kingbearvr", name: "KingBearVR", img: "https://media.discordapp.net/attachments/1470700666895863900/1479031720094334976/pfp3.png.png?ex=69aa8f21&is=69a93da1&hm=7dd191f60c334020854dcefeb6d6a51fcc6584cade3cfd9fb7990a8bf4c9dd63&=&format=webp&quality=lossless" },
-            { id: "masonman", name: "Masonman585", img: "https://media.discordapp.net/attachments/1470700666895863900/1479031717108121704/pfp6.png.png?ex=69aa8f20&is=69a93da0&hm=58d514ece75852955bb3f986a4f5a3b065f8d642ca97157b2c423e41f3e62531&=&format=webp&quality=lossless" },
-            { id: "vibe", name: "Vibe", img: "https://media.discordapp.net/attachments/1470700666895863900/1479031718747832380/pfp1.png.png?ex=69aa8f20&is=69a93da0&hm=2bde62231628a7f7350849b3251d7824406809b740ee30cae3157f03480401d1&=&format=webp&quality=lossless" },
-            { id: "reeta", name: "Reeta", img: "https://media.discordapp.net/attachments/1470700666895863900/1479031717548392459/pfp7.png.png?ex=69aa8f20&is=69a93da0&hm=81c405f85c124233549e647a08ebf8fd590adc64e86d5c9273a4b35e167fda09&=&format=webp&quality=lossless" },
-            { id: "cyber", name: "Cyber", img: "https://media.discordapp.net/attachments/1470700666895863900/1479031718378999888/pfp9.png.png?ex=69aa8f20&is=69a93da0&hm=d009fe2f554fe64209e08027e32ad50877967ebf95edffd5891cafde65de8c68&=&format=webp&quality=lossless" },
-            { id: "riskhuntervr", name: "riskhuntervr", img: "https://media.discordapp.net/attachments/1470700666895863900/1479031719179980832/pfp2.png.png?ex=69aa8f20&is=69a93da0&hm=33dbb47617213120e91e9a8414b36ed4bfcef18f7e70d730efc7a48eaca7d0b9&=&format=webp&quality=lossless" }
-        ];
-
-        const KEY_SESSION = "staffCal.session.v2";
-        const KEY_EVENTS = "staffCal.events.v1";
-        const KEY_AVAIL = "staffCal.availability.v1";
-        const KEY_PICKS = "staffCal.hostPicks.v1";
-        const KEY_VIEWMODE = "staffCal.viewMode.v1";
+        const KEY_EVENTS = "staffCal.events.v2";
+        const KEY_AVAIL = "staffCal.availability.v2";
+        const KEY_PICKS = "staffCal.hostPicks.v2";
+        const KEY_VIEWMODE = "staffCal.viewMode.v2";
 
         function saveJSON(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
         function loadJSON(key, fallback) {
-            try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }
-            catch { return fallback; }
+            try {
+                const raw = localStorage.getItem(key);
+                return raw ? JSON.parse(raw) : fallback;
+            } catch {
+                return fallback;
+            }
         }
 
-        let session = loadJSON(KEY_SESSION, null);
+        let session = null;
+        let usersMap = new Map();
+        let hosts = [];
         let events = loadJSON(KEY_EVENTS, []);
         let avail = loadJSON(KEY_AVAIL, []);
         let hostPicks = loadJSON(KEY_PICKS, []);
@@ -871,6 +1106,9 @@
         let viewDate = new Date();
         let selectedDate = null;
         let pendingOpenDate = null;
+        let authMode = "login";
+        let profileImageData = null;
+        let unsubscribers = [];
 
         function uid() { return Math.random().toString(16).slice(2) + Date.now().toString(16); }
         function pad2(n) { return String(n).padStart(2, "0"); }
@@ -883,119 +1121,262 @@
             const d = fromISODate(iso);
             return d.toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" });
         }
+
         function escapeHTML(s) {
             return String(s).replace(/[&<>"']/g, c => ({
-                "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
             }[c]));
         }
+
         function toast(msg) {
             const t = document.getElementById("toast");
             t.textContent = msg;
             t.style.display = "block";
             clearTimeout(toast._tm);
-            toast._tm = setTimeout(() => t.style.display = "none", 2200);
+            toast._tm = setTimeout(() => t.style.display = "none", 2300);
         }
 
-        const eventsCol = collection(db, "events");
-        const availCol = collection(db, "availability");
-        const picksCol = collection(db, "host_picks");
-
-        async function upsertEvent(ev) { await setDoc(doc(db, "events", ev.id), ev, { merge: true }); }
-        async function removeEvent(id) { await deleteDoc(doc(db, "events", id)); }
-        async function upsertAvail(a) { await setDoc(doc(db, "availability", a.id), a, { merge: true }); }
-        async function removeAvail(id) { await deleteDoc(doc(db, "availability", id)); }
-
-        function pickDocId(dateIso, hostId) { return dateIso + "_" + hostId; }
-        async function setPick(dateIso, host) {
-            const id = pickDocId(dateIso, host.id);
-            const record = { id, date: dateIso, hostId: host.id, hostName: host.name, hostImg: host.img };
-            await setDoc(doc(db, "host_picks", id), record, { merge: true });
-        }
-        async function removePick(dateIso, hostId) {
-            const id = pickDocId(dateIso, hostId);
-            await deleteDoc(doc(db, "host_picks", id));
+        function initialsFromName(name) {
+            const clean = String(name || "").trim();
+            if (!clean) return "U";
+            const parts = clean.split(/\s+/).slice(0, 2);
+            return parts.map(p => p[0]?.toUpperCase() || "").join("") || "U";
         }
 
-        function picksForDate(dateIso) { return hostPicks.filter(p => p.date === dateIso); }
-        function isPicked(dateIso, hostId) { return hostPicks.some(p => p.date === dateIso && p.hostId === hostId); }
+        function defaultAvatarDataURL(name) {
+            const initials = initialsFromName(name);
+            const svg = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+                    <defs>
+                        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                            <stop stop-color="#7289da"/>
+                            <stop offset="1" stop-color="#39d98a"/>
+                        </linearGradient>
+                    </defs>
+                    <rect width="160" height="160" rx="34" fill="url(#g)"/>
+                    <text x="80" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="54" font-weight="700" fill="white">${initials}</text>
+                </svg>
+            `;
+            return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+        }
+
+        async function fileToAvatarDataURL(file) {
+            const img = await new Promise((resolve, reject) => {
+                const fr = new FileReader();
+                fr.onload = () => {
+                    const image = new Image();
+                    image.onload = () => resolve(image);
+                    image.onerror = reject;
+                    image.src = fr.result;
+                };
+                fr.onerror = reject;
+                fr.readAsDataURL(file);
+            });
+
+            const size = 180;
+            const canvas = document.createElement("canvas");
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext("2d");
+
+            const sw = img.width;
+            const sh = img.height;
+            const side = Math.min(sw, sh);
+            const sx = (sw - side) / 2;
+            const sy = (sh - side) / 2;
+
+            ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
+            return canvas.toDataURL("image/jpeg", 0.82);
+        }
+
+        function profilePhotoOrDefault(userLike) {
+            return userLike?.photoURL || defaultAvatarDataURL(userLike?.name || userLike?.displayName || userLike?.email || "User");
+        }
+
+        async function ensureUserDoc(firebaseUser) {
+            const ref = doc(db, "users", firebaseUser.uid);
+            const snap = await getDoc(ref);
+
+            if (!snap.exists()) {
+                const fallbackName = (firebaseUser.email || "User").split("@")[0];
+                await setDoc(ref, {
+                    name: fallbackName,
+                    email: firebaseUser.email || "",
+                    role: "staff",
+                    photoURL: "",
+                    createdAt: Date.now()
+                }, { merge: true });
+            }
+        }
+
+        async function loadSessionFromAuth(firebaseUser) {
+            if (!firebaseUser) {
+                session = null;
+                return;
+            }
+
+            await ensureUserDoc(firebaseUser);
+
+            const snap = await getDoc(doc(db, "users", firebaseUser.uid));
+            const data = snap.exists() ? snap.data() : {};
+
+            session = {
+                uid: firebaseUser.uid,
+                email: firebaseUser.email || "",
+                name: data.name || (firebaseUser.email || "User").split("@")[0],
+                role: data.role || "staff",
+                photoURL: data.photoURL || ""
+            };
+        }
+
+        function currentHostEntry() {
+            if (!session) return null;
+            const host = hosts.find(h => h.uid === session.uid);
+            return host || null;
+        }
 
         function canClickHost(host) {
             if (!session) return false;
             if (session.role === "admin") return true;
-            const a = (host.name || "").toLowerCase().trim();
-            const b = (session.name || "").toLowerCase().trim();
-            return a === b;
+            return host.uid === session.uid;
         }
 
-        function myHostEntry() {
-            if (!session) return null;
-            const b = (session.name || "").toLowerCase().trim();
-            return HOSTS.find(h => (h.name || "").toLowerCase().trim() === b) || null;
+        function pickDocId(dateIso, hostUid) {
+            return `${dateIso}_${hostUid}`;
+        }
+
+        async function setPick(dateIso, host) {
+            const id = pickDocId(dateIso, host.uid);
+            await setDoc(doc(db, "host_picks", id), {
+                id,
+                date: dateIso,
+                hostUid: host.uid,
+                hostName: host.name,
+                hostImg: profilePhotoOrDefault(host),
+                email: host.email || ""
+            }, { merge: true });
+        }
+
+        async function removePick(dateIso, hostUid) {
+            await deleteDoc(doc(db, "host_picks", pickDocId(dateIso, hostUid)));
+        }
+
+        function picksForDate(dateIso) {
+            return hostPicks.filter(p => p.date === dateIso);
+        }
+
+        function isPicked(dateIso, hostUid) {
+            return hostPicks.some(p => p.date === dateIso && p.hostUid === hostUid);
+        }
+
+        async function upsertEvent(ev) {
+            await setDoc(doc(db, "events", ev.id), ev, { merge: true });
+        }
+
+        async function removeEvent(id) {
+            await deleteDoc(doc(db, "events", id));
+        }
+
+        async function upsertAvail(a) {
+            await setDoc(doc(db, "availability", a.id), a, { merge: true });
+        }
+
+        async function removeAvail(id) {
+            await deleteDoc(doc(db, "availability", id));
         }
 
         const whoLine = document.getElementById("whoLine");
+        const topAvatar = document.getElementById("topAvatar");
         const rolePill = document.getElementById("rolePill");
         const btnLogin = document.getElementById("btnLogin");
         const btnLogout = document.getElementById("btnLogout");
+        const btnProfile = document.getElementById("btnProfile");
         const calGrid = document.getElementById("calGrid");
         const monthTitle = document.getElementById("monthTitle");
-
-        const sideSub = document.getElementById("sideSub");
         const selectedDateText = document.getElementById("selectedDateText");
         const detailList = document.getElementById("detailList");
-
+        const sideSub = document.getElementById("sideSub");
         const addEventBtn = document.getElementById("addEventBtn");
         const addAvailBtn = document.getElementById("addAvailBtn");
         const resetBtn = document.getElementById("resetBtn");
         const storageNote = document.getElementById("storageNote");
         const viewModeBtn = document.getElementById("viewModeBtn");
         const clearAllBtn = document.getElementById("clearAllBtn");
-
-        const loginBackdrop = document.getElementById("loginBackdrop");
-        const dayBackdrop = document.getElementById("dayBackdrop");
-        const dayModalTitle = document.getElementById("dayModalTitle");
-        const dayModalSub = document.getElementById("dayModalSub");
-        const dayModalBody = document.getElementById("dayModalBody");
-
         const pfpPickerBox = document.getElementById("pfpPickerBox");
         const pfpGrid = document.getElementById("pfpGrid");
-
         const hostBar = document.getElementById("hostBar");
         const hostBarDate = document.getElementById("hostBarDate");
         const hostChips = document.getElementById("hostChips");
         const clearMyPickBtn = document.getElementById("clearMyPickBtn");
 
-        async function loadDiscordSession() {
-            try {
-                const res = await fetch("/api/session", {
-                    method: "GET",
-                    credentials: "include"
-                });
+        const authBackdrop = document.getElementById("authBackdrop");
+        const tabLogin = document.getElementById("tabLogin");
+        const tabRegister = document.getElementById("tabRegister");
+        const authEmail = document.getElementById("authEmail");
+        const authPassword = document.getElementById("authPassword");
+        const authPassword2 = document.getElementById("authPassword2");
+        const confirmField = document.getElementById("confirmField");
+        const authGo = document.getElementById("authGo");
 
-                const data = await res.json();
+        const profileBackdrop = document.getElementById("profileBackdrop");
+        const profileName = document.getElementById("profileName");
+        const profileFile = document.getElementById("profileFile");
+        const profilePreview = document.getElementById("profilePreview");
 
-                if (data.loggedIn && data.user) {
-                    session = {
-                        id: data.user.id,
-                        name: data.user.global_name || data.user.username,
-                        username: data.user.username,
-                        avatar: data.user.avatar,
-                        role: data.user.role
-                    };
-                    saveJSON(KEY_SESSION, session);
-                } else {
-                    session = null;
-                    saveJSON(KEY_SESSION, null);
-                }
-            } catch (err) {
-                console.error("Session load failed:", err);
+        const dayBackdrop = document.getElementById("dayBackdrop");
+        const dayModalTitle = document.getElementById("dayModalTitle");
+        const dayModalSub = document.getElementById("dayModalSub");
+        const dayModalBody = document.getElementById("dayModalBody");
+
+        function setAuthMode(mode) {
+            authMode = mode;
+            const loginActive = mode === "login";
+            tabLogin.classList.toggle("active", loginActive);
+            tabRegister.classList.toggle("active", !loginActive);
+            confirmField.style.display = loginActive ? "none" : "block";
+            authGo.textContent = loginActive ? "Login" : "Register";
+        }
+
+        function openAuth() {
+            setAuthMode("login");
+            authBackdrop.style.display = "flex";
+        }
+
+        function closeAuth() {
+            authBackdrop.style.display = "none";
+        }
+
+        function openProfileModal(force = false) {
+            if (!session) return;
+            profileName.value = session.name || "";
+            profileImageData = session.photoURL || "";
+            profilePreview.src = profilePhotoOrDefault(session);
+            profileBackdrop.style.display = "flex";
+            if (force) {
+                document.getElementById("profileClose").style.display = "none";
+            } else {
+                document.getElementById("profileClose").style.display = "inline-block";
             }
+        }
+
+        function closeProfileModal() {
+            profileBackdrop.style.display = "none";
+        }
+
+        function needsProfileSetup() {
+            return !!session && (!session.name || session.name.trim().length < 2);
         }
 
         function renderTop() {
             if (!session) {
-                whoLine.textContent = "Discord login required";
+                whoLine.textContent = "Login required";
+                topAvatar.style.display = "none";
                 rolePill.style.display = "none";
+                btnProfile.style.display = "none";
                 btnLogin.style.display = "inline-block";
                 btnLogout.style.display = "none";
                 addEventBtn.style.display = "none";
@@ -1003,68 +1384,70 @@
                 resetBtn.style.display = "none";
                 viewModeBtn.style.display = "none";
                 clearAllBtn.style.display = "none";
-                sideSub.textContent = "Login with Discord to view and manage events";
+                sideSub.textContent = "Log in to view and manage the calendar";
                 return;
             }
 
-            whoLine.textContent = "Logged in as " + session.name;
+            whoLine.textContent = `Logged in as ${session.name}`;
+            topAvatar.src = profilePhotoOrDefault(session);
+            topAvatar.style.display = "block";
             rolePill.style.display = "inline-flex";
-            rolePill.innerHTML = "Role: <b>" + session.role.toUpperCase() + "</b>";
+            rolePill.innerHTML = `Role: <b>${escapeHTML(session.role.toUpperCase())}</b>`;
+            btnProfile.style.display = "inline-block";
             btnLogin.style.display = "none";
             btnLogout.style.display = "inline-block";
-
             viewModeBtn.style.display = "inline-block";
             viewModeBtn.textContent = "View: " + (viewMode ? "ON" : "OFF");
 
             clearAllBtn.style.display = (session.role === "admin") ? "inline-block" : "none";
             resetBtn.style.display = (session.role === "admin") ? "inline-block" : "none";
-
-            addAvailBtn.style.display = (session.role === "admin" && !viewMode) ? "inline-block" : "none";
             addEventBtn.style.display = (session.role === "admin" && !viewMode) ? "inline-block" : "none";
+            addAvailBtn.style.display = (session.role === "admin" && !viewMode) ? "inline-block" : "none";
 
             sideSub.textContent = viewMode
-                ? "View mode: click dates to view only"
+                ? "View mode: no edit popup"
                 : (session.role === "admin"
-                    ? "Admin: add/remove events, set host, add availability"
-                    : "Staff: click dates to view details");
+                    ? "Admin: manage events, availability, and hosts"
+                    : "Staff: view dates and pick yourself as host");
         }
 
         function renderHostPicker() {
-            const show = !!session && !!selectedDate && !viewMode;
+            const show = !!session && !!selectedDate && !viewMode && hosts.length > 0;
             pfpPickerBox.style.display = show ? "block" : "none";
             if (!show) return;
 
             pfpGrid.innerHTML = "";
 
-            HOSTS.forEach(host => {
+            hosts.forEach(host => {
                 const btn = document.createElement("div");
                 btn.className = "pfpBtn";
-                if (isPicked(selectedDate, host.id)) btn.classList.add("active");
+                if (isPicked(selectedDate, host.uid)) btn.classList.add("active");
 
                 const allowed = canClickHost(host);
                 btn.setAttribute("aria-disabled", allowed ? "false" : "true");
 
                 btn.innerHTML = `
-                        <img class="pfpImg" src="${escapeHTML(host.img)}" alt="${escapeHTML(host.name)}"
-                             onerror="this.style.opacity='.35';this.title='Broken image link';" />
-                        <div class="pfpName">${escapeHTML(host.name)}</div>
-                    `;
+                    <img class="pfpImg" src="${escapeHTML(profilePhotoOrDefault(host))}" alt="${escapeHTML(host.name)}" />
+                    <div class="pfpName">${escapeHTML(host.name)}</div>
+                `;
 
                 btn.addEventListener("click", async (e) => {
                     e.stopPropagation();
+
                     if (!allowed) {
-                        toast("You can only pick your own PFP");
+                        toast("You can only pick your own profile");
                         return;
                     }
 
-                    const already = isPicked(selectedDate, host.id);
-
                     try {
-                        if (already) await removePick(selectedDate, host.id);
-                        else await setPick(selectedDate, host);
+                        if (isPicked(selectedDate, host.uid)) {
+                            await removePick(selectedDate, host.uid);
+                        } else {
+                            await setPick(selectedDate, host);
+                        }
                     } catch (err) {
                         console.error(err);
-                        toast("Pick failed");
+                        toast("Could not update host pick");
                     }
                 });
 
@@ -1081,9 +1464,7 @@
             hostBar.style.display = "flex";
             hostBarDate.textContent = prettyDate(selectedDate);
 
-            const picks = picksForDate(selectedDate).slice()
-                .sort((a, b) => (a.hostName || "").localeCompare(b.hostName || ""));
-
+            const picks = picksForDate(selectedDate).slice().sort((a, b) => (a.hostName || "").localeCompare(b.hostName || ""));
             hostChips.innerHTML = "";
 
             if (!picks.length) {
@@ -1096,37 +1477,19 @@
                     const chip = document.createElement("div");
                     chip.className = "chip";
                     chip.innerHTML = `
-                            <img src="${escapeHTML(p.hostImg || "")}" alt="${escapeHTML(p.hostName || "")}" onerror="this.style.opacity='.35'"/>
-                            <b>${escapeHTML(p.hostName || "Host")}</b>
-                        `;
+                        <img src="${escapeHTML(p.hostImg || defaultAvatarDataURL(p.hostName || "U"))}" alt="${escapeHTML(p.hostName || "Host")}" />
+                        <b>${escapeHTML(p.hostName || "Host")}</b>
+                    `;
                     hostChips.appendChild(chip);
                 });
             }
 
             if (session) {
-                const mine = myHostEntry();
-                clearMyPickBtn.style.display = (mine && isPicked(selectedDate, mine.id)) ? "inline-flex" : "none";
+                clearMyPickBtn.style.display = isPicked(selectedDate, session.uid) ? "inline-flex" : "none";
             } else {
                 clearMyPickBtn.style.display = "none";
             }
         }
-
-        clearMyPickBtn.addEventListener("click", async () => {
-            if (!session || !selectedDate) return;
-            const mine = myHostEntry();
-            if (!mine) {
-                toast("Your name is not in HOSTS list");
-                return;
-            }
-
-            try {
-                await removePick(selectedDate, mine.id);
-                toast("Removed your pick");
-            } catch (err) {
-                console.error(err);
-                toast("Could not remove pick");
-            }
-        });
 
         function renderCalendar() {
             monthTitle.textContent = monthLabel(viewDate);
@@ -1134,12 +1497,10 @@
 
             const first = startOfMonth(viewDate);
             const lead = mondayIndex(first.getDay());
-            const cells = 42;
-
             const startCellDate = new Date(first);
             startCellDate.setDate(first.getDate() - lead);
 
-            for (let i = 0; i < cells; i++) {
+            for (let i = 0; i < 42; i++) {
                 const cellDate = new Date(startCellDate);
                 cellDate.setDate(startCellDate.getDate() + i);
                 const iso = toISODate(cellDate);
@@ -1181,7 +1542,7 @@
                 dayEvents.slice(0, 2).forEach(ev => {
                     const it = document.createElement("div");
                     it.className = "miniItem";
-                    it.textContent = ev.host ? (ev.title + " - " + ev.host) : ev.title;
+                    it.textContent = ev.host ? `${ev.title} - ${ev.host}` : ev.title;
                     list.appendChild(it);
                 });
 
@@ -1189,20 +1550,19 @@
                     const it = document.createElement("div");
                     it.className = "miniItem";
                     const icons = dayPicks.slice(0, 3).map(p =>
-                        `<img src="${escapeHTML(p.hostImg)}"
-                                  title="${escapeHTML(p.hostName)}"
-                                  style="width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.18);margin-right:-6px;vertical-align:middle;background:rgba(255,255,255,.06)"
-                                  onerror="this.style.opacity='.35'">`
+                        `<img src="${escapeHTML(p.hostImg || defaultAvatarDataURL(p.hostName || "U"))}"
+                              title="${escapeHTML(p.hostName || "Host")}"
+                              style="width:20px;height:20px;border-radius:50%;border:1px solid rgba(255,255,255,.18);margin-right:-6px;vertical-align:middle;background:rgba(255,255,255,.06)">`
                     ).join("");
-                    const extra = dayPicks.length > 3 ? ` <span style="color:rgba(238,241,246,.65)">+${dayPicks.length - 3}</span>` : "";
-                    it.innerHTML = `<span style="color:rgba(238,241,246,.65)">Hosts:</span> ${icons}${extra}`;
+                    const extra = dayPicks.length > 3 ? ` <span>+${dayPicks.length - 3}</span>` : "";
+                    it.innerHTML = `<span>Hosts:</span> ${icons}${extra}`;
                     list.appendChild(it);
                 }
 
                 if (dayEvents.length > 2) {
                     const it = document.createElement("div");
                     it.className = "miniItem";
-                    it.innerHTML = "<span>+" + (dayEvents.length - 2) + " more</span>";
+                    it.innerHTML = `<span>+${dayEvents.length - 2} more</span>`;
                     list.appendChild(it);
                 }
 
@@ -1220,7 +1580,7 @@
 
                     if (!session) {
                         pendingOpenDate = iso;
-                        openLogin();
+                        openAuth();
                         return;
                     }
 
@@ -1240,21 +1600,22 @@
             renderHostPicker();
 
             if (!session) {
-                detailList.innerHTML =
-                    '<div class="item"><div>' +
-                    '<h4>Login required</h4>' +
-                    '<p>Use Discord login to access the calendar.</p>' +
-                    '<div class="meta">This version syncs through Firestore.</div>' +
-                    '</div></div>';
+                detailList.innerHTML = `
+                    <div class="emptyState">
+                        <b>Login required</b>
+                        <p style="margin:8px 0 0;color:var(--muted);font-size:12px;">Create an account or log in to use the calendar.</p>
+                    </div>
+                `;
                 return;
             }
 
             if (!selectedDate) {
-                detailList.innerHTML =
-                    '<div class="item"><div>' +
-                    '<h4>Pick a date</h4>' +
-                    '<p>Click any day to see events and availability.</p>' +
-                    '</div></div>';
+                detailList.innerHTML = `
+                    <div class="emptyState">
+                        <b>Pick a date</b>
+                        <p style="margin:8px 0 0;color:var(--muted);font-size:12px;">Tap or click a day to view events and host picks.</p>
+                    </div>
+                `;
                 return;
             }
 
@@ -1264,25 +1625,20 @@
 
             const picksCard = document.createElement("div");
             picksCard.className = "item";
-            const picksLeft = document.createElement("div");
-            picksLeft.style.flex = "1";
-            picksLeft.innerHTML =
-                `<h4>Picked hosts (${dayPicks.length})</h4>` +
-                (dayPicks.length ? `<p>${escapeHTML(dayPicks.map(p => p.hostName).join(", "))}</p>` : `<p>No host picks yet.</p>`);
-            const picksRight = document.createElement("div");
-            picksRight.innerHTML = `<div class="badge ok">Host picks</div>`;
-            picksCard.appendChild(picksLeft);
-            picksCard.appendChild(picksRight);
+            picksCard.innerHTML = `
+                <div style="flex:1">
+                    <h4>Picked hosts (${dayPicks.length})</h4>
+                    <p>${dayPicks.length ? escapeHTML(dayPicks.map(p => p.hostName).join(", ")) : "No host picks yet."}</p>
+                </div>
+                <div class="badge ok">Host picks</div>
+            `;
             detailList.appendChild(picksCard);
 
             const evCard = document.createElement("div");
             evCard.className = "item";
             const evLeft = document.createElement("div");
             evLeft.style.flex = "1";
-
-            const evTitle = document.createElement("h4");
-            evTitle.textContent = "Official events (" + dayEvents.length + ")";
-            evLeft.appendChild(evTitle);
+            evLeft.innerHTML = `<h4>Official events (${dayEvents.length})</h4>`;
 
             if (!dayEvents.length) {
                 const p = document.createElement("p");
@@ -1297,12 +1653,13 @@
                     wrap.style.border = "1px solid rgba(255,255,255,.10)";
                     wrap.style.background = "rgba(0,0,0,.16)";
 
-                    const hostLine = ev.host ? ("Host: " + ev.host) : "Host: Unassigned";
+                    const hostLine = ev.host ? `Host: ${ev.host}` : "Host: Unassigned";
 
-                    wrap.innerHTML =
-                        `<b>${escapeHTML(ev.title)}</b>` +
-                        `<div class="meta">${escapeHTML(ev.time || "Time TBA")} • ${escapeHTML(ev.location || "Location TBA")} • ${escapeHTML(hostLine)}</div>` +
-                        (ev.note ? `<p style="margin:8px 0 0;font-size:12px;color:var(--muted)">${escapeHTML(ev.note)}</p>` : "");
+                    wrap.innerHTML = `
+                        <b>${escapeHTML(ev.title)}</b>
+                        <div class="meta">${escapeHTML(ev.time || "Time TBA")} • ${escapeHTML(ev.location || "Location TBA")} • ${escapeHTML(hostLine)}</div>
+                        ${ev.note ? `<p style="margin:8px 0 0;font-size:12px;color:var(--muted)">${escapeHTML(ev.note)}</p>` : ""}
+                    `;
 
                     if (!viewMode && session.role === "admin") {
                         const controls = document.createElement("div");
@@ -1338,21 +1695,14 @@
                 });
             }
 
-            const evRight = document.createElement("div");
-            evRight.innerHTML = (session.role === "admin") ? '<div class="badge brand">Admin</div>' : '<div class="badge">Staff</div>';
-
             evCard.appendChild(evLeft);
-            evCard.appendChild(evRight);
             detailList.appendChild(evCard);
 
             const avCard = document.createElement("div");
             avCard.className = "item";
             const avLeft = document.createElement("div");
             avLeft.style.flex = "1";
-
-            const avTitle = document.createElement("h4");
-            avTitle.textContent = "Staff availability (" + dayAvail.length + ")";
-            avLeft.appendChild(avTitle);
+            avLeft.innerHTML = `<h4>Staff availability (${dayAvail.length})</h4>`;
 
             if (!dayAvail.length) {
                 const p = document.createElement("p");
@@ -1366,7 +1716,10 @@
                     line.style.borderRadius = "12px";
                     line.style.border = "1px solid rgba(255,255,255,.10)";
                     line.style.background = "rgba(0,0,0,.16)";
-                    line.innerHTML = `<b class="okText">${escapeHTML(a.name)}</b><div class="meta">${escapeHTML(a.note || "Available to host")}</div>`;
+                    line.innerHTML = `
+                        <b class="okText">${escapeHTML(a.name)}</b>
+                        <div class="meta">${escapeHTML(a.note || "Available to host")}</div>
+                    `;
 
                     if (!viewMode && session.role === "admin") {
                         const del = document.createElement("button");
@@ -1384,19 +1737,8 @@
                 });
             }
 
-            const avRight = document.createElement("div");
-            avRight.innerHTML = '<div class="badge ok">Availability</div>';
             avCard.appendChild(avLeft);
-            avCard.appendChild(avRight);
             detailList.appendChild(avCard);
-        }
-
-        function openLogin() {
-            loginBackdrop.style.display = "flex";
-        }
-
-        function closeLogin() {
-            loginBackdrop.style.display = "none";
         }
 
         function openDayModal(iso) {
@@ -1404,38 +1746,41 @@
 
             dayBackdrop.style.display = "flex";
             dayModalTitle.textContent = prettyDate(iso);
-            dayModalSub.textContent = "Admin: add an official event and add availability.";
+            dayModalSub.textContent = "Admin: add an official event or add staff availability.";
 
-            dayModalBody.innerHTML =
-                '<div class="row" style="justify-content:space-between;align-items:center;margin-bottom:10px">' +
-                '<div class="pill">Selected: <b>' + iso + '</b></div>' +
-                '<button class="btn" id="closeDayModal" type="button">Close</button>' +
-                '</div>' +
+            dayModalBody.innerHTML = `
+                <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:10px">
+                    <div class="pill">Selected: <b>${escapeHTML(iso)}</b></div>
+                    <button class="btn" id="closeDayModal" type="button">Close</button>
+                </div>
 
-                '<div class="kv">' +
-                '<div class="t">Add official event</div>' +
-                '<div style="height:10px"></div>' +
-                '<div class="field"><label>Event title</label><input id="evTitle" placeholder="e.g. Time Trial" maxlength="50"></div>' +
-                '<div class="row">' +
-                '<div class="field" style="flex:1;min-width:160px"><label>Time (optional)</label><input id="evTime" placeholder="e.g. 6:00PM AEST" maxlength="30"></div>' +
-                '<div class="field" style="flex:1;min-width:160px"><label>Location (optional)</label><input id="evLoc" placeholder="e.g. Spider cave" maxlength="40"></div>' +
-                '</div>' +
-                '<div class="field"><label>Host (optional)</label><input id="evHost" placeholder="e.g. Nugg" maxlength="24"></div>' +
-                '<div class="field"><label>Notes (optional)</label><textarea id="evNote" placeholder="Extra details..."></textarea></div>' +
-                '<button class="btn ok" id="saveEvent" type="button">Add event</button>' +
-                '</div>' +
+                <div class="kv">
+                    <div class="t">Add official event</div>
+                    <div style="height:10px"></div>
+                    <div class="field"><label>Event title</label><input id="evTitle" placeholder="e.g. Time Trial" maxlength="50"></div>
+                    <div class="row">
+                        <div class="field" style="flex:1;min-width:160px"><label>Time (optional)</label><input id="evTime" placeholder="e.g. 6:00PM AEST" maxlength="30"></div>
+                        <div class="field" style="flex:1;min-width:160px"><label>Location (optional)</label><input id="evLoc" placeholder="e.g. Spider cave" maxlength="40"></div>
+                    </div>
+                    <div class="field"><label>Host (optional)</label><input id="evHost" placeholder="e.g. Nugg" maxlength="24"></div>
+                    <div class="field"><label>Notes (optional)</label><textarea id="evNote" placeholder="Extra details..."></textarea></div>
+                    <button class="btn ok" id="saveEvent" type="button">Add event</button>
+                </div>
 
-                '<div class="divider"></div>' +
+                <div class="divider"></div>
 
-                '<div class="kv">' +
-                '<div class="t">Add availability (admin entry)</div>' +
-                '<div style="height:10px"></div>' +
-                '<div class="field"><label>Name</label><input id="avName" placeholder="e.g. Nugg" maxlength="24"></div>' +
-                '<div class="field"><label>Note (optional)</label><input id="avNote" placeholder="e.g. Can host after 5pm" maxlength="60"></div>' +
-                '<button class="btn primary" id="saveAvail" type="button">Add availability</button>' +
-                '</div>';
+                <div class="kv">
+                    <div class="t">Add availability</div>
+                    <div style="height:10px"></div>
+                    <div class="field"><label>Name</label><input id="avName" placeholder="e.g. Nugg" maxlength="24"></div>
+                    <div class="field"><label>Note (optional)</label><input id="avNote" placeholder="e.g. Can host after 5pm" maxlength="60"></div>
+                    <button class="btn primary" id="saveAvail" type="button">Add availability</button>
+                </div>
+            `;
 
-            document.getElementById("closeDayModal").onclick = () => dayBackdrop.style.display = "none";
+            document.getElementById("closeDayModal").onclick = () => {
+                dayBackdrop.style.display = "none";
+            };
 
             document.getElementById("saveEvent").onclick = async () => {
                 const title = (document.getElementById("evTitle").value || "").trim();
@@ -1449,8 +1794,16 @@
                     return;
                 }
 
-                const ev = { id: uid(), date: iso, title, time, location: loc, host, note };
-                await upsertEvent(ev);
+                await upsertEvent({
+                    id: uid(),
+                    date: iso,
+                    title,
+                    time,
+                    location: loc,
+                    host,
+                    note
+                });
+
                 toast("Event added");
                 dayBackdrop.style.display = "none";
             };
@@ -1464,43 +1817,214 @@
                     return;
                 }
 
-                const a = { id: uid(), date: iso, name, note };
-                await upsertAvail(a);
+                await upsertAvail({
+                    id: uid(),
+                    date: iso,
+                    name,
+                    note
+                });
+
                 toast("Availability added");
                 dayBackdrop.style.display = "none";
             };
         }
 
-        btnLogin.addEventListener("click", openLogin);
+        function clearListeners() {
+            unsubscribers.forEach(fn => {
+                try { fn(); } catch {}
+            });
+            unsubscribers = [];
+        }
+
+        function startListeners() {
+            clearListeners();
+            storageNote.textContent = "Syncing with Firebase...";
+
+            unsubscribers.push(onSnapshot(collection(db, "users"), (snap) => {
+                usersMap.clear();
+                hosts = snap.docs.map(d => {
+                    const data = d.data();
+                    const user = {
+                        uid: d.id,
+                        name: data.name || "User",
+                        email: data.email || "",
+                        role: data.role || "staff",
+                        photoURL: data.photoURL || ""
+                    };
+                    usersMap.set(d.id, user);
+                    return user;
+                }).sort((a, b) => a.name.localeCompare(b.name));
+
+                if (session && usersMap.has(session.uid)) {
+                    const fresh = usersMap.get(session.uid);
+                    session = { ...session, ...fresh };
+                    renderTop();
+                }
+
+                renderHostPicker();
+                renderDetails();
+            }));
+
+            unsubscribers.push(onSnapshot(collection(db, "events"), (snap) => {
+                events = snap.docs.map(d => d.data());
+                saveJSON(KEY_EVENTS, events);
+                renderCalendar();
+                renderDetails();
+                storageNote.textContent = "Synced with Firebase";
+            }));
+
+            unsubscribers.push(onSnapshot(collection(db, "availability"), (snap) => {
+                avail = snap.docs.map(d => d.data());
+                saveJSON(KEY_AVAIL, avail);
+                renderCalendar();
+                renderDetails();
+            }));
+
+            unsubscribers.push(onSnapshot(collection(db, "host_picks"), (snap) => {
+                hostPicks = snap.docs.map(d => d.data());
+                saveJSON(KEY_PICKS, hostPicks);
+                renderCalendar();
+                renderDetails();
+                renderHostPicker();
+                renderHostBar();
+            }));
+        }
+
+        btnLogin.addEventListener("click", openAuth);
 
         btnLogout.addEventListener("click", async () => {
             try {
-                await fetch("/api/logout", {
-                    method: "GET",
-                    credentials: "include"
-                });
-            } catch (e) {
-                console.error(e);
+                await signOut(auth);
+                toast("Logged out");
+            } catch (err) {
+                console.error(err);
+                toast("Logout failed");
+            }
+        });
+
+        btnProfile.addEventListener("click", () => openProfileModal(false));
+
+        tabLogin.addEventListener("click", () => setAuthMode("login"));
+        tabRegister.addEventListener("click", () => setAuthMode("register"));
+        document.getElementById("authClose").addEventListener("click", closeAuth);
+
+        document.getElementById("authGo").addEventListener("click", async () => {
+            const email = (authEmail.value || "").trim();
+            const password = authPassword.value || "";
+            const password2 = authPassword2.value || "";
+
+            if (!email || !password) {
+                toast("Enter email and password");
+                return;
             }
 
-            session = null;
-            saveJSON(KEY_SESSION, null);
-            toast("Logged out");
-            renderTop();
-            renderCalendar();
-            renderDetails();
+            if (authMode === "register") {
+                if (password.length < 6) {
+                    toast("Password must be at least 6 characters");
+                    return;
+                }
+
+                if (password !== password2) {
+                    toast("Passwords do not match");
+                    return;
+                }
+
+                try {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                    closeAuth();
+                    toast("Account created");
+                } catch (err) {
+                    console.error(err);
+                    toast(err?.message?.includes("email-already-in-use") ? "Email already in use" : "Could not register");
+                }
+                return;
+            }
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                closeAuth();
+                toast("Logged in");
+            } catch (err) {
+                console.error(err);
+                toast("Login failed");
+            }
         });
 
-        document.getElementById("loginGo").addEventListener("click", () => {
-            window.location.href = "/api/discord/login";
+        document.getElementById("profileClose").addEventListener("click", closeProfileModal);
+
+        profileFile.addEventListener("change", async () => {
+            const file = profileFile.files?.[0];
+            if (!file) return;
+
+            try {
+                profileImageData = await fileToAvatarDataURL(file);
+                profilePreview.src = profileImageData;
+            } catch (err) {
+                console.error(err);
+                toast("Could not read image");
+            }
         });
 
-        loginBackdrop.addEventListener("click", (e) => {
-            if (e.target === loginBackdrop) closeLogin();
+        document.getElementById("removeProfilePic").addEventListener("click", () => {
+            profileImageData = "";
+            profileFile.value = "";
+            profilePreview.src = defaultAvatarDataURL(profileName.value || session?.name || "User");
         });
 
-        dayBackdrop.addEventListener("click", (e) => {
-            if (e.target === dayBackdrop) dayBackdrop.style.display = "none";
+        profileName.addEventListener("input", () => {
+            if (!profileImageData) {
+                profilePreview.src = defaultAvatarDataURL(profileName.value || "User");
+            }
+        });
+
+        document.getElementById("profileSave").addEventListener("click", async () => {
+            if (!session) return;
+
+            const name = (profileName.value || "").trim();
+            if (name.length < 2) {
+                toast("Display name must be at least 2 characters");
+                return;
+            }
+
+            try {
+                const existing = await getDoc(doc(db, "users", session.uid));
+                const current = existing.exists() ? existing.data() : {};
+                await setDoc(doc(db, "users", session.uid), {
+                    name,
+                    email: session.email || current.email || "",
+                    role: current.role || "staff",
+                    photoURL: profileImageData || ""
+                }, { merge: true });
+
+                session = {
+                    ...session,
+                    name,
+                    photoURL: profileImageData || "",
+                    role: current.role || session.role || "staff"
+                };
+
+                topAvatar.src = profilePhotoOrDefault(session);
+                closeProfileModal();
+                renderTop();
+                renderHostPicker();
+                renderDetails();
+                toast("Profile saved");
+            } catch (err) {
+                console.error(err);
+                toast("Could not save profile");
+            }
+        });
+
+        clearMyPickBtn.addEventListener("click", async () => {
+            if (!session || !selectedDate) return;
+
+            try {
+                await removePick(selectedDate, session.uid);
+                toast("Removed your pick");
+            } catch (err) {
+                console.error(err);
+                toast("Could not remove pick");
+            }
         });
 
         document.getElementById("prevMonth").addEventListener("click", () => {
@@ -1523,18 +2047,20 @@
 
             if (!session) {
                 pendingOpenDate = selectedDate;
-                openLogin();
+                openAuth();
                 return;
             }
 
-            if (session.role === "admin") openDayModal(selectedDate);
+            if (session.role === "admin") {
+                openDayModal(selectedDate);
+            }
         });
 
         addEventBtn.addEventListener("click", () => {
             if (viewMode) return;
             if (!session) {
                 pendingOpenDate = selectedDate || toISODate(new Date());
-                openLogin();
+                openAuth();
                 return;
             }
             if (session.role !== "admin") return;
@@ -1546,7 +2072,7 @@
             if (viewMode) return;
             if (!session) {
                 pendingOpenDate = selectedDate || toISODate(new Date());
-                openLogin();
+                openAuth();
                 return;
             }
             if (session.role !== "admin") return;
@@ -1573,9 +2099,9 @@
 
             try {
                 const [evSnap, avSnap, pkSnap] = await Promise.all([
-                    getDocs(eventsCol),
-                    getDocs(availCol),
-                    getDocs(picksCol),
+                    getDocs(collection(db, "events")),
+                    getDocs(collection(db, "availability")),
+                    getDocs(collection(db, "host_picks"))
                 ]);
 
                 const deletes = [];
@@ -1599,39 +2125,58 @@
             toast("Local cache cleared");
         });
 
-        function startListeners() {
-            storageNote.textContent = "Syncing with Firebase (Firestore)...";
+        authBackdrop.addEventListener("click", (e) => {
+            if (e.target === authBackdrop) closeAuth();
+        });
 
-            onSnapshot(eventsCol, (snap) => {
-                events = snap.docs.map(d => d.data());
-                saveJSON(KEY_EVENTS, events);
+        profileBackdrop.addEventListener("click", (e) => {
+            if (e.target === profileBackdrop && document.getElementById("profileClose").style.display !== "none") {
+                closeProfileModal();
+            }
+        });
+
+        dayBackdrop.addEventListener("click", (e) => {
+            if (e.target === dayBackdrop) dayBackdrop.style.display = "none";
+        });
+
+        onAuthStateChanged(auth, async (firebaseUser) => {
+            try {
+                if (!firebaseUser) {
+                    session = null;
+                    renderTop();
+                    renderCalendar();
+                    renderDetails();
+                    return;
+                }
+
+                await loadSessionFromAuth(firebaseUser);
+                renderTop();
                 renderCalendar();
                 renderDetails();
-                storageNote.textContent = "Synced with Firebase (Firestore)";
-            });
+                startListeners();
 
-            onSnapshot(availCol, (snap) => {
-                avail = snap.docs.map(d => d.data());
-                saveJSON(KEY_AVAIL, avail);
-                renderCalendar();
-                renderDetails();
-            });
+                if (needsProfileSetup()) {
+                    openProfileModal(true);
+                }
 
-            onSnapshot(picksCol, (snap) => {
-                hostPicks = snap.docs.map(d => d.data());
-                saveJSON(KEY_PICKS, hostPicks);
-                renderCalendar();
-                renderDetails();
-                renderHostPicker();
-                renderHostBar();
-            });
-        }
+                if (pendingOpenDate && session?.role === "admin" && !viewMode) {
+                    const dateToOpen = pendingOpenDate;
+                    pendingOpenDate = null;
+                    selectedDate = dateToOpen;
+                    renderCalendar();
+                    renderDetails();
+                    openDayModal(dateToOpen);
+                } else {
+                    pendingOpenDate = null;
+                }
+            } catch (err) {
+                console.error(err);
+                toast("Could not load account");
+            }
+        });
 
-        async function boot() {
+        function boot() {
             selectedDate = toISODate(new Date());
-
-            await loadDiscordSession();
-
             renderTop();
             renderCalendar();
             renderDetails();
