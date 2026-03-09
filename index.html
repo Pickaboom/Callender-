@@ -692,17 +692,6 @@
             align-items: center;
             flex-wrap: wrap;
         }
-
-        /* clickable code */
-        #codeHelp {
-            cursor: pointer;
-            color: #7289da;
-            user-select: none;
-        }
-
-            #codeHelp:hover {
-                text-decoration: underline;
-            }
     </style>
 </head>
 
@@ -713,18 +702,18 @@
                 <div class="logo"></div>
                 <div>
                     <h1>Staff Calendar</h1>
-                    <p id="whoLine">Logged in as Nugg</p>
+                    <p id="whoLine">Checking login...</p>
                 </div>
             </div>
+
             <div class="row" style="align-items:center;justify-content:flex-end">
-                <div class="pill" id="rolePill" style="display:inline-flex;">Role: <b>STAFF</b></div>
-                <button class="btn ghost" id="btnLogin" style="display:none;">Login</button>
-                <button class="btn" id="btnLogout" style="display:inline-block;">Logout</button>
+                <div class="pill" id="rolePill" style="display:none;">Role: <b>STAFF</b></div>
+                <button class="btn ghost" id="btnLogin" style="display:none;">Login with Discord</button>
+                <button class="btn" id="btnLogout" style="display:none;">Logout</button>
             </div>
         </div>
 
         <div class="grid">
-            <!-- Calendar -->
             <div class="card">
                 <div class="calTop">
                     <div class="calTopLeft">
@@ -745,7 +734,6 @@
                 <div class="calGrid" id="calGrid"></div>
             </div>
 
-            <!-- Right panel -->
             <div class="card">
                 <div class="cardHead">
                     <div>
@@ -754,10 +742,8 @@
                     </div>
 
                     <div class="rightActions">
-                        <button class="btn small" id="viewModeBtn" style="display:inline-block;">View: OFF</button>
+                        <button class="btn small" id="viewModeBtn" style="display:none;">View: OFF</button>
                         <button class="btn small danger" id="clearAllBtn" style="display:none;">Clear ALL</button>
-
-                        <!-- Admin-only buttons (we control visibility in JS) -->
                         <button class="btn small ok" id="addEventBtn" style="display:none;">+ Add event</button>
                         <button class="btn small primary" id="addAvailBtn" style="display:none;">+ Add availability</button>
                     </div>
@@ -796,7 +782,6 @@
         </div>
     </div>
 
-    <!-- Bottom Host Bar -->
     <div class="hostBar" id="hostBar">
         <div class="hostBarLeft">
             <div class="hostBarTitle">Hosting on</div>
@@ -808,35 +793,20 @@
         </div>
     </div>
 
-    <!-- Login modal -->
     <div class="modalBackdrop" id="loginBackdrop">
         <div class="modal" role="dialog" aria-modal="true">
             <div class="modalTop">
-                <h3>Login</h3>
-                <p>Enter your staff code. Your name is saved so you do not need to type it every time.</p>
+                <h3>Login with Discord</h3>
+                <p>Use your Discord account to sign in.</p>
             </div>
             <div class="modalBody">
-                <div class="field">
-                    <label>Display name</label>
-                    <input id="loginName" placeholder="e.g. Nugg" maxlength="24" />
-                    <div class="tiny">
-                        <button class="btn small ghost" id="clearSavedNameBtn" type="button" style="padding:6px 8px">Clear saved name</button>
-                    </div>
-                </div>
-                <div class="field">
-                    <label>Code</label>
-                    <input id="loginCode" placeholder="Staff: PICKA-STAFF-1835" />
-                    <div id="codeHelp" class="tiny">• Staff: PICKA-STAFF-1835</div>
-                </div>
-                <div class="modalActions">
-                    <button class="btn" id="loginCancel" type="button">Cancel</button>
-                    <button class="btn primary" id="loginGo" type="button">Login</button>
+                <div class="modalActions" style="justify-content:center">
+                    <button class="btn primary" id="loginGo" type="button">Login with Discord</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Day modal (ADMIN ONLY now) -->
     <div class="modalBackdrop" id="dayBackdrop">
         <div class="modal" role="dialog" aria-modal="true">
             <div class="modalTop">
@@ -867,11 +837,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        const CODES = {
-            admin: "PICKA-ADMIN-4927",
-            staff: "PICKA-STAFF-1835",
-        };
-
         const HOSTS = [
             { id: "nugg", name: "Nugg", img: "https://media.discordapp.net/attachments/1470700666895863900/1479031716755669062/pfp5.png.png?ex=69aa8f20&is=69a93da0&hm=1ec57ffc74e8ad041a78d6cf409fbba116615df48490073131cf8797fb52a2ff&=&format=webp&quality=lossless" },
             { id: "dafound1", name: "Dafound1", img: "https://media.discordapp.net/attachments/1470700666895863900/1479031716458008638/pfp4.png.png?ex=69aa8f20&is=69a93da0&hm=43434b26efd48c47611def6509506c43f9d556d780e5b84e95d4230df286e008&=&format=webp&quality=lossless" },
@@ -885,11 +850,10 @@
             { id: "riskhuntervr", name: "riskhuntervr", img: "https://media.discordapp.net/attachments/1470700666895863900/1479031719179980832/pfp2.png.png?ex=69aa8f20&is=69a93da0&hm=33dbb47617213120e91e9a8414b36ed4bfcef18f7e70d730efc7a48eaca7d0b9&=&format=webp&quality=lossless" }
         ];
 
-        const KEY_SESSION = "staffCal.session.v1";
+        const KEY_SESSION = "staffCal.session.v2";
         const KEY_EVENTS = "staffCal.events.v1";
         const KEY_AVAIL = "staffCal.availability.v1";
         const KEY_PICKS = "staffCal.hostPicks.v1";
-        const KEY_SAVED_NAME = "staffCal.savedName.v1";
         const KEY_VIEWMODE = "staffCal.viewMode.v1";
 
         function saveJSON(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
@@ -932,12 +896,6 @@
             toast._tm = setTimeout(() => t.style.display = "none", 2200);
         }
 
-        // Clickable code -> auto fill the code box
-        function fillPassword() {
-            loginCode.value = CODES.staff;
-            loginCode.focus();
-        }
-
         const eventsCol = collection(db, "events");
         const availCol = collection(db, "availability");
         const picksCol = collection(db, "host_picks");
@@ -968,13 +926,13 @@
             const b = (session.name || "").toLowerCase().trim();
             return a === b;
         }
+
         function myHostEntry() {
             if (!session) return null;
             const b = (session.name || "").toLowerCase().trim();
             return HOSTS.find(h => (h.name || "").toLowerCase().trim() === b) || null;
         }
 
-        // UI refs
         const whoLine = document.getElementById("whoLine");
         const rolePill = document.getElementById("rolePill");
         const btnLogin = document.getElementById("btnLogin");
@@ -994,11 +952,6 @@
         const clearAllBtn = document.getElementById("clearAllBtn");
 
         const loginBackdrop = document.getElementById("loginBackdrop");
-        const loginName = document.getElementById("loginName");
-        const loginCode = document.getElementById("loginCode");
-        const codeHelp = document.getElementById("codeHelp");
-        const clearSavedNameBtn = document.getElementById("clearSavedNameBtn");
-
         const dayBackdrop = document.getElementById("dayBackdrop");
         const dayModalTitle = document.getElementById("dayModalTitle");
         const dayModalSub = document.getElementById("dayModalSub");
@@ -1012,9 +965,36 @@
         const hostChips = document.getElementById("hostChips");
         const clearMyPickBtn = document.getElementById("clearMyPickBtn");
 
+        async function loadDiscordSession() {
+            try {
+                const res = await fetch("/api/session", {
+                    method: "GET",
+                    credentials: "include"
+                });
+
+                const data = await res.json();
+
+                if (data.loggedIn && data.user) {
+                    session = {
+                        id: data.user.id,
+                        name: data.user.global_name || data.user.username,
+                        username: data.user.username,
+                        avatar: data.user.avatar,
+                        role: data.user.role
+                    };
+                    saveJSON(KEY_SESSION, session);
+                } else {
+                    session = null;
+                    saveJSON(KEY_SESSION, null);
+                }
+            } catch (err) {
+                console.error("Session load failed:", err);
+            }
+        }
+
         function renderTop() {
             if (!session) {
-                whoLine.textContent = "Synced (Firebase) - Login required";
+                whoLine.textContent = "Discord login required";
                 rolePill.style.display = "none";
                 btnLogin.style.display = "inline-block";
                 btnLogout.style.display = "none";
@@ -1023,7 +1003,7 @@
                 resetBtn.style.display = "none";
                 viewModeBtn.style.display = "none";
                 clearAllBtn.style.display = "none";
-                sideSub.textContent = "Login to view and manage events";
+                sideSub.textContent = "Login with Discord to view and manage events";
                 return;
             }
 
@@ -1039,25 +1019,23 @@
             clearAllBtn.style.display = (session.role === "admin") ? "inline-block" : "none";
             resetBtn.style.display = (session.role === "admin") ? "inline-block" : "none";
 
-            // ✅ Admin-only: add event / add availability
             addAvailBtn.style.display = (session.role === "admin" && !viewMode) ? "inline-block" : "none";
             addEventBtn.style.display = (session.role === "admin" && !viewMode) ? "inline-block" : "none";
 
-            // ✅ Staff no longer adds availability via modal
             sideSub.textContent = viewMode
-                ? "View mode: click dates to view only (no edit popup)"
+                ? "View mode: click dates to view only"
                 : (session.role === "admin"
                     ? "Admin: add/remove events, set host, add availability"
-                    : "Staff: click dates to view details (admin edits only)");
+                    : "Staff: click dates to view details");
         }
 
         function renderHostPicker() {
-            // host picker stays as before (staff can pick ONLY their own PFP, admins can pick anyone)
             const show = !!session && !!selectedDate && !viewMode;
             pfpPickerBox.style.display = show ? "block" : "none";
             if (!show) return;
 
             pfpGrid.innerHTML = "";
+
             HOSTS.forEach(host => {
                 const btn = document.createElement("div");
                 btn.className = "pfpBtn";
@@ -1067,21 +1045,26 @@
                 btn.setAttribute("aria-disabled", allowed ? "false" : "true");
 
                 btn.innerHTML = `
-              <img class="pfpImg" src="${escapeHTML(host.img)}" alt="${escapeHTML(host.name)}"
-                   onerror="this.style.opacity='.35';this.title='Broken image link';" />
-              <div class="pfpName">${escapeHTML(host.name)}</div>
-            `;
+                        <img class="pfpImg" src="${escapeHTML(host.img)}" alt="${escapeHTML(host.name)}"
+                             onerror="this.style.opacity='.35';this.title='Broken image link';" />
+                        <div class="pfpName">${escapeHTML(host.name)}</div>
+                    `;
 
                 btn.addEventListener("click", async (e) => {
                     e.stopPropagation();
-                    if (!allowed) { toast("You can only pick your own PFP"); return; }
+                    if (!allowed) {
+                        toast("You can only pick your own PFP");
+                        return;
+                    }
+
                     const already = isPicked(selectedDate, host.id);
+
                     try {
                         if (already) await removePick(selectedDate, host.id);
                         else await setPick(selectedDate, host);
                     } catch (err) {
                         console.error(err);
-                        toast("Pick failed (check Firestore rules)");
+                        toast("Pick failed");
                     }
                 });
 
@@ -1090,7 +1073,11 @@
         }
 
         function renderHostBar() {
-            if (!selectedDate) { hostBar.style.display = "none"; return; }
+            if (!selectedDate) {
+                hostBar.style.display = "none";
+                return;
+            }
+
             hostBar.style.display = "flex";
             hostBarDate.textContent = prettyDate(selectedDate);
 
@@ -1109,9 +1096,9 @@
                     const chip = document.createElement("div");
                     chip.className = "chip";
                     chip.innerHTML = `
-                <img src="${escapeHTML(p.hostImg || "")}" alt="${escapeHTML(p.hostName || "")}" onerror="this.style.opacity='.35'" />
-                <b>${escapeHTML(p.hostName || "Host")}</b>
-              `;
+                            <img src="${escapeHTML(p.hostImg || "")}" alt="${escapeHTML(p.hostName || "")}" onerror="this.style.opacity='.35'"/>
+                            <b>${escapeHTML(p.hostName || "Host")}</b>
+                        `;
                     hostChips.appendChild(chip);
                 });
             }
@@ -1127,7 +1114,11 @@
         clearMyPickBtn.addEventListener("click", async () => {
             if (!session || !selectedDate) return;
             const mine = myHostEntry();
-            if (!mine) { toast("Your name is not in HOSTS list"); return; }
+            if (!mine) {
+                toast("Your name is not in HOSTS list");
+                return;
+            }
+
             try {
                 await removePick(selectedDate, mine.id);
                 toast("Removed your pick");
@@ -1199,9 +1190,9 @@
                     it.className = "miniItem";
                     const icons = dayPicks.slice(0, 3).map(p =>
                         `<img src="${escapeHTML(p.hostImg)}"
-                      title="${escapeHTML(p.hostName)}"
-                      style="width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.18);margin-right:-6px;vertical-align:middle;background:rgba(255,255,255,.06)"
-                      onerror="this.style.opacity='.35'">`
+                                  title="${escapeHTML(p.hostName)}"
+                                  style="width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.18);margin-right:-6px;vertical-align:middle;background:rgba(255,255,255,.06)"
+                                  onerror="this.style.opacity='.35'">`
                     ).join("");
                     const extra = dayPicks.length > 3 ? ` <span style="color:rgba(238,241,246,.65)">+${dayPicks.length - 3}</span>` : "";
                     it.innerHTML = `<span style="color:rgba(238,241,246,.65)">Hosts:</span> ${icons}${extra}`;
@@ -1218,7 +1209,6 @@
                 div.appendChild(head);
                 div.appendChild(list);
 
-                // ✅ CHANGE: only ADMINS get the popup modal
                 div.addEventListener("click", () => {
                     selectedDate = iso;
                     renderCalendar();
@@ -1228,14 +1218,12 @@
 
                     if (viewMode) return;
 
-                    // if not logged in, still allow login flow
                     if (!session) {
                         pendingOpenDate = iso;
                         openLogin();
                         return;
                     }
 
-                    // staff: view only (NO modal)
                     if (session.role !== "admin") return;
 
                     openDayModal(iso);
@@ -1255,7 +1243,7 @@
                 detailList.innerHTML =
                     '<div class="item"><div>' +
                     '<h4>Login required</h4>' +
-                    '<p>Staff can view. Admins can add events and add availability.</p>' +
+                    '<p>Use Discord login to access the calendar.</p>' +
                     '<div class="meta">This version syncs through Firestore.</div>' +
                     '</div></div>';
                 return;
@@ -1274,7 +1262,6 @@
             const dayAvail = avail.filter(a => a.date === selectedDate);
             const dayPicks = picksForDate(selectedDate);
 
-            // picked hosts
             const picksCard = document.createElement("div");
             picksCard.className = "item";
             const picksLeft = document.createElement("div");
@@ -1288,7 +1275,6 @@
             picksCard.appendChild(picksRight);
             detailList.appendChild(picksCard);
 
-            // events
             const evCard = document.createElement("div");
             evCard.className = "item";
             const evLeft = document.createElement("div");
@@ -1359,7 +1345,6 @@
             evCard.appendChild(evRight);
             detailList.appendChild(evCard);
 
-            // availability
             const avCard = document.createElement("div");
             avCard.className = "item";
             const avLeft = document.createElement("div");
@@ -1383,13 +1368,15 @@
                     line.style.background = "rgba(0,0,0,.16)";
                     line.innerHTML = `<b class="okText">${escapeHTML(a.name)}</b><div class="meta">${escapeHTML(a.note || "Available to host")}</div>`;
 
-                    // ✅ CHANGE: only admins can remove availability now
                     if (!viewMode && session.role === "admin") {
                         const del = document.createElement("button");
                         del.className = "btn small danger";
                         del.textContent = "Remove";
                         del.style.marginTop = "10px";
-                        del.onclick = async () => { await removeAvail(a.id); toast("Availability removed"); };
+                        del.onclick = async () => {
+                            await removeAvail(a.id);
+                            toast("Availability removed");
+                        };
                         line.appendChild(del);
                     }
 
@@ -1406,19 +1393,13 @@
 
         function openLogin() {
             loginBackdrop.style.display = "flex";
-            const saved = localStorage.getItem(KEY_SAVED_NAME) || "";
-            loginName.value = saved || (session ? session.name : "");
-            loginCode.value = "";
-
-            // clickable staff code stays visible
-            codeHelp.textContent = "• Staff: " + CODES.staff;
-
-            setTimeout(() => loginName.focus(), 50);
         }
-        function closeLogin() { loginBackdrop.style.display = "none"; }
+
+        function closeLogin() {
+            loginBackdrop.style.display = "none";
+        }
 
         function openDayModal(iso) {
-            // ✅ Admin only
             if (!session || viewMode || session.role !== "admin") return;
 
             dayBackdrop.style.display = "flex";
@@ -1462,7 +1443,12 @@
                 const loc = (document.getElementById("evLoc").value || "").trim();
                 const host = (document.getElementById("evHost").value || "").trim();
                 const note = (document.getElementById("evNote").value || "").trim();
-                if (!title) { toast("Event title required"); return; }
+
+                if (!title) {
+                    toast("Event title required");
+                    return;
+                }
+
                 const ev = { id: uid(), date: iso, title, time, location: loc, host, note };
                 await upsertEvent(ev);
                 toast("Event added");
@@ -1472,7 +1458,12 @@
             document.getElementById("saveAvail").onclick = async () => {
                 const name = (document.getElementById("avName").value || "").trim();
                 const note = (document.getElementById("avNote").value || "").trim();
-                if (!name) { toast("Name required"); return; }
+
+                if (!name) {
+                    toast("Name required");
+                    return;
+                }
+
                 const a = { id: uid(), date: iso, name, note };
                 await upsertAvail(a);
                 toast("Availability added");
@@ -1480,69 +1471,53 @@
             };
         }
 
-        // UI events
         btnLogin.addEventListener("click", openLogin);
-        btnLogout.addEventListener("click", () => {
+
+        btnLogout.addEventListener("click", async () => {
+            try {
+                await fetch("/api/logout", {
+                    method: "GET",
+                    credentials: "include"
+                });
+            } catch (e) {
+                console.error(e);
+            }
+
             session = null;
             saveJSON(KEY_SESSION, null);
             toast("Logged out");
-            renderTop(); renderCalendar(); renderDetails();
+            renderTop();
+            renderCalendar();
+            renderDetails();
         });
-
-        document.getElementById("loginCancel").addEventListener("click", closeLogin);
-        loginBackdrop.addEventListener("click", (e) => { if (e.target === loginBackdrop) closeLogin(); });
-        dayBackdrop.addEventListener("click", (e) => { if (e.target === dayBackdrop) dayBackdrop.style.display = "none"; });
-
-        clearSavedNameBtn.addEventListener("click", () => {
-            localStorage.removeItem(KEY_SAVED_NAME);
-            loginName.value = "";
-            toast("Saved name cleared");
-            loginName.focus();
-        });
-
-        // clickable staff code
-        codeHelp.addEventListener("click", fillPassword);
 
         document.getElementById("loginGo").addEventListener("click", () => {
-            const name = (loginName.value || "").trim();
-            const code = (loginCode.value || "").trim();
-            if (!name) { toast("Enter a display name"); return; }
+            window.location.href = "/api/discord/login";
+        });
 
-            let role = null;
-            if (code === CODES.admin) role = "admin";
-            if (code === CODES.staff) role = role || "staff";
-            if (!role) { toast("Wrong code"); return; }
+        loginBackdrop.addEventListener("click", (e) => {
+            if (e.target === loginBackdrop) closeLogin();
+        });
 
-            session = { role, name };
-            saveJSON(KEY_SESSION, session);
-            localStorage.setItem(KEY_SAVED_NAME, name);
-
-            closeLogin();
-            toast("Logged in as " + role);
-            renderTop(); renderCalendar(); renderDetails();
-
-            // if an admin clicked a date before login, open modal after login
-            if (pendingOpenDate && !viewMode && role === "admin") {
-                const d = pendingOpenDate;
-                pendingOpenDate = null;
-                openDayModal(d);
-            } else {
-                pendingOpenDate = null;
-            }
+        dayBackdrop.addEventListener("click", (e) => {
+            if (e.target === dayBackdrop) dayBackdrop.style.display = "none";
         });
 
         document.getElementById("prevMonth").addEventListener("click", () => {
             viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1);
             renderCalendar();
         });
+
         document.getElementById("nextMonth").addEventListener("click", () => {
             viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1);
             renderCalendar();
         });
+
         document.getElementById("todayBtn").addEventListener("click", () => {
             viewDate = new Date();
             selectedDate = toISODate(new Date());
-            renderCalendar(); renderDetails();
+            renderCalendar();
+            renderDetails();
 
             if (viewMode) return;
 
@@ -1552,21 +1527,28 @@
                 return;
             }
 
-            // admin-only popup
             if (session.role === "admin") openDayModal(selectedDate);
         });
 
-        // Admin-only buttons (safe guards too)
         addEventBtn.addEventListener("click", () => {
             if (viewMode) return;
-            if (!session) { pendingOpenDate = selectedDate || toISODate(new Date()); openLogin(); return; }
+            if (!session) {
+                pendingOpenDate = selectedDate || toISODate(new Date());
+                openLogin();
+                return;
+            }
             if (session.role !== "admin") return;
             if (!selectedDate) selectedDate = toISODate(new Date());
             openDayModal(selectedDate);
         });
+
         addAvailBtn.addEventListener("click", () => {
             if (viewMode) return;
-            if (!session) { pendingOpenDate = selectedDate || toISODate(new Date()); openLogin(); return; }
+            if (!session) {
+                pendingOpenDate = selectedDate || toISODate(new Date());
+                openLogin();
+                return;
+            }
             if (session.role !== "admin") return;
             if (!selectedDate) selectedDate = toISODate(new Date());
             openDayModal(selectedDate);
@@ -1576,7 +1558,9 @@
             viewMode = !viewMode;
             saveJSON(KEY_VIEWMODE, viewMode);
             toast("View mode " + (viewMode ? "ON" : "OFF"));
-            renderTop(); renderCalendar(); renderDetails();
+            renderTop();
+            renderCalendar();
+            renderDetails();
         });
 
         clearAllBtn.addEventListener("click", async () => {
@@ -1603,7 +1587,7 @@
                 toast("Cleared everything");
             } catch (err) {
                 console.error(err);
-                toast("Clear failed (check Firestore rules)");
+                toast("Clear failed");
             }
         });
 
@@ -1643,17 +1627,15 @@
             });
         }
 
-        function boot() {
+        async function boot() {
             selectedDate = toISODate(new Date());
+
+            await loadDiscordSession();
+
             renderTop();
             renderCalendar();
             renderDetails();
             startListeners();
-
-            if (session && !session.name) {
-                session = null;
-                saveJSON(KEY_SESSION, null);
-            }
         }
 
         boot();
