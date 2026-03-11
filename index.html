@@ -283,8 +283,10 @@
             flex-direction: column;
             gap: 8px;
             cursor: pointer;
-            transition: .12s background,.12s transform,.12s border-color;
+            transition: .12s background,.12s transform,.12s border-color,.12s box-shadow;
             min-width: 0;
+            position: relative;
+            overflow: hidden;
         }
 
         .day:hover {
@@ -294,6 +296,55 @@
 
         .day:active { transform: translateY(1px); }
         .day.muted { opacity: .45; }
+
+        .day.selected {
+            border-color: rgba(114,137,218,.65);
+            background: rgba(114,137,218,.10);
+        }
+
+        .day.overlayOn {
+            border-color: rgba(255,107,107,.78) !important;
+            background:
+                linear-gradient(180deg, rgba(255,80,35,.92) 0%, rgba(255,70,20,.88) 56%, rgba(45,214,232,.95) 56%, rgba(45,214,232,.95) 100%);
+            box-shadow:
+                inset 0 0 0 1px rgba(255,255,255,.10),
+                0 0 0 1px rgba(255,80,35,.18),
+                0 18px 34px rgba(255,80,35,.14);
+        }
+
+        .day.overlayOn .dayNum,
+        .day.overlayOn .miniItem,
+        .day.overlayOn .badge,
+        .day.overlayOn .dayHead {
+            color: #111;
+        }
+
+        .day.overlayOn .miniItem {
+            background: rgba(255,255,255,.18);
+            border-color: rgba(0,0,0,.08);
+            font-weight: 700;
+        }
+
+        .day.overlayOn .badge {
+            background: rgba(255,255,255,.28);
+            border-color: rgba(0,0,0,.08);
+        }
+
+        .dayOverlayTag {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: .5px;
+            text-transform: uppercase;
+            padding: 3px 6px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.28);
+            color: #111;
+            border: 1px solid rgba(0,0,0,.08);
+            z-index: 2;
+        }
 
         .dayHead {
             display: flex;
@@ -342,12 +393,19 @@
             background: rgba(245,192,79,.12);
         }
 
+        .badge.live {
+            border-color: rgba(255,107,107,.45);
+            color: #ffdede;
+            background: rgba(255,107,107,.15);
+        }
+
         .miniList {
             display: flex;
             flex-direction: column;
             gap: 6px;
             overflow: hidden;
             min-width: 0;
+            margin-top: 6px;
         }
 
         .miniItem {
@@ -995,6 +1053,7 @@
                     </div>
 
                     <div class="rightActions">
+                        <button class="btn small warn" id="overlayToggleBtn" style="display:none;">Event Overlay: OFF</button>
                         <button class="btn small" id="viewModeBtn" style="display:none;">View: OFF</button>
                         <button class="btn small danger" id="clearAllBtn" style="display:none;">Clear ALL</button>
                         <button class="btn small ok" id="addEventBtn" style="display:none;">+ Add event</button>
@@ -1008,6 +1067,7 @@
                             <div class="t">Selected date</div>
                             <div class="v" id="selectedDateText">None</div>
                             <p class="tiny" id="selectedHint" style="margin-top:8px;">Staff can view and pick themselves. Admins can edit and remove any pick.</p>
+                            <div id="overlayInfoBox" style="margin-top:10px;"></div>
                         </div>
 
                         <div class="kv" id="pfpPickerBox" style="display:none;">
@@ -1042,7 +1102,6 @@
         </div>
     </div>
 
-    <!-- AUTH MODAL -->
     <div class="modalBackdrop" id="authBackdrop">
         <div class="modal" role="dialog" aria-modal="true">
             <div class="modalTop">
@@ -1080,7 +1139,6 @@
         </div>
     </div>
 
-    <!-- SETTINGS MODAL -->
     <div class="modalBackdrop" id="settingsBackdrop">
         <div class="modal" role="dialog" aria-modal="true">
             <div class="modalTop">
@@ -1158,7 +1216,6 @@
         </div>
     </div>
 
-    <!-- DAY MODAL -->
     <div class="modalBackdrop" id="dayBackdrop">
         <div class="modal" role="dialog" aria-modal="true">
             <div class="modalTop">
@@ -1213,6 +1270,7 @@
         const KEY_AVAIL = "staffCal.availability.v3";
         const KEY_PICKS = "staffCal.hostPicks.v3";
         const KEY_VIEWMODE = "staffCal.viewMode.v3";
+        const KEY_FLAGS = "staffCal.dayFlags.v1";
 
         function saveJSON(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
         function loadJSON(key, fallback) {
@@ -1230,6 +1288,7 @@
         let events = loadJSON(KEY_EVENTS, []);
         let avail = loadJSON(KEY_AVAIL, []);
         let hostPicks = loadJSON(KEY_PICKS, []);
+        let dayFlags = loadJSON(KEY_FLAGS, []);
         let viewMode = loadJSON(KEY_VIEWMODE, false);
 
         let viewDate = new Date();
@@ -1324,6 +1383,30 @@
 
         function profilePhotoOrDefault(userLike) {
             return userLike?.photoURL || defaultAvatarDataURL(userLike?.name || userLike?.displayName || userLike?.email || "User");
+        }
+
+        function getDayFlag(dateIso) {
+            return dayFlags.find(f => f.date === dateIso) || null;
+        }
+
+        function isOverlayOn(dateIso) {
+            return !!getDayFlag(dateIso)?.active;
+        }
+
+        async function setDayOverlay(dateIso, active) {
+            const ref = doc(db, "day_flags", dateIso);
+
+            if (active) {
+                await setDoc(ref, {
+                    date: dateIso,
+                    active: true,
+                    label: "EVENT",
+                    updatedAt: Date.now(),
+                    updatedBy: session?.uid || ""
+                }, { merge: true });
+            } else {
+                await deleteDoc(ref);
+            }
         }
 
         async function ensureUserDoc(firebaseUser) {
@@ -1434,6 +1517,8 @@
         const storageNote = document.getElementById("storageNote");
         const viewModeBtn = document.getElementById("viewModeBtn");
         const clearAllBtn = document.getElementById("clearAllBtn");
+        const overlayToggleBtn = document.getElementById("overlayToggleBtn");
+        const overlayInfoBox = document.getElementById("overlayInfoBox");
         const pfpPickerBox = document.getElementById("pfpPickerBox");
         const pfpGrid = document.getElementById("pfpGrid");
         const hostBar = document.getElementById("hostBar");
@@ -1526,6 +1611,7 @@
                 resetBtn.style.display = "none";
                 viewModeBtn.style.display = "none";
                 clearAllBtn.style.display = "none";
+                overlayToggleBtn.style.display = "none";
                 sideSub.textContent = "Log in to view and manage the calendar";
                 return;
             }
@@ -1541,16 +1627,38 @@
             viewModeBtn.style.display = "inline-block";
             viewModeBtn.textContent = "View: " + (viewMode ? "ON" : "OFF");
 
-            clearAllBtn.style.display = (session.role === "admin") ? "inline-block" : "none";
-            resetBtn.style.display = (session.role === "admin") ? "inline-block" : "none";
-            addEventBtn.style.display = (session.role === "admin" && !viewMode) ? "inline-block" : "none";
-            addAvailBtn.style.display = (session.role === "admin" && !viewMode) ? "inline-block" : "none";
+            const admin = session.role === "admin";
+            clearAllBtn.style.display = admin ? "inline-block" : "none";
+            resetBtn.style.display = admin ? "inline-block" : "none";
+            addEventBtn.style.display = (admin && !viewMode) ? "inline-block" : "none";
+            addAvailBtn.style.display = (admin && !viewMode) ? "inline-block" : "none";
+            overlayToggleBtn.style.display = admin ? "inline-block" : "none";
+
+            if (!selectedDate) {
+                overlayToggleBtn.textContent = "Event Overlay: OFF";
+                overlayToggleBtn.disabled = true;
+            } else {
+                overlayToggleBtn.disabled = false;
+                overlayToggleBtn.textContent = "Event Overlay: " + (isOverlayOn(selectedDate) ? "ON" : "OFF");
+            }
 
             sideSub.textContent = viewMode
                 ? "View mode: no edit popup"
-                : (session.role === "admin"
-                    ? "Admin: manage events, availability, and all picks"
+                : (admin
+                    ? "Admin: manage events, availability, host picks, and event overlays"
                     : "Staff: view dates and pick yourself as host");
+        }
+
+        function renderOverlayInfo() {
+            if (!selectedDate) {
+                overlayInfoBox.innerHTML = `<div class="tiny">Pick a date to see if an event overlay is active.</div>`;
+                return;
+            }
+
+            const active = isOverlayOn(selectedDate);
+            overlayInfoBox.innerHTML = active
+                ? `<div class="badge live">Event overlay is ON for this date</div>`
+                : `<div class="tiny">No event overlay on this date.</div>`;
         }
 
         function renderHostPicker() {
@@ -1651,13 +1759,18 @@
                 const dayEvents = events.filter(e => e.date === iso);
                 const dayAvail = avail.filter(a => a.date === iso);
                 const dayPicks = hostPicks.filter(p => p.date === iso);
+                const overlayActive = isOverlayOn(iso);
 
                 const div = document.createElement("div");
                 div.className = "day" + (inMonth ? "" : " muted");
+                if (selectedDate === iso) div.classList.add("selected");
+                if (overlayActive) div.classList.add("overlayOn");
 
-                if (selectedDate === iso) {
-                    div.style.borderColor = "rgba(114,137,218,.65)";
-                    div.style.background = "rgba(114,137,218,.10)";
+                if (overlayActive) {
+                    const overlayTag = document.createElement("div");
+                    overlayTag.className = "dayOverlayTag";
+                    overlayTag.textContent = "Weekly";
+                    div.appendChild(overlayTag);
                 }
 
                 const head = document.createElement("div");
@@ -1672,7 +1785,16 @@
                 if (dayEvents.length) parts.push("E " + dayEvents.length);
                 if (dayAvail.length) parts.push("A " + dayAvail.length);
                 if (dayPicks.length) parts.push("H " + dayPicks.length);
-                badge.className = "badge" + (dayEvents.length ? " brand" : ((dayAvail.length || dayPicks.length) ? " ok" : ""));
+                if (overlayActive) parts.unshift("LIVE");
+
+                badge.className = "badge";
+                if (overlayActive) {
+                    badge.classList.add("live");
+                } else if (dayEvents.length) {
+                    badge.classList.add("brand");
+                } else if (dayAvail.length || dayPicks.length) {
+                    badge.classList.add("ok");
+                }
                 badge.textContent = parts.length ? parts.join(" ") : "";
 
                 head.appendChild(num);
@@ -1708,11 +1830,19 @@
                     list.appendChild(it);
                 }
 
+                if (overlayActive && !dayEvents.length) {
+                    const it = document.createElement("div");
+                    it.className = "miniItem";
+                    it.textContent = "Event overlay active";
+                    list.appendChild(it);
+                }
+
                 div.appendChild(head);
                 div.appendChild(list);
 
                 div.addEventListener("click", () => {
                     selectedDate = iso;
+                    renderTop();
                     renderCalendar();
                     renderDetails();
                     renderHostPicker();
@@ -1740,6 +1870,8 @@
             detailList.innerHTML = "";
             renderHostBar();
             renderHostPicker();
+            renderOverlayInfo();
+            renderTop();
 
             if (!session) {
                 detailList.innerHTML = `
@@ -1764,6 +1896,7 @@
             const dayEvents = events.filter(e => e.date === selectedDate);
             const dayAvail = avail.filter(a => a.date === selectedDate);
             const dayPicks = picksForDate(selectedDate);
+            const overlayActive = isOverlayOn(selectedDate);
 
             const picksCard = document.createElement("div");
             picksCard.className = "item";
@@ -1842,6 +1975,47 @@
             picksCard.appendChild(picksRight);
             detailList.appendChild(picksCard);
 
+            const overlayCard = document.createElement("div");
+            overlayCard.className = "item";
+
+            const overlayLeft = document.createElement("div");
+            overlayLeft.style.flex = "1";
+            overlayLeft.innerHTML = `
+                <h4>Event overlay</h4>
+                <p>${overlayActive ? "This date is highlighted for everyone viewing the calendar." : "This date is not highlighted right now."}</p>
+            `;
+
+            if (!viewMode && session.role === "admin") {
+                const row = document.createElement("div");
+                row.className = "row";
+                row.style.marginTop = "10px";
+
+                const toggleBtn = document.createElement("button");
+                toggleBtn.className = "btn small warn";
+                toggleBtn.textContent = overlayActive ? "Turn OFF overlay" : "Turn ON overlay";
+                toggleBtn.onclick = async () => {
+                    try {
+                        await setDayOverlay(selectedDate, !overlayActive);
+                        toast("Overlay " + (!overlayActive ? "enabled" : "disabled"));
+                    } catch (err) {
+                        console.error(err);
+                        toast("Could not update overlay");
+                    }
+                };
+
+                row.appendChild(toggleBtn);
+                overlayLeft.appendChild(row);
+            }
+
+            const overlayRight = document.createElement("div");
+            overlayRight.innerHTML = overlayActive
+                ? '<div class="badge live">LIVE</div>'
+                : '<div class="badge">OFF</div>';
+
+            overlayCard.appendChild(overlayLeft);
+            overlayCard.appendChild(overlayRight);
+            detailList.appendChild(overlayCard);
+
             const evCard = document.createElement("div");
             evCard.className = "item";
             const evLeft = document.createElement("div");
@@ -1904,7 +2078,9 @@
             }
 
             const evRight = document.createElement("div");
-            evRight.innerHTML = (session.role === "admin") ? '<div class="badge brand">Admin</div>' : '<div class="badge">Staff</div>';
+            evRight.innerHTML = (session.role === "admin")
+                ? '<div class="badge brand">Admin</div>'
+                : '<div class="badge">Staff</div>';
 
             evCard.appendChild(evLeft);
             evCard.appendChild(evRight);
@@ -1959,14 +2135,23 @@
         function openDayModal(iso) {
             if (!session || viewMode || session.role !== "admin") return;
 
+            const overlayActive = isOverlayOn(iso);
+
             dayBackdrop.style.display = "flex";
             dayModalTitle.textContent = prettyDate(iso);
-            dayModalSub.textContent = "Admin: add an official event or add staff availability.";
+            dayModalSub.textContent = "Admin: add an official event, add staff availability, or toggle the event overlay.";
 
             dayModalBody.innerHTML = `
                 <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:10px">
                     <div class="pill">Selected: <b>${escapeHTML(iso)}</b></div>
                     <button class="btn" id="closeDayModal" type="button">Close</button>
+                </div>
+
+                <div class="kv" style="margin-bottom:12px;">
+                    <div class="t">Event overlay</div>
+                    <div style="height:10px"></div>
+                    <div class="tiny" style="margin-bottom:10px;">This highlights the date for everyone viewing the site.</div>
+                    <button class="btn warn" id="toggleDayOverlayInModal" type="button">${overlayActive ? "Turn OFF overlay" : "Turn ON overlay"}</button>
                 </div>
 
                 <div class="kv">
@@ -1995,6 +2180,17 @@
 
             document.getElementById("closeDayModal").onclick = () => {
                 dayBackdrop.style.display = "none";
+            };
+
+            document.getElementById("toggleDayOverlayInModal").onclick = async () => {
+                try {
+                    await setDayOverlay(iso, !overlayActive);
+                    toast("Overlay " + (!overlayActive ? "enabled" : "disabled"));
+                    dayBackdrop.style.display = "none";
+                } catch (err) {
+                    console.error(err);
+                    toast("Could not update overlay");
+                }
             };
 
             document.getElementById("saveEvent").onclick = async () => {
@@ -2102,6 +2298,14 @@
                 renderDetails();
                 renderHostPicker();
                 renderHostBar();
+            }));
+
+            unsubscribers.push(onSnapshot(collection(db, "day_flags"), (snap) => {
+                dayFlags = snap.docs.map(d => d.data());
+                saveJSON(KEY_FLAGS, dayFlags);
+                renderTop();
+                renderCalendar();
+                renderDetails();
             }));
         }
 
@@ -2315,6 +2519,7 @@
         document.getElementById("todayBtn").addEventListener("click", () => {
             viewDate = new Date();
             selectedDate = toISODate(new Date());
+            renderTop();
             renderCalendar();
             renderDetails();
 
@@ -2364,25 +2569,40 @@
             renderDetails();
         });
 
+        overlayToggleBtn.addEventListener("click", async () => {
+            if (!session || session.role !== "admin" || !selectedDate) return;
+
+            try {
+                const next = !isOverlayOn(selectedDate);
+                await setDayOverlay(selectedDate, next);
+                toast("Event overlay " + (next ? "ON" : "OFF"));
+            } catch (err) {
+                console.error(err);
+                toast("Could not update event overlay");
+            }
+        });
+
         clearAllBtn.addEventListener("click", async () => {
             if (!session || session.role !== "admin") return;
 
             const ok = confirm(
-                "CLEAR ALL?\n\nThis deletes:\n- All Events\n- All Availability\n- All Host Picks\n\nThis cannot be undone."
+                "CLEAR ALL?\n\nThis deletes:\n- All Events\n- All Availability\n- All Host Picks\n- All Event Overlays\n\nThis cannot be undone."
             );
             if (!ok) return;
 
             try {
-                const [evSnap, avSnap, pkSnap] = await Promise.all([
+                const [evSnap, avSnap, pkSnap, flSnap] = await Promise.all([
                     getDocs(collection(db, "events")),
                     getDocs(collection(db, "availability")),
-                    getDocs(collection(db, "host_picks"))
+                    getDocs(collection(db, "host_picks")),
+                    getDocs(collection(db, "day_flags"))
                 ]);
 
                 const deletes = [];
                 evSnap.forEach(d => deletes.push(deleteDoc(doc(db, "events", d.id))));
                 avSnap.forEach(d => deletes.push(deleteDoc(doc(db, "availability", d.id))));
                 pkSnap.forEach(d => deletes.push(deleteDoc(doc(db, "host_picks", d.id))));
+                flSnap.forEach(d => deletes.push(deleteDoc(doc(db, "day_flags", d.id))));
                 await Promise.all(deletes);
 
                 toast("Cleared everything");
@@ -2397,6 +2617,7 @@
             saveJSON(KEY_EVENTS, []);
             saveJSON(KEY_AVAIL, []);
             saveJSON(KEY_PICKS, []);
+            saveJSON(KEY_FLAGS, []);
             toast("Local cache cleared");
         });
 
@@ -2432,6 +2653,7 @@
                     const dateToOpen = pendingOpenDate;
                     pendingOpenDate = null;
                     selectedDate = dateToOpen;
+                    renderTop();
                     renderCalendar();
                     renderDetails();
                     openDayModal(dateToOpen);
