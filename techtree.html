@@ -1,647 +1,1424 @@
-﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <title>Pickaboom Hosting Guide</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Staff Calendar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --bg: #070b10;
-            --panel: #101821;
-            --panel2: #16212d;
-            --stroke: rgba(255,255,255,.10);
-            --text: #eef7f1;
-            --muted: #97aaa2;
-            --yellow: #f5c04f;
+            --bg: #0b0f0c;
+            --bg-2: #111712;
+            --panel: #171f19;
+            --panel-2: #1d2821;
+            --panel-3: #243128;
+            --stroke: rgba(255,255,255,.08);
+            --stroke-2: rgba(255,255,255,.14);
+            --text: #eef6ef;
+            --muted: #a7b5aa;
+            --brand: #f5c04f;
+            --brand-2: #d9a631;
             --green: #32d583;
-            --blue: #63a8ff;
-            --purple: #ae7cff;
+            --green-2: #1f7a52;
+            --yellow: #f5c04f;
+            --yellow-2: #8d6a1b;
             --red: #ef6262;
-            --shadow: 0 18px 50px rgba(0,0,0,.35);
+            --dayPast: #4a1e1e;
+            --dayPast2: #6d2929;
+            --shadow: 0 18px 50px rgba(0,0,0,.28);
+            --radius: 18px;
+            --radius-sm: 14px;
+            --brand-banner: url("https://media.discordapp.net/attachments/1470700666895863900/1482343917595656315/221.png?ex=69b69bda&is=69b54a5a&hm=9df6c53a490b67404c757237d7fc601c2e18347127f1facdcb79df63ec9863ce&=&format=webp&quality=lossless&width=1768&height=710");
+            --brand-logo: url("https://media.discordapp.net/attachments/1470700666895863900/1482343894568927393/asda.png?ex=69b69bd5&is=69b54a55&hm=a85fca9d3a97cbf001db42ada026f5c41ec5936934c5cbf7b5f45d8e99253281&=&format=webp&quality=lossless&width=331&height=350");
         }
 
         * {
-            box-sizing: border-box
+            box-sizing: border-box;
         }
 
         html, body {
             margin: 0;
-            height: 100%;
-            font-family: Inter,system-ui,Arial,sans-serif;
+            min-height: 100%;
+            font-family: Inter, system-ui, Arial, sans-serif;
+            background: radial-gradient(1000px 520px at 10% -10%, rgba(245,192,79,.13), transparent 58%), radial-gradient(900px 500px at 100% 0%, rgba(50,213,131,.10), transparent 55%), linear-gradient(180deg, #0b0f0c 0%, #101611 100%);
             color: var(--text);
-            background: linear-gradient(180deg,#06090c 0%,#0a1015 100%);
         }
 
         body {
-            overflow: hidden
+            padding: 18px 18px 140px;
         }
 
-        .topBar {
-            height: 72px;
-            border-bottom: 1px solid var(--stroke);
-            background: rgba(8,13,17,.92);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 14px;
-            padding: 0 16px;
-            z-index: 30;
+        .wrap {
+            width: min(1720px, 100%);
+            margin: 0 auto;
+        }
+
+        .hero {
             position: relative;
+            border: 1px solid var(--stroke);
+            border-radius: 28px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(245,192,79,.18), rgba(50,213,131,.10)), var(--bg-2);
+            min-height: 180px;
+            box-shadow: var(--shadow);
+            margin-bottom: 22px;
         }
 
-        .brandWrap {
+            .hero::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background-image: linear-gradient(rgba(8,12,10,.52), rgba(8,12,10,.52)), var(--brand-banner);
+                background-size: cover;
+                background-position: center;
+                opacity: .42;
+                pointer-events: none;
+            }
+
+        .heroInner {
+            position: relative;
+            z-index: 1;
+            padding: 28px 28px 24px;
             display: flex;
-            align-items: center;
-            gap: 12px;
-            min-width: 0
+            justify-content: space-between;
+            gap: 20px;
+            align-items: flex-start;
+            flex-wrap: wrap;
         }
 
-        .brandIcon {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
+        .brand {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            color: var(--yellow);
-            background: linear-gradient(135deg,rgba(245,192,79,.22),rgba(50,213,131,.16)),#121b23;
+            gap: 18px;
+            align-items: flex-start;
+            min-width: 0;
+        }
+
+        .brandLogo {
+            width: 76px;
+            height: 76px;
+            border-radius: 20px;
+            flex: 0 0 auto;
             border: 1px solid rgba(255,255,255,.12);
+            background: linear-gradient(135deg, rgba(245,192,79,.18), rgba(50,213,131,.18)), #18211b;
+            background-image: var(--brand-logo);
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,.22);
         }
 
         .brandText h1 {
             margin: 0;
-            font-size: 19px;
-            color: var(--yellow)
+            font-size: clamp(28px, 5vw, 54px);
+            font-weight: 800;
+            line-height: 1.02;
+            letter-spacing: -.03em;
         }
 
         .brandText p {
-            margin: 4px 0 0;
-            font-size: 12px;
-            color: var(--muted)
+            margin: 10px 0 0;
+            font-size: 14px;
+            color: #d7e2d7;
+            max-width: 760px;
+            line-height: 1.5;
         }
 
-        .topActions {
+        .heroRight {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .topUser {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
-            justify-content: flex-end
+            justify-content: flex-end;
         }
 
-        .pill, .btn {
-            min-height: 36px;
+        .topAvatar {
+            width: 46px;
+            height: 46px;
             border-radius: 14px;
+            object-fit: cover;
             border: 1px solid rgba(255,255,255,.12);
-            font: inherit;
-            font-size: 13px;
+            display: none;
+            background: #223028;
         }
 
         .pill {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 12px;
-            background: rgba(255,255,255,.04)
+            min-height: 38px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.10);
+            background: rgba(255,255,255,.05);
+            font-size: 12px;
+            color: var(--text);
         }
+
+            .pill b {
+                font-weight: 800;
+            }
+
+        .menuButtons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            margin-bottom: 40px; /* space below buttons */
+            gap: 15px;
+        }
+
+        .menuCardBtn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-height: 52px;
+            padding: 0 18px;
+            border: 1px solid rgba(255,255,255,.10);
+            border-radius: 16px;
+            background: linear-gradient(180deg, #1a241d, #151d18);
+            color: var(--text);
+            cursor: pointer;
+            text-align: center;
+            font: inherit;
+            font-weight: 700;
+            transition: .18s ease;
+            box-shadow: 0 10px 25px rgba(0,0,0,.18);
+        }
+
+            .menuCardBtn:hover {
+                transform: translateY(-2px);
+                border-color: rgba(245,192,79,.28);
+                background: linear-gradient(180deg, #202b23, #18211b);
+            }
 
         .btn {
             appearance: none;
-            padding: 9px 13px;
-            background: #182430;
+            border: 1px solid rgba(255,255,255,.10);
+            background: #1b241d;
             color: var(--text);
+            font: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 11px 14px;
+            border-radius: 14px;
             cursor: pointer;
-            font-weight: 700
+            transition: .15s ease;
         }
 
             .btn:hover {
-                background: #223141
+                transform: translateY(-1px);
+                border-color: rgba(255,255,255,.18);
+                background: #222d25;
+            }
+
+            .btn:active {
+                transform: translateY(0);
+            }
+
+            .btn.small {
+                padding: 9px 12px;
+                border-radius: 12px;
+                font-size: 12px;
             }
 
             .btn.primary {
-                background: linear-gradient(135deg,#1f7f57,#32d583);
-                color: #06120d;
-                border-color: rgba(50,213,131,.35)
+                background: linear-gradient(135deg, #f5c04f, #d9a631);
+                border-color: rgba(245,192,79,.26);
+                color: #16120a;
             }
+
+                .btn.primary:hover {
+                    background: linear-gradient(135deg, #f7c75f, #dfaf3c);
+                }
+
+            .btn.ok {
+                background: #1b5b40;
+                border-color: rgba(50,213,131,.26);
+            }
+
+                .btn.ok:hover {
+                    background: #216c4d;
+                }
 
             .btn.warn {
-                background: #4b3816;
-                color: #fff3d1
+                background: #6b5319;
+                border-color: rgba(245,192,79,.24);
             }
+
+                .btn.warn:hover {
+                    background: #7a601c;
+                }
 
             .btn.danger {
-                background: #4a2020
+                background: #612936;
+                border-color: rgba(239,98,98,.24);
             }
 
-        .workspace {
-            position: relative;
-            height: calc(100vh - 72px);
-            overflow: hidden
-        }
+                .btn.danger:hover {
+                    background: #75303f;
+                }
 
-        .canvasWrap {
-            position: absolute;
-            inset: 0;
-            overflow: auto;
-            background: radial-gradient(circle at 1px 1px,rgba(255,255,255,.08) 1px,transparent 0);
-            background-size: 28px 28px;
-            cursor: default;
-        }
-
-            .canvasWrap.panning {
-                cursor: grabbing !important
+            .btn.ghost {
+                background: rgba(255,255,255,.04);
             }
 
-        .zoomLayer {
-            position: relative;
-            width: 10000px;
-            height: 8000px;
-            transform-origin: top left;
-            will-change: transform;
-            backface-visibility: hidden;
+        .actionsRow {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
         }
 
-        .canvas {
-            position: relative;
-            width: 10000px;
-            height: 8000px;
+        .mainGrid {
+            display: grid;
+            grid-template-columns: minmax(0, 2.2fr) minmax(360px, .95fr);
+            gap: 22px;
+            align-items: start;
         }
 
-        #lines {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 6;
-            overflow: visible;
-            pointer-events: none;
-        }
-
-        .frame, .sectionBox, .node {
-            position: absolute;
-            user-select: none;
+        .panel {
+            border: 1px solid var(--stroke);
+            border-radius: 24px;
+            overflow: hidden;
+            background: linear-gradient(180deg, #161f19, #121913);
             box-shadow: var(--shadow);
         }
 
-        .frame, .sectionBox {
-            min-width: 260px;
-            min-height: 180px;
-            border-radius: 22px;
-            overflow: hidden;
+        .calendarTop {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 18px 20px;
+            background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+            border-bottom: 1px solid rgba(255,255,255,.06);
+            flex-wrap: wrap;
         }
 
-        .frame {
-            z-index: 1;
-            background: linear-gradient(180deg,rgba(99,168,255,.08),rgba(99,168,255,.02)),rgba(17,27,38,.55);
-            border: 2px solid rgba(99,168,255,.35);
+        .calendarTopLeft {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
-        .sectionBox {
-            z-index: 2;
-            background: linear-gradient(180deg,rgba(174,124,255,.08),rgba(174,124,255,.02)),rgba(24,18,34,.5);
-            border: 2px dashed rgba(174,124,255,.38);
+        .monthTitle {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -.02em;
+            margin-left: 6px;
         }
 
-        .node {
-            width: 260px;
-            min-height: 120px;
-            padding: 14px;
-            border-radius: 18px;
-            background: linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.015)),#101821;
-            border: 1px solid rgba(255,255,255,.12);
-            z-index: 10;
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 12px;
+            padding: 18px 20px 10px;
         }
 
-            .node:hover {
-                border-color: rgba(50,213,131,.35)
+            .weekdays div {
+                text-align: center;
+                font-size: 15px;
+                font-weight: 700;
+                color: #d7e3d7;
+                padding: 6px 4px 0;
+                letter-spacing: -.01em;
             }
 
-        .selected {
-            box-shadow: 0 0 0 2px rgba(245,192,79,.18),var(--shadow)
+        .calGrid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 12px;
+            padding: 8px 20px 20px;
         }
 
-        .dragging {
-            box-shadow: 0 22px 60px rgba(0,0,0,.46)
+        .day {
+            min-height: 160px;
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,.10);
+            background: linear-gradient(180deg, #243127, #1c261e);
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            transition: .15s ease;
+            position: relative;
         }
 
-        .frameTop, .sectionTop {
-            height: 42px;
-            padding: 8px 10px 8px 12px;
-            border-bottom: 1px solid rgba(255,255,255,.08);
+            .day:hover {
+                transform: translateY(-2px);
+                border-color: rgba(245,192,79,.22);
+            }
+
+            .day.muted {
+                opacity: .42;
+            }
+
+            .day.selected {
+                outline: 2px solid rgba(245,192,79,.85);
+                outline-offset: -2px;
+            }
+
+            .day.past {
+                background: linear-gradient(180deg, var(--dayPast2), var(--dayPast));
+            }
+
+            .day.today {
+                box-shadow: inset 0 0 0 2px rgba(245,192,79,.35);
+            }
+
+        .dayTopBar {
+            min-height: 46px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px;
-            background: rgba(8,12,18,.28)
+            gap: 8px;
+            padding: 10px 12px;
+            background: rgba(6,9,7,.34);
+            border-bottom: 1px solid rgba(255,255,255,.08);
         }
 
-        .frameTitle, .sectionTitle, .nodeTitle {
-            outline: none;
-            font-weight: 800
-        }
-
-        .frameTitle {
+        .dayDate {
             font-size: 13px;
-            color: var(--blue)
+            font-weight: 800;
+            letter-spacing: .02em;
+            text-transform: uppercase;
+        }
+
+        .dayIcon {
+            font-size: 12px;
+            color: #f8f2de;
+            opacity: .9;
+        }
+
+        .dayBody {
+            flex: 1;
+            padding: 10px 12px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            justify-content: flex-start;
+        }
+
+        .miniTime {
+            font-size: 12px;
+            font-weight: 800;
+            color: #f5c04f;
+            text-transform: uppercase;
+            letter-spacing: .02em;
+        }
+
+        .miniItem {
+            font-size: 13px;
+            line-height: 1.24;
+            color: #f4f8f4;
+            font-weight: 700;
+        }
+
+        .miniMeta {
+            font-size: 12px;
+            color: #d1ddd2;
+            margin-top: auto;
+            padding-top: 6px;
+        }
+
+        .hostPreviewRow {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 2px;
+        }
+
+        .sideHead {
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(255,255,255,.06);
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+            .sideHead h2 {
+                margin: 0;
+                font-size: 18px;
+                font-weight: 800;
+                letter-spacing: -.01em;
+            }
+
+            .sideHead p {
+                margin: 8px 0 0;
+                font-size: 13px;
+                color: var(--muted);
+                line-height: 1.45;
+            }
+
+        .sideBody {
+            padding: 18px 20px 20px;
+        }
+
+        .infoBlock,
+        .detailCard,
+        .eventBlock,
+        .pickEntry,
+        .availabilityBlock,
+        .pfpBtn,
+        .infoBox {
+            background: #18211b;
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 18px;
+        }
+
+        .infoBlock {
+            padding: 16px;
+        }
+
+        .infoLabel {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .infoValue {
+            font-size: 18px;
+            font-weight: 800;
+            line-height: 1.25;
+        }
+
+        .divider {
+            height: 1px;
+            background: rgba(255,255,255,.06);
+            margin: 18px 0;
         }
 
         .sectionTitle {
             font-size: 13px;
-            color: var(--purple)
+            font-weight: 800;
+            color: #dce7dc;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: .05em;
         }
 
-        .frameDesc, .sectionDesc {
-            padding: 10px 12px;
+        .detailList {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .detailCard {
+            padding: 14px;
+        }
+
+        .detailCardTop {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+            .detailCardTop h4 {
+                margin: 0;
+                font-size: 15px;
+                font-weight: 800;
+            }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 28px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+            border: 1px solid rgba(255,255,255,.10);
+            background: rgba(255,255,255,.04);
+        }
+
+            .badge.brand {
+                background: rgba(245,192,79,.10);
+                border-color: rgba(245,192,79,.22);
+                color: #f8ddb0;
+            }
+
+            .badge.ok {
+                background: rgba(50,213,131,.10);
+                border-color: rgba(50,213,131,.22);
+            }
+
+            .badge.warn {
+                background: rgba(245,192,79,.08);
+                border-color: rgba(245,192,79,.18);
+            }
+
+        .emptyState {
+            padding: 14px;
+            border-radius: 16px;
+            border: 1px dashed rgba(255,255,255,.10);
+            color: var(--muted);
+            font-size: 13px;
+            background: rgba(255,255,255,.02);
+        }
+
+        .eventBlock,
+        .pickEntry,
+        .availabilityBlock {
+            padding: 12px;
+            margin-top: 10px;
+        }
+
+        .eventTitle {
+            font-size: 14px;
+            font-weight: 800;
+            margin: 0 0 6px;
+        }
+
+        .metaText {
             font-size: 12px;
             color: var(--muted);
             line-height: 1.45;
-            outline: none;
-            white-space: pre-wrap
         }
 
-        .nodeTop {
+        .pickEntry {
             display: flex;
-            align-items: flex-start;
             justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 10px
-        }
-
-        .nodeType {
-            min-height: 24px;
-            padding: 4px 9px;
-            border-radius: 999px;
-            display: inline-flex;
+            gap: 12px;
             align-items: center;
-            font-size: 11px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: .04em;
-            border: 1px solid;
+            flex-wrap: wrap;
         }
 
-            .nodeType.event {
-                background: rgba(245,192,79,.10);
-                border-color: rgba(245,192,79,.24);
-                color: var(--yellow)
-            }
-
-            .nodeType.setup {
-                background: rgba(99,168,255,.10);
-                border-color: rgba(99,168,255,.24);
-                color: var(--blue)
-            }
-
-            .nodeType.rule {
-                background: rgba(239,98,98,.10);
-                border-color: rgba(239,98,98,.24);
-                color: #ff9b9b
-            }
-
-            .nodeType.tip {
-                background: rgba(50,213,131,.10);
-                border-color: rgba(50,213,131,.24);
-                color: var(--green)
-            }
-
-        .nodeTools {
+        .pickEntryLeft {
             display: flex;
-            gap: 8px;
-            flex-wrap: wrap
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
         }
 
-        .iconBtn {
-            width: 30px;
-            height: 30px;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,.10);
-            background: rgba(255,255,255,.04);
-            color: var(--text);
+        .pickEntryName {
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .pickEntryMeta {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 4px;
+            word-break: break-word;
+        }
+
+        .pfpPickerBox {
+            margin-top: 16px;
+            display: none;
+        }
+
+        .pfpGrid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .pfpBtn {
+            padding: 12px;
+            cursor: pointer;
+            min-height: 52px;
+            transition: .15s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 800
-        }
-
-            .iconBtn:hover {
-                background: rgba(255,255,255,.08)
-            }
-
-        .nodeTitle {
-            font-size: 18px;
-            color: var(--yellow);
-            line-height: 1.15;
-            margin-bottom: 8px;
-            word-break: break-word
-        }
-
-        .nodeDesc {
-            font-size: 13px;
-            color: #d7e5dc;
-            line-height: 1.5;
-            outline: none;
-            word-break: break-word;
-            white-space: pre-wrap
-        }
-
-            .nodeTitle[contenteditable="true"]:focus,
-            .nodeDesc[contenteditable="true"]:focus,
-            .frameTitle[contenteditable="true"]:focus,
-            .frameDesc[contenteditable="true"]:focus,
-            .sectionTitle[contenteditable="true"]:focus,
-            .sectionDesc[contenteditable="true"]:focus {
-                background: rgba(255,255,255,.04);
-                border-radius: 10px;
-            }
-
-        .resizeHandle {
-            position: absolute;
-            right: 10px;
-            bottom: 10px;
-            width: 18px;
-            height: 18px;
-            border-radius: 8px;
-            background: rgba(255,255,255,.10);
-            border: 1px solid rgba(255,255,255,.16);
-            cursor: nwse-resize;
-        }
-
-        .zoomHud {
-            position: absolute;
-            left: 16px;
-            top: 16px;
-            z-index: 25;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 12px;
-            border-radius: 16px;
-            background: rgba(12,18,24,.92);
-            border: 1px solid var(--stroke)
-        }
-
-        .zoomBadge {
-            min-width: 58px;
             text-align: center;
-            padding: 8px 10px;
-            border-radius: 12px;
-            background: rgba(255,255,255,.05);
-            border: 1px solid rgba(255,255,255,.10);
-            font-weight: 800
         }
 
-        .hintBox {
-            position: absolute;
-            left: 16px;
-            bottom: 16px;
-            z-index: 25;
-            max-width: 420px;
-            padding: 12px 14px;
-            border-radius: 16px;
-            border: 1px solid var(--stroke);
-            background: rgba(12,18,24,.92);
-            color: var(--muted);
-            font-size: 12px;
-            line-height: 1.5
-        }
-
-            .hintBox b {
-                color: var(--text)
+            .pfpBtn:hover {
+                background: #202b23;
+                border-color: rgba(255,255,255,.16);
             }
 
-        .floatingTools {
-            position: absolute;
-            right: 16px;
-            bottom: 16px;
-            z-index: 25;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: flex-end
-        }
+            .pfpBtn.active {
+                border-color: rgba(50,213,131,.36);
+                background: #1b3528;
+            }
 
-        .emptyMessage {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%,-50%);
-            width: min(460px,calc(100vw - 28px));
-            padding: 22px 24px;
+            .pfpBtn[aria-disabled="true"] {
+                opacity: .45;
+                cursor: not-allowed;
+            }
+
+        .pfpName {
+            min-width: 0;
+            font-size: 13px;
+            font-weight: 800;
+            white-space: normal;
             text-align: center;
-            color: var(--muted);
-            border: 1px dashed rgba(255,255,255,.14);
-            background: rgba(255,255,255,.03);
-            border-radius: 22px;
-            z-index: 3
+            line-height: 1.2;
         }
 
-            .emptyMessage h3 {
-                margin: 0 0 8px;
-                color: var(--text)
-            }
-
-        .toast {
+        .hostBar {
             position: fixed;
             left: 50%;
-            bottom: 22px;
+            bottom: 16px;
             transform: translateX(-50%);
+            width: min(1180px, calc(100vw - 22px));
+            border: 1px solid rgba(255,255,255,.10);
+            border-radius: 20px;
+            background: #131b15;
+            box-shadow: 0 14px 40px rgba(0,0,0,.35);
+            padding: 12px 14px;
             display: none;
-            z-index: 99999;
-            background: rgba(12,18,24,.96);
-            color: var(--text);
-            border: 1px solid rgba(255,255,255,.12);
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            z-index: 1500;
+        }
+
+        .hostBarLeft {
+            min-width: 170px;
+        }
+
+        .hostBarTitle {
+            font-size: 11px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+        }
+
+        .hostBarDate {
+            margin-top: 4px;
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .hostChips {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
+            overflow-x: auto;
+            padding-bottom: 2px;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            background: #1d2821;
+            border: 1px solid rgba(255,255,255,.08);
             border-radius: 999px;
-            padding: 12px 16px;
-            font-size: 12px
+            white-space: nowrap;
+        }
+
+            .chip b {
+                font-size: 12px;
+            }
+
+        .hostBarRight {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
         }
 
         .modalBackdrop {
             position: fixed;
             inset: 0;
-            background: rgba(2,4,6,.60);
+            background: rgba(5,10,7,.62);
             display: none;
             align-items: center;
             justify-content: center;
             padding: 18px;
-            z-index: 9999
+            z-index: 9999;
         }
 
         .modal {
-            width: min(500px,100%);
-            background: #111a22;
-            border: 1px solid rgba(255,255,255,.12);
+            width: min(560px, 100%);
+            background: #141c16;
+            border: 1px solid rgba(255,255,255,.10);
             border-radius: 22px;
-            overflow: hidden
+            overflow: hidden;
+            box-shadow: 0 22px 65px rgba(0,0,0,.38);
+            max-height: calc(100vh - 36px);
+            overflow-y: auto;
         }
+
+            .modal.slim {
+                width: min(500px, 100%);
+            }
 
         .modalTop {
             padding: 18px 18px 14px;
-            border-bottom: 1px solid rgba(255,255,255,.08)
+            border-bottom: 1px solid rgba(255,255,255,.06);
         }
 
             .modalTop h3 {
                 margin: 0;
-                font-size: 18px
+                font-size: 18px;
+                font-weight: 800;
             }
 
             .modalTop p {
                 margin: 8px 0 0;
                 font-size: 13px;
-                color: var(--muted)
+                color: var(--muted);
+                line-height: 1.45;
             }
 
         .modalBody {
-            padding: 16px 18px 18px
+            padding: 16px 18px 18px;
         }
 
         .field {
             display: flex;
             flex-direction: column;
             gap: 7px;
-            margin-bottom: 12px
+            margin-bottom: 12px;
         }
 
             .field label {
                 font-size: 12px;
                 font-weight: 700;
-                color: #d8e5dd
+                color: #dce8dd;
             }
 
-        input, select, textarea {
+        input, textarea {
             width: 100%;
             font: inherit;
             color: var(--text);
-            background: #16212d;
+            background: #1a241d;
             border: 1px solid rgba(255,255,255,.10);
             border-radius: 14px;
             padding: 12px 13px;
             outline: none;
-            resize: vertical
         }
+
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+            input:focus, textarea:focus {
+                border-color: rgba(245,192,79,.45);
+            }
 
         .modalActions {
             display: flex;
             justify-content: flex-end;
             gap: 10px;
             flex-wrap: wrap;
-            margin-top: 12px
+            margin-top: 14px;
         }
 
-        @media (max-width:860px) {
-            .topBar {
-                height: auto;
-                min-height: 72px;
-                padding: 12px;
+        .authTabs, .settingsTabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .authTab, .settingsTab {
+            flex: 1;
+            text-align: center;
+            padding: 11px 12px;
+            border-radius: 14px;
+            background: #1a241d;
+            border: 1px solid rgba(255,255,255,.08);
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+            .authTab.active, .settingsTab.active {
+                background: #2a342c;
+                border-color: rgba(245,192,79,.24);
+            }
+
+        .settingsPanel {
+            display: none;
+        }
+
+            .settingsPanel.active {
+                display: block;
+            }
+
+        .infoBox {
+            padding: 12px;
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.45;
+            margin-bottom: 12px;
+        }
+
+        .avatarPreviewWrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .avatarPreview {
+            width: 72px;
+            height: 72px;
+            border-radius: 18px;
+            object-fit: cover;
+            border: 1px solid rgba(255,255,255,.10);
+            background: #223028;
+        }
+
+        .tiny {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.45;
+        }
+
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 24px;
+            transform: translateX(-50%);
+            max-width: min(700px, calc(100vw - 26px));
+            background: #131b15;
+            border: 1px solid rgba(255,255,255,.10);
+            color: var(--text);
+            border-radius: 999px;
+            padding: 12px 16px;
+            font-size: 12px;
+            display: none;
+            z-index: 20000;
+            box-shadow: 0 14px 35px rgba(0,0,0,.30);
+        }
+
+        .editorMiniGrid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        @media (max-width: 1220px) {
+            .mainGrid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 860px) {
+            body {
+                padding: 12px 12px 150px;
+            }
+
+            .heroInner {
+                padding: 20px;
+            }
+
+            .brandLogo {
+                width: 60px;
+                height: 60px;
+                border-radius: 16px;
+            }
+
+            .brandText p {
+                font-size: 13px;
+            }
+
+            .weekdays div {
+                font-size: 13px;
+            }
+
+            .calGrid {
+                gap: 8px;
+                padding: 6px 12px 14px;
+            }
+
+            .weekdays {
+                gap: 8px;
+                padding: 14px 12px 8px;
+            }
+
+            .day {
+                min-height: 118px;
+            }
+
+            .dayTopBar {
+                min-height: 40px;
+                padding: 8px 9px;
+            }
+
+            .dayDate {
+                font-size: 12px;
+            }
+
+            .miniTime {
+                font-size: 10px;
+            }
+
+            .miniItem {
+                font-size: 11px;
+            }
+
+            .miniMeta {
+                font-size: 10px;
+            }
+
+            .pfpGrid {
+                grid-template-columns: repeat(2, minmax(0,1fr));
+            }
+
+            .hostBar {
                 flex-direction: column;
-                align-items: stretch
+                align-items: stretch;
             }
 
-            .topActions {
-                justify-content: flex-start
+            .hostBarLeft,
+            .hostBarRight {
+                min-width: 0;
             }
 
-            .workspace {
-                height: calc(100vh - 122px)
+            .hostBarRight {
+                justify-content: flex-end;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .heroRight {
+                align-items: stretch;
+                width: 100%;
             }
 
-            .hintBox {
-                left: 12px;
-                right: 12px;
-                bottom: 12px;
-                max-width: none
+            .topUser,
+            .actionsRow {
+                justify-content: flex-start;
             }
 
-            .floatingTools {
-                left: 12px;
-                right: 12px;
-                bottom: 122px
+            .weekdays div {
+                font-size: 11px;
+                padding-top: 6px;
             }
 
-            .zoomHud {
-                left: 12px;
-                top: 12px;
-                flex-wrap: wrap;
-                max-width: calc(100vw - 24px)
+            .day {
+                min-height: 92px;
+            }
+
+            .dayBody {
+                padding: 8px;
+                gap: 5px;
+            }
+
+            .miniItem {
+                font-size: 10px;
+            }
+
+            .miniMeta {
+                font-size: 9px;
+            }
+
+            .authTabs, .settingsTabs {
+                flex-direction: column;
+            }
+
+            .editorMiniGrid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
+    <meta name="maxai-mui-classname-prefix" content="injectDocumentStart-2026-03-24T22:50:13.797Z">
+    <script src="chrome-extension://ngphehpfehdmjellohmlojkplilekadg/apps/content-scripts/website/maxai.js"></script>
+    <style id="_goober">
+        .go1475592160 {
+            height: 0;
+        }
+
+        .go1671063245 {
+            height: auto;
+        }
+
+        .go1888806478 {
+            display: flex;
+            flex-wrap: wrap;
+            flex-grow: 1;
+        }
+
+        @media (min-width:600px) {
+            .go1888806478 {
+                flex-grow: initial;
+                min-width: 288px;
+            }
+        }
+
+        .go167266335 {
+            background-color: #313131;
+            font-size: 0.875rem;
+            line-height: 1.43;
+            letter-spacing: 0.01071em;
+            color: #fff;
+            align-items: center;
+            padding: 6px 16px;
+            border-radius: 4px;
+            box-shadow: 0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12);
+        }
+
+        .go3162094071 {
+            padding-left: 20px;
+        }
+
+        .go3844575157 {
+            background-color: #313131;
+        }
+
+        .go1725278324 {
+            background-color: #43a047;
+        }
+
+        .go3651055292 {
+            background-color: #d32f2f;
+        }
+
+        .go4215275574 {
+            background-color: #ff9800;
+        }
+
+        .go1930647212 {
+            background-color: #2196f3;
+        }
+
+        .go946087465 {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+        }
+
+        .go703367398 {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+            padding-left: 16px;
+            margin-right: -8px;
+        }
+
+        .go3963613292 {
+            width: 100%;
+            position: relative;
+            transform: translateX(0);
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            min-width: 288px;
+        }
+
+        .go1141946668 {
+            box-sizing: border-box;
+            display: flex;
+            max-height: 100%;
+            position: fixed;
+            z-index: 1400;
+            height: auto;
+            width: auto;
+            transition: top 300ms ease 0ms,right 300ms ease 0ms,bottom 300ms ease 0ms,left 300ms ease 0ms,max-width 300ms ease 0ms;
+            pointer-events: none;
+            max-width: calc(100% - 40px);
+        }
+
+            .go1141946668 .notistack-CollapseWrapper {
+                padding: 6px 0px;
+                transition: padding 300ms ease 0ms;
+            }
+
+        @media (max-width:599.95px) {
+            .go1141946668 {
+                width: 100%;
+                max-width: calc(100% - 32px);
+            }
+        }
+
+        .go3868796639 .notistack-CollapseWrapper {
+            padding: 2px 0px;
+        }
+
+        .go3118922589 {
+            top: 14px;
+            flex-direction: column;
+        }
+
+        .go1453831412 {
+            bottom: 14px;
+            flex-direction: column-reverse;
+        }
+
+        .go4027089540 {
+            left: 20px;
+        }
+
+        @media (min-width:600px) {
+            .go4027089540 {
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width:599.95px) {
+            .go4027089540 {
+                left: 16px;
+            }
+        }
+
+        .go2989568495 {
+            right: 20px;
+        }
+
+        @media (min-width:600px) {
+            .go2989568495 {
+                align-items: flex-end;
+            }
+        }
+
+        @media (max-width:599.95px) {
+            .go2989568495 {
+                right: 16px;
+            }
+        }
+
+        .go4034260886 {
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        @media (min-width:600px) {
+            .go4034260886 {
+                align-items: center;
+            }
+        }
+    </style>
+    <link id="USE_CHAT_GPT_AI_CONTENT_CSS_LINK_TAG" rel="stylesheet" href="chrome-extension://ngphehpfehdmjellohmlojkplilekadg/content.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&amp;display=swap">
+    <style type="text/css">
+        .transform-component-module_wrapper__SPB86 {
+            position: relative;
+            width: -moz-fit-content;
+            width: fit-content;
+            height: -moz-fit-content;
+            height: fit-content;
+            overflow: hidden;
+            -webkit-touch-callout: none; /* iOS Safari */
+            -webkit-user-select: none; /* Safari */
+            -khtml-user-select: none; /* Konqueror HTML */
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .transform-component-module_content__FBWxo {
+            display: flex;
+            flex-wrap: wrap;
+            width: -moz-fit-content;
+            width: fit-content;
+            height: -moz-fit-content;
+            height: fit-content;
+            margin: 0;
+            padding: 0;
+            transform-origin: 0% 0%;
+        }
+
+            .transform-component-module_content__FBWxo img {
+                pointer-events: none;
+            }
+    </style>
 </head>
 <body>
+    <div class="wrap">
+        <div class="hero">
+            <div class="heroInner">
+                <div class="brand">
+                    <div class="brandLogo"></div>
+                    <div class="brandText">
+                        <h1>Staff Calendar</h1>
+                        <p id="whoLine">Logged in as nuggvr</p>
+                    </div>
+                </div>
 
-    <div class="topBar">
-        <div class="brandWrap">
-            <div class="brandIcon">PB</div>
-            <div class="brandText">
-                <h1>Pickaboom Hosting Guide</h1>
-                <p id="userLine">Loading account...</p>
-            </div>
-        </div>
+                <div class="heroRight">
+                    <div class="topUser">
+                        <img id="topAvatar" class="topAvatar" alt="Profile" src="data:image/jpeg;base64,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" style="display: block;">
+                        <div class="pill" id="rolePill" style="display: inline-flex;">Role: <b>ADMIN</b></div>
+                    </div>
 
-        <div class="topActions">
-            <div class="pill" id="rolePill" style="display:none;">Role: <b id="roleText">STAFF</b></div>
-            <button class="btn" onclick="location.href='index.html'">Back to Calendar</button>
-            <button class="btn" id="connectModeBtn" style="display:none;">Connect: OFF</button>
-            <button class="btn primary" id="addNodeBtn" style="display:none;">+ Node</button>
-            <button class="btn" id="addFrameBtn" style="display:none;">+ Frame</button>
-            <button class="btn" id="addSectionBtn" style="display:none;">+ Section</button>
-            <button class="btn" id="loginBtn" style="display:none;">Login</button>
-            <button class="btn danger" id="logoutBtn" style="display:none;">Logout</button>
-        </div>
-    </div>
-
-    <div class="workspace">
-        <div class="canvasWrap" id="canvasWrap">
-            <div class="zoomLayer" id="zoomLayer">
-                <div class="canvas" id="canvas">
-                    <svg id="lines"></svg>
-                    <div class="emptyMessage" id="emptyMessage" style="display:none;">
-                        <h3>No guide items yet</h3>
-                        <div>Admins can add nodes, frames and sections here.</div>
+                    <div class="actionsRow">
+                        <button class="btn ghost" id="btnSettings" style="display: inline-block;">Settings</button>
+                        <button class="btn ghost" id="btnLogin" style="display: none;">Login</button>
+                        <button class="btn" id="btnLogout" style="display: inline-block;">Logout</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="zoomHud">
-            <button class="btn" id="zoomOutBtn" type="button">−</button>
-            <div class="zoomBadge" id="zoomLabel">100%</div>
-            <button class="btn" id="zoomInBtn" type="button">+</button>
-            <button class="btn" id="resetViewBtn" type="button">Reset</button>
-            <button class="btn" id="fitViewBtn" type="button">Fit</button>
+        <div class="menuButtons">
+
+
+
         </div>
 
-        <div class="hintBox">
-            <b>Controls:</b><br>
-            Middle mouse = pan<br>
-            Space + drag = pan<br>
-            Ctrl/Cmd + wheel = zoom<br>
-            + / - = zoom, 0 = reset, F = fit<br>
-            Admins can drag, resize, edit, and connect items.
-        </div>
+        <div class="mainGrid">
+            <div class="panel">
+                <div class="calendarTop">
+                    <div class="calendarTopLeft">
+                        <button class="btn small" id="prevMonth">◀</button>
+                        <button class="btn small" id="todayBtn">Today</button>
+                        <button class="btn small" id="nextMonth">▶</button>
+                        <div class="monthTitle" id="monthTitle">March 2026</div>
+                    </div>
+                    <div class="actionsRow">
+                        <span class="pill" id="viewHint">Click a day</span>
+                    </div>
+                </div>
 
-        <div class="floatingTools">
-            <button class="btn warn" id="clearSelectionBtn" style="display:none;">Clear selected link</button>
+                <div class="weekdays">
+                    <div>Monday</div>
+                    <div>Tuesday</div>
+                    <div>Wednesday</div>
+                    <div>Thursday</div>
+                    <div>Friday</div>
+                    <div>Saturday</div>
+                    <div>Sunday</div>
+                </div>
+
+                <div class="calGrid" id="calGrid"><div class="day muted past"><div class="dayTopBar"><div class="dayDate">FEB 23</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniMeta">Past day</div></div></div><div class="day muted past"><div class="dayTopBar"><div class="dayDate">FEB 24</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniMeta">Past day</div></div></div><div class="day muted past"><div class="dayTopBar"><div class="dayDate">FEB 25</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniMeta">Past day</div></div></div><div class="day muted past"><div class="dayTopBar"><div class="dayDate">FEB 26</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniMeta">Past day</div></div></div><div class="day muted past"><div class="dayTopBar"><div class="dayDate">FEB 27</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniMeta">Past day</div></div></div><div class="day muted past"><div class="dayTopBar"><div class="dayDate">FEB 28</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniMeta">Past day</div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 1</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">No event</div><div class="miniMeta"></div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 2</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">No event</div><div class="miniMeta"></div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 3</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">No event</div><div class="miniMeta"></div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 4</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">No event</div><div class="miniMeta"></div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 5</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">No event</div><div class="miniMeta"></div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 6</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">🎤 Q&amp;A HOST/MINIGAMES</div><div class="miniMeta"></div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 7</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">🎮 WEEKLY ADVENTURE</div><div class="miniMeta"></div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 8</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">💰 MONEY FARMING</div><div class="miniMeta"></div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 9</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">MINIGAMES MONDAY!</div><div class="miniMeta"></div><div class="hostPreviewRow"><div class="badge ok">ArtistRed</div><div class="badge ok">nuggvr</div><div class="badge ok">dafound24</div><div class="miniMeta">+1</div></div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 10</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">💰 MONEY FARMING</div><div class="miniMeta"></div><div class="hostPreviewRow"><div class="badge ok">ArtistRed</div><div class="badge ok">riskhuntervr</div><div class="badge ok">Masonman585</div></div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 11</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">⬆️ GAME UPDATE</div><div class="miniMeta"></div><div class="hostPreviewRow"><div class="badge ok">Glitch</div><div class="badge ok">Masonman585</div></div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 12</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">BOOM BROS CHOICE</div><div class="miniMeta"></div><div class="hostPreviewRow"><div class="badge ok">king.bear.100.vr</div><div class="badge ok">riskhuntervr</div></div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 13</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">Tag</div><div class="miniMeta"></div><div class="hostPreviewRow"><div class="badge ok">ArtistRed</div><div class="badge ok">nuggvr</div><div class="badge ok">dafound24</div><div class="miniMeta">+1</div></div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 14</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">🏆Tournament Day</div><div class="miniMeta"></div><div class="hostPreviewRow"><div class="badge ok">Glitch</div><div class="badge ok">ArtistRed</div><div class="badge ok">nuggvr</div><div class="miniMeta">+1</div></div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 15</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">Simon says Sunday</div><div class="miniMeta"></div><div class="hostPreviewRow"><div class="badge ok">dafound24</div><div class="badge ok">riskhuntervr</div><div class="badge ok">Masonman585</div></div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 16</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">MINIGAMES MONDAY!</div><div class="miniMeta"></div><div class="hostPreviewRow"><div class="badge ok">Glitch</div><div class="badge ok">dafound24</div><div class="badge ok">Masonman585</div></div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 17</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">BOOM BROS CHOICE</div><div class="miniMeta"></div><div class="hostPreviewRow"><div class="badge ok">king.bear.100.vr</div><div class="badge ok">riskhuntervr</div></div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 18</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">⬆️ GAME UPDATE</div><div class="miniMeta"></div><div class="hostPreviewRow"><div class="badge ok">riskhuntervr</div><div class="badge ok">Masonman585</div></div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 19</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">💰 MONEY FARMING</div><div class="miniMeta"></div><div class="hostPreviewRow"><div class="badge ok">king.bear.100.vr</div><div class="badge ok">dafound24</div></div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 20</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">🎮 WEEKLY ADVENTURE</div><div class="miniMeta"></div><div class="hostPreviewRow"><div class="badge ok">nuggvr</div><div class="badge ok">riskhuntervr</div><div class="badge ok">Masonman585</div></div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 21</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">Simon says Saturday</div><div class="miniMeta"></div><div class="hostPreviewRow"><div class="badge ok">ArtistRed</div><div class="badge ok">nuggvr</div><div class="badge ok">dafound24</div><div class="miniMeta">+1</div></div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 22</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">🎮 WEEKLY ADVENTURE</div><div class="miniMeta"></div><div class="hostPreviewRow"><div class="badge ok">king.bear.100.vr</div><div class="badge ok">ArtistRed</div><div class="badge ok">riskhuntervr</div></div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 23</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">MINIGAMES MONDAY!</div><div class="miniMeta"></div><div class="hostPreviewRow"><div class="badge ok">king.bear.100.vr</div><div class="badge ok">Masonman585</div></div></div></div><div class="day past"><div class="dayTopBar"><div class="dayDate">MAR 24</div><div class="dayIcon">⏺</div></div><div class="dayBody"><div class="miniItem">Tag</div><div class="miniMeta"></div><div class="hostPreviewRow"><div class="badge ok">Masonman585</div></div></div></div><div class="day selected today"><div class="dayTopBar"><div class="dayDate">MAR 25</div><div class="dayIcon">★</div></div><div class="dayBody"><div class="miniItem">⬆️ GAME UPDATE</div><div class="miniMeta"></div><div class="hostPreviewRow"><div class="badge ok">riskhuntervr</div><div class="badge ok">Masonman585</div></div></div></div><div class="day"><div class="dayTopBar"><div class="dayDate">MAR 26</div><div class="dayIcon">★</div></div><div class="dayBody"><div class="miniItem">BOOM BROS CHOICE</div><div class="miniMeta"></div><div class="hostPreviewRow"><div class="badge ok">king.bear.100.vr</div><div class="badge ok">Masonman585</div></div></div></div><div class="day"><div class="dayTopBar"><div class="dayDate">MAR 27</div><div class="dayIcon">★</div></div><div class="dayBody"><div class="miniItem">💰 MONEY FARMING</div><div class="miniMeta"></div><div class="hostPreviewRow"><div class="badge ok">nuggvr</div><div class="badge ok">Masonman585</div></div></div></div><div class="day"><div class="dayTopBar"><div class="dayDate">MAR 28</div><div class="dayIcon">★</div></div><div class="dayBody"><div class="miniItem">🏆Tournament Day</div><div class="miniMeta"></div><div class="hostPreviewRow"><div class="badge ok">ArtistRed</div><div class="badge ok">nuggvr</div><div class="badge ok">Masonman585</div></div></div></div><div class="day"><div class="dayTopBar"><div class="dayDate">MAR 29</div><div class="dayIcon">★</div></div><div class="dayBody"><div class="miniItem">🎥 Content Creator Event</div><div class="miniMeta"></div><div class="hostPreviewRow"><div class="badge ok">king.bear.100.vr</div><div class="badge ok">ArtistRed</div></div></div></div><div class="day"><div class="dayTopBar"><div class="dayDate">MAR 30</div><div class="dayIcon"></div></div><div class="dayBody"><div class="miniMeta"></div></div></div><div class="day"><div class="dayTopBar"><div class="dayDate">MAR 31</div><div class="dayIcon"></div></div><div class="dayBody"><div class="miniMeta"></div></div></div><div class="day muted"><div class="dayTopBar"><div class="dayDate">APR 1</div><div class="dayIcon"></div></div><div class="dayBody"><div class="miniMeta"></div></div></div><div class="day muted"><div class="dayTopBar"><div class="dayDate">APR 2</div><div class="dayIcon"></div></div><div class="dayBody"><div class="miniMeta"></div></div></div><div class="day muted"><div class="dayTopBar"><div class="dayDate">APR 3</div><div class="dayIcon"></div></div><div class="dayBody"><div class="miniMeta"></div></div></div><div class="day muted"><div class="dayTopBar"><div class="dayDate">APR 4</div><div class="dayIcon"></div></div><div class="dayBody"><div class="miniMeta"></div></div></div><div class="day muted"><div class="dayTopBar"><div class="dayDate">APR 5</div><div class="dayIcon"></div></div><div class="dayBody"><div class="miniMeta"></div></div></div></div>
+            </div>
+
+            <div class="panel">
+                <div class="sideHead">
+                    <div>
+                        <h2>Details</h2>
+                        <p id="sideSub">View mode: clicking days will not open editor</p>
+                    </div>
+
+                    <div class="actionsRow">
+                        <button class="btn small" id="viewModeBtn" style="display: inline-block;">View: ON</button>
+                        <button class="btn small danger" id="clearAllBtn" style="display: inline-block;">Clear ALL</button>
+                        <button class="btn small ok" id="addEventBtn" style="display:none;">+ Add event</button>
+                        <button class="btn small primary" id="addAvailBtn" style="display:none;">+ Add availability</button>
+                    </div>
+                </div>
+
+                <div class="sideBody">
+                    <div class="infoBlock">
+                        <div class="infoLabel">Selected date</div>
+                        <div class="infoValue" id="selectedDateText">Wednesday 25 March 2026</div>
+                        <div class="tiny" id="selectedHint" style="margin-top:10px;">
+                            Staff can pick themselves. Admins can edit and remove anything.
+                        </div>
+                    </div>
+
+                    <div class="pfpPickerBox" id="pfpPickerBox" style="display: none;">
+                        <div class="sectionTitle">Quick host picker</div>
+                        <div class="tiny">Uses names instead of profile images.</div>
+                        <div class="pfpGrid" id="pfpGrid"></div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="detailList" id="detailList">
+                        <div class="detailCard">
+                            <div class="detailCardTop">
+                                <h4>Picked hosts (2)</h4>
+                                <div class="badge ok">Host picks</div>
+                            </div>
+                            <div class="pickEntry">
+                                <div class="pickEntryLeft">
+                                    <div>
+                                        <div class="pickEntryName">riskhuntervr</div>
+                                        <div class="pickEntryMeta">riskhuntervr@email.com</div>
+                                    </div>
+                                </div>
+                                <div class="actionsRow"></div>
+                            </div><div class="pickEntry">
+                                <div class="pickEntryLeft">
+                                    <div>
+                                        <div class="pickEntryName">Masonman585</div>
+                                        <div class="pickEntryMeta">masonmcfleming@gmail.com</div>
+                                    </div>
+                                </div>
+                                <div class="actionsRow"></div>
+                            </div>
+                        </div><div class="detailCard">
+                            <div class="detailCardTop">
+                                <h4>Official events (1)</h4>
+                                <div class="badge brand">Admin</div>
+                            </div>
+                            <div class="eventBlock">
+                                <div class="eventTitle">⬆️ GAME UPDATE</div>
+                                <div class="metaText">Time TBA • Location TBA • Host: Unassigned</div>
+
+                            </div>
+                        </div><div class="detailCard">
+                            <div class="detailCardTop">
+                                <h4>Staff availability (0)</h4>
+                                <div class="badge warn">Availability</div>
+                            </div>
+                            <div class="emptyState">No availability added yet.</div>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="actionsRow" style="justify-content:space-between;">
+                        <div class="tiny" id="storageNote">Synced with Firebase</div>
+                        <button class="btn small danger" id="resetBtn" style="display: inline-block;">Reset local cache</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hostBar" id="hostBar" style="display: flex;">
+        <div class="hostBarLeft">
+            <div class="hostBarTitle">Hosting on</div>
+            <div class="hostBarDate" id="hostBarDate">Wednesday 25 March 2026</div>
+        </div>
+        <div class="hostChips" id="hostChips"><div class="chip"><b>Masonman585</b></div><div class="chip"><b>riskhuntervr</b></div></div>
+        <div class="hostBarRight">
+            <button class="btn small" id="clearMyPickBtn" style="display:none;">Remove my pick</button>
         </div>
     </div>
 
     <div class="modalBackdrop" id="authBackdrop">
-        <div class="modal">
+        <div class="modal slim" role="dialog" aria-modal="true">
             <div class="modalTop">
-                <h3>Login</h3>
-                <p>Use the same account as your calendar page.</p>
+                <h3>Account</h3>
+                <p>Create an account or log in.</p>
             </div>
             <div class="modalBody">
+                <div class="authTabs">
+                    <div class="authTab active" id="tabLogin">Login</div>
+                    <div class="authTab" id="tabRegister">Register</div>
+                </div>
+
                 <div class="field">
                     <label>Email</label>
                     <input id="authEmail" type="email" placeholder="name@email.com" autocomplete="email">
                 </div>
+
                 <div class="field">
                     <label>Password</label>
                     <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
                 </div>
+
+                <div class="field" id="confirmField" style="display:none;">
+                    <label>Confirm password</label>
+                    <input id="authPassword2" type="password" placeholder="Confirm password" autocomplete="new-password">
+                </div>
+
+                <div class="tiny">Admins still need their role set in Firestore.</div>
+
                 <div class="modalActions">
                     <button class="btn" id="authClose" type="button">Close</button>
                     <button class="btn primary" id="authGo" type="button">Login</button>
@@ -650,35 +1427,90 @@
         </div>
     </div>
 
-    <div class="modalBackdrop" id="createBackdrop">
-        <div class="modal">
+    <div class="modalBackdrop" id="settingsBackdrop">
+        <div class="modal" role="dialog" aria-modal="true">
             <div class="modalTop">
-                <h3 id="createTitle">Create item</h3>
-                <p id="createText">Add something new.</p>
+                <h3>Settings</h3>
+                <p>Update your profile and account details.</p>
             </div>
             <div class="modalBody">
-                <div class="field">
-                    <label>Title</label>
-                    <input id="createName" type="text" placeholder="Enter a title">
+                <div class="settingsTabs">
+                    <div class="settingsTab active" id="settingsProfileTab">Profile</div>
+                    <div class="settingsTab" id="settingsAccountTab">Account</div>
                 </div>
-                <div class="field" id="createTypeWrap">
-                    <label>Node type</label>
-                    <select id="createType">
-                        <option value="event">Event</option>
-                        <option value="setup">Setup</option>
-                        <option value="rule">Rule</option>
-                        <option value="tip">Tip</option>
-                    </select>
+
+                <div class="settingsPanel active" id="settingsProfilePanel">
+                    <div class="field">
+                        <label>Display name</label>
+                        <input id="profileName" maxlength="24" placeholder="e.g. Nugg">
+                    </div>
+
+                    <div class="field">
+                        <label>Profile picture</label>
+                        <div class="avatarPreviewWrap">
+                            <img id="profilePreview" class="avatarPreview" alt="Preview">
+                            <div class="actionsRow">
+                                <input id="profileFile" type="file" accept="image/*" style="max-width:240px;">
+                                <button class="btn small" id="removeProfilePic" type="button">Use default</button>
+                            </div>
+                        </div>
+                        <div class="tiny">Profile image is optional, but host picks now use names.</div>
+                    </div>
+
+                    <div class="modalActions">
+                        <button class="btn primary" id="saveProfileBtn" type="button">Save profile</button>
+                    </div>
                 </div>
-                <div class="field">
-                    <label>Description</label>
-                    <textarea id="createDesc" rows="4" placeholder="Write a short description"></textarea>
+
+                <div class="settingsPanel" id="settingsAccountPanel">
+                    <div class="infoBox">
+                        To change your email or password, enter your current password first.
+                    </div>
+
+                    <div class="field">
+                        <label>Current email</label>
+                        <input id="accountCurrentEmail" type="email" disabled="">
+                    </div>
+
+                    <div class="field">
+                        <label>New email</label>
+                        <input id="accountNewEmail" type="email" placeholder="Leave blank to keep current email">
+                    </div>
+
+                    <div class="field">
+                        <label>Current password</label>
+                        <input id="accountCurrentPassword" type="password" placeholder="Required for email/password changes">
+                    </div>
+
+                    <div class="field">
+                        <label>New password</label>
+                        <input id="accountNewPassword" type="password" placeholder="Leave blank to keep current password">
+                    </div>
+
+                    <div class="field">
+                        <label>Confirm new password</label>
+                        <input id="accountNewPassword2" type="password" placeholder="Confirm new password">
+                    </div>
+
+                    <div class="modalActions">
+                        <button class="btn warn" id="saveAccountBtn" type="button">Save account changes</button>
+                    </div>
                 </div>
+
                 <div class="modalActions">
-                    <button class="btn" id="createClose" type="button">Cancel</button>
-                    <button class="btn primary" id="createGo" type="button">Create</button>
+                    <button class="btn" id="settingsClose" type="button">Close</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="modalBackdrop" id="dayBackdrop">
+        <div class="modal slim" role="dialog" aria-modal="true">
+            <div class="modalTop">
+                <h3 id="dayModalTitle"></h3>
+                <p id="dayModalSub"></p>
+            </div>
+            <div class="modalBody" id="dayModalBody"></div>
         </div>
     </div>
 
@@ -687,10 +1519,26 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
         import {
-            getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
+            getAuth,
+            onAuthStateChanged,
+            signInWithEmailAndPassword,
+            createUserWithEmailAndPassword,
+            signOut,
+            updateEmail,
+            updatePassword,
+            EmailAuthProvider,
+            reauthenticateWithCredential
         } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+
         import {
-            getFirestore, doc, getDoc, setDoc, deleteDoc, collection, onSnapshot
+            getFirestore,
+            collection,
+            doc,
+            setDoc,
+            getDoc,
+            getDocs,
+            deleteDoc,
+            onSnapshot
         } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -706,771 +1554,896 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        const CANVAS_W = 10000;
-        const CANVAS_H = 8000;
-        const NODE_W = 260;
-        const NODE_H = 120;
-        const FRAME_W = 620;
-        const FRAME_H = 380;
-        const SECTION_W = 480;
-        const SECTION_H = 280;
+        const KEY_EVENTS = "staffCal.events.v5";
+        const KEY_AVAIL = "staffCal.availability.v5";
+        const KEY_PICKS = "staffCal.hostPicks.v5";
+        const KEY_VIEWMODE = "staffCal.viewMode.v5";
 
-        const userLine = document.getElementById("userLine");
-        const rolePill = document.getElementById("rolePill");
-        const roleText = document.getElementById("roleText");
-        const loginBtn = document.getElementById("loginBtn");
-        const logoutBtn = document.getElementById("logoutBtn");
-        const addNodeBtn = document.getElementById("addNodeBtn");
-        const addFrameBtn = document.getElementById("addFrameBtn");
-        const addSectionBtn = document.getElementById("addSectionBtn");
-        const connectModeBtn = document.getElementById("connectModeBtn");
-        const clearSelectionBtn = document.getElementById("clearSelectionBtn");
-        const authBackdrop = document.getElementById("authBackdrop");
-        const authEmail = document.getElementById("authEmail");
-        const authPassword = document.getElementById("authPassword");
-        const authGo = document.getElementById("authGo");
-        const authClose = document.getElementById("authClose");
-        const createBackdrop = document.getElementById("createBackdrop");
-        const createTitle = document.getElementById("createTitle");
-        const createText = document.getElementById("createText");
-        const createName = document.getElementById("createName");
-        const createDesc = document.getElementById("createDesc");
-        const createType = document.getElementById("createType");
-        const createTypeWrap = document.getElementById("createTypeWrap");
-        const createGo = document.getElementById("createGo");
-        const createClose = document.getElementById("createClose");
-        const canvasWrap = document.getElementById("canvasWrap");
-        const zoomLayer = document.getElementById("zoomLayer");
-        const canvas = document.getElementById("canvas");
-        const svg = document.getElementById("lines");
-        const emptyMessage = document.getElementById("emptyMessage");
-        const zoomLabel = document.getElementById("zoomLabel");
-        const zoomInBtn = document.getElementById("zoomInBtn");
-        const zoomOutBtn = document.getElementById("zoomOutBtn");
-        const resetViewBtn = document.getElementById("resetViewBtn");
-        const fitViewBtn = document.getElementById("fitViewBtn");
+        const saveJSON = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+        const loadJSON = (key, fallback) => {
+            try {
+                const raw = localStorage.getItem(key);
+                return raw ? JSON.parse(raw) : fallback;
+            } catch {
+                return fallback;
+            }
+        };
 
         let session = null;
-        let items = [];
-        let links = [];
-        let connectMode = false;
-        let selectedSourceNodeId = null;
-        let selectedItemId = null;
-        let createMode = "node";
-        let unsubItems = null;
-        let unsubLinks = null;
-        let activeEditingId = null;
-        let pendingRender = false;
-        let isSpacePressed = false;
-        let isPanning = false;
-        let panStartX = 0;
-        let panStartY = 0;
-        let lineFrame = null;
+        let usersMap = new Map();
+        let hosts = [];
+        let events = loadJSON(KEY_EVENTS, []);
+        let avail = loadJSON(KEY_AVAIL, []);
+        let hostPicks = loadJSON(KEY_PICKS, []);
+        let viewMode = loadJSON(KEY_VIEWMODE, false);
 
-        const view = { scale: 1, min: 0.5, max: 1.8 };
+        let viewDate = new Date();
+        let selectedDate = null;
+        let pendingOpenDate = null;
+        let authMode = "login";
+        let profileImageData = null;
+        let unsubscribers = [];
+
+        const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
+        const pad2 = n => String(n).padStart(2, "0");
+        const toISODate = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+        const fromISODate = s => {
+            const [y, m, d] = s.split("-").map(Number);
+            return new Date(y, m - 1, d);
+        };
+        const startOfMonth = d => new Date(d.getFullYear(), d.getMonth(), 1);
+        const monthLabel = d => d.toLocaleString(undefined, { month: "long", year: "numeric" });
+        const mondayIndex = jsDay => (jsDay + 6) % 7;
+
+        const prettyDate = iso => fromISODate(iso).toLocaleDateString(undefined, {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        });
+
+        const isPastDay = iso => {
+            const today = new Date();
+            const t = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            return fromISODate(iso) < t;
+        };
+
+        const isToday = iso => iso === toISODate(new Date());
+
+        const escapeHTML = s => String(s).replace(/[&<>"']/g, c => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        }[c]));
 
         function toast(msg) {
             const t = document.getElementById("toast");
             t.textContent = msg;
             t.style.display = "block";
             clearTimeout(toast._tm);
-            toast._tm = setTimeout(() => t.style.display = "none", 2200);
+            toast._tm = setTimeout(() => t.style.display = "none", 2600);
         }
-        function uid() { return Math.random().toString(16).slice(2) + Date.now().toString(16); }
-        function isAdmin() { return !!session && session.role === "admin"; }
-        function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
-        function esc(s) {
-            return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+        function initialsFromName(name) {
+            const clean = String(name || "").trim();
+            if (!clean) return "U";
+            return clean
+                .split(/\s+/)
+                .slice(0, 2)
+                .map(p => p[0]?.toUpperCase() || "")
+                .join("") || "U";
         }
-        function nodeTypeLabel(type) {
-            if (type === "rule") return "Rule";
-            if (type === "setup") return "Setup";
-            if (type === "tip") return "Tip";
-            return "Event";
+
+        function defaultAvatarDataURL(name) {
+            const initials = initialsFromName(name);
+            const svg = `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+                            <defs>
+                                <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                                    <stop stop-color="#f5c04f"/>
+                                    <stop offset="1" stop-color="#32d583"/>
+                                </linearGradient>
+                            </defs>
+                            <rect width="160" height="160" rx="34" fill="url(#g)"/>
+                            <text x="80" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="54" font-weight="700" fill="#15120c">${initials}</text>
+                        </svg>
+                    `;
+            return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
         }
-        function getItem(id) { return items.find(i => i.id === id) || null; }
-        function getNodes() { return items.filter(i => i.kind === "node"); }
-        function getFrames() { return items.filter(i => i.kind === "frame"); }
-        function getSections() { return items.filter(i => i.kind === "section"); }
-        function updateZoomUi() { zoomLabel.textContent = Math.round(view.scale * 100) + "%"; }
-        function applyZoom() {
-            zoomLayer.style.transform = `translateZ(0) scale(${view.scale})`;
-            updateZoomUi();
-            scheduleDrawLines();
-        }
-        function scheduleDrawLines() {
-            if (lineFrame) return;
-            lineFrame = requestAnimationFrame(() => {
-                lineFrame = null;
-                drawLines();
+
+        async function fileToAvatarDataURL(file) {
+            const img = await new Promise((resolve, reject) => {
+                const fr = new FileReader();
+                fr.onload = () => {
+                    const image = new Image();
+                    image.onload = () => resolve(image);
+                    image.onerror = reject;
+                    image.src = fr.result;
+                };
+                fr.onerror = reject;
+                fr.readAsDataURL(file);
             });
-        }
-        function screenToCanvas(clientX, clientY) {
-            const r = canvasWrap.getBoundingClientRect();
-            return {
-                x: (canvasWrap.scrollLeft + (clientX - r.left)) / view.scale,
-                y: (canvasWrap.scrollTop + (clientY - r.top)) / view.scale
-            };
-        }
-        function getViewCenter() {
-            return {
-                x: (canvasWrap.scrollLeft + canvasWrap.clientWidth / 2) / view.scale,
-                y: (canvasWrap.scrollTop + canvasWrap.clientHeight / 2) / view.scale
-            };
-        }
-        function zoomAt(clientX, clientY, nextScale) {
-            const oldScale = view.scale;
-            nextScale = clamp(nextScale, view.min, view.max);
-            if (Math.abs(nextScale - oldScale) < 0.0001) return;
 
-            const rect = canvasWrap.getBoundingClientRect();
-            const offsetX = clientX - rect.left;
-            const offsetY = clientY - rect.top;
-            const contentX = (canvasWrap.scrollLeft + offsetX) / oldScale;
-            const contentY = (canvasWrap.scrollTop + offsetY) / oldScale;
+            const size = 180;
+            const canvas = document.createElement("canvas");
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext("2d");
 
-            view.scale = nextScale;
-            applyZoom();
+            const sw = img.width;
+            const sh = img.height;
+            const side = Math.min(sw, sh);
+            const sx = (sw - side) / 2;
+            const sy = (sh - side) / 2;
 
-            canvasWrap.scrollLeft = contentX * nextScale - offsetX;
-            canvasWrap.scrollTop = contentY * nextScale - offsetY;
-            scheduleDrawLines();
+            ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
+            return canvas.toDataURL("image/jpeg", 0.82);
         }
-        function zoomBy(dir) {
-            const f = dir > 0 ? 1.1 : 1 / 1.1;
-            const r = canvasWrap.getBoundingClientRect();
-            zoomAt(r.left + r.width / 2, r.top + r.height / 2, view.scale * f);
-        }
-        function resetView(center = true) {
-            view.scale = 1;
-            applyZoom();
-            if (center) {
-                canvasWrap.scrollLeft = Math.max(0, (CANVAS_W - canvasWrap.clientWidth) / 2);
-                canvasWrap.scrollTop = Math.max(0, (CANVAS_H - canvasWrap.clientHeight) / 2);
+
+        const profilePhotoOrDefault = userLike =>
+            userLike?.photoURL || defaultAvatarDataURL(userLike?.name || userLike?.displayName || userLike?.email || "User");
+
+        const hostLabelFromUser = userLike =>
+            userLike?.name || (userLike?.email ? userLike.email.split("@")[0] : "User");
+
+        const hostLabelFromPick = pick =>
+            pick?.hostName || (pick?.email ? pick.email.split("@")[0] : "Host");
+
+        async function ensureUserDoc(firebaseUser) {
+            const ref = doc(db, "users", firebaseUser.uid);
+            const snap = await getDoc(ref);
+
+            if (!snap.exists()) {
+                const fallbackName = (firebaseUser.email || "User").split("@")[0];
+                await setDoc(ref, {
+                    name: fallbackName,
+                    email: firebaseUser.email || "",
+                    role: "staff",
+                    photoURL: "",
+                    createdAt: Date.now()
+                }, { merge: true });
             }
-            scheduleDrawLines();
         }
-        function fitView() {
-            if (!items.length) {
-                view.scale = 0.7;
-                applyZoom();
-                canvasWrap.scrollLeft = Math.max(0, (CANVAS_W * view.scale - canvasWrap.clientWidth) / 2);
-                canvasWrap.scrollTop = Math.max(0, (CANVAS_H * view.scale - canvasWrap.clientHeight) / 2);
-                scheduleDrawLines();
+
+        async function loadSessionFromAuth(firebaseUser) {
+            if (!firebaseUser) {
+                session = null;
                 return;
             }
-            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-            items.forEach(i => {
-                minX = Math.min(minX, i.x || 0);
-                minY = Math.min(minY, i.y || 0);
-                maxX = Math.max(maxX, (i.x || 0) + (i.w || NODE_W));
-                maxY = Math.max(maxY, (i.y || 0) + (i.h || NODE_H));
-            });
-            const boxW = maxX - minX;
-            const boxH = maxY - minY;
-            const pad = 140;
-            view.scale = clamp(Math.min(canvasWrap.clientWidth / (boxW + pad), canvasWrap.clientHeight / (boxH + pad)), view.min, 1.1);
-            applyZoom();
-            canvasWrap.scrollLeft = (minX + boxW / 2) * view.scale - canvasWrap.clientWidth / 2;
-            canvasWrap.scrollTop = (minY + boxH / 2) * view.scale - canvasWrap.clientHeight / 2;
-            scheduleDrawLines();
-        }
-        function openAuth() { authBackdrop.style.display = "flex"; }
-        function closeAuth() { authBackdrop.style.display = "none"; }
-        function openCreate(mode) {
-            createMode = mode;
-            createName.value = "";
-            createDesc.value = "";
-            createTypeWrap.style.display = mode === "node" ? "" : "none";
-            if (mode === "node") {
-                createTitle.textContent = "Create node";
-                createText.textContent = "Add a new guide node.";
-                createType.value = "event";
-            } else if (mode === "frame") {
-                createTitle.textContent = "Create frame";
-                createText.textContent = "Frames are big group boxes like Figma.";
-            } else {
-                createTitle.textContent = "Create section";
-                createText.textContent = "Sections help organise a smaller area.";
-            }
-            createBackdrop.style.display = "flex";
-            setTimeout(() => createName.focus(), 30);
-        }
-        function closeCreate() { createBackdrop.style.display = "none"; }
 
-        async function loadSession(user) {
-            if (!user) { session = null; return; }
-            const snap = await getDoc(doc(db, "users", user.uid));
+            await ensureUserDoc(firebaseUser);
+
+            const snap = await getDoc(doc(db, "users", firebaseUser.uid));
             const data = snap.exists() ? snap.data() : {};
+
             session = {
-                uid: user.uid,
-                email: user.email || "",
-                name: data.name || (user.email || "User").split("@")[0],
-                role: data.role || "staff"
+                uid: firebaseUser.uid,
+                email: firebaseUser.email || "",
+                name: data.name || (firebaseUser.email || "User").split("@")[0],
+                role: data.role || "staff",
+                photoURL: data.photoURL || ""
             };
         }
+
+        const canClickHost = host => {
+            if (!session) return false;
+            if (session.role === "admin") return true;
+            return host.uid === session.uid;
+        };
+
+        const upsertEvent = ev => setDoc(doc(db, "events", ev.id), ev, { merge: true });
+        const removeEvent = id => deleteDoc(doc(db, "events", id));
+        const upsertAvail = a => setDoc(doc(db, "availability", a.id), a, { merge: true });
+        const removeAvail = id => deleteDoc(doc(db, "availability", id));
+
+        const pickDocId = (dateIso, hostUid) => `${dateIso}_${hostUid}`;
+
+        function setPick(dateIso, host) {
+            const id = pickDocId(dateIso, host.uid);
+            return setDoc(doc(db, "host_picks", id), {
+                id,
+                date: dateIso,
+                hostUid: host.uid,
+                hostName: host.name || (host.email ? host.email.split("@")[0] : "User"),
+                hostImg: "",
+                email: host.email || ""
+            }, { merge: true });
+        }
+
+        const removePick = (dateIso, hostUid) =>
+            deleteDoc(doc(db, "host_picks", pickDocId(dateIso, hostUid)));
+
+        async function clearPicksForDate(dateIso) {
+            const picks = hostPicks.filter(p => p.date === dateIso);
+            await Promise.all(picks.map(p => removePick(dateIso, p.hostUid)));
+        }
+
+        const picksForDate = dateIso => hostPicks.filter(p => p.date === dateIso);
+        const isPicked = (dateIso, hostUid) => hostPicks.some(p => p.date === dateIso && p.hostUid === hostUid);
+
+        const whoLine = document.getElementById("whoLine");
+        const topAvatar = document.getElementById("topAvatar");
+        const rolePill = document.getElementById("rolePill");
+        const btnSettings = document.getElementById("btnSettings");
+        const btnLogin = document.getElementById("btnLogin");
+        const btnLogout = document.getElementById("btnLogout");
+        const calGrid = document.getElementById("calGrid");
+        const monthTitle = document.getElementById("monthTitle");
+        const selectedDateText = document.getElementById("selectedDateText");
+        const detailList = document.getElementById("detailList");
+        const sideSub = document.getElementById("sideSub");
+        const addEventBtn = document.getElementById("addEventBtn");
+        const addAvailBtn = document.getElementById("addAvailBtn");
+        const resetBtn = document.getElementById("resetBtn");
+        const storageNote = document.getElementById("storageNote");
+        const viewModeBtn = document.getElementById("viewModeBtn");
+        const clearAllBtn = document.getElementById("clearAllBtn");
+        const pfpPickerBox = document.getElementById("pfpPickerBox");
+        const pfpGrid = document.getElementById("pfpGrid");
+        const hostBar = document.getElementById("hostBar");
+        const hostBarDate = document.getElementById("hostBarDate");
+        const hostChips = document.getElementById("hostChips");
+        const clearMyPickBtn = document.getElementById("clearMyPickBtn");
+
+        const authBackdrop = document.getElementById("authBackdrop");
+        const tabLogin = document.getElementById("tabLogin");
+        const tabRegister = document.getElementById("tabRegister");
+        const authEmail = document.getElementById("authEmail");
+        const authPassword = document.getElementById("authPassword");
+        const authPassword2 = document.getElementById("authPassword2");
+        const confirmField = document.getElementById("confirmField");
+        const authGo = document.getElementById("authGo");
+
+        const settingsBackdrop = document.getElementById("settingsBackdrop");
+        const settingsProfileTab = document.getElementById("settingsProfileTab");
+        const settingsAccountTab = document.getElementById("settingsAccountTab");
+        const settingsProfilePanel = document.getElementById("settingsProfilePanel");
+        const settingsAccountPanel = document.getElementById("settingsAccountPanel");
+        const profileName = document.getElementById("profileName");
+        const profileFile = document.getElementById("profileFile");
+        const profilePreview = document.getElementById("profilePreview");
+        const accountCurrentEmail = document.getElementById("accountCurrentEmail");
+        const accountNewEmail = document.getElementById("accountNewEmail");
+        const accountCurrentPassword = document.getElementById("accountCurrentPassword");
+        const accountNewPassword = document.getElementById("accountNewPassword");
+        const accountNewPassword2 = document.getElementById("accountNewPassword2");
+
+        const dayBackdrop = document.getElementById("dayBackdrop");
+        const dayModalTitle = document.getElementById("dayModalTitle");
+        const dayModalSub = document.getElementById("dayModalSub");
+        const dayModalBody = document.getElementById("dayModalBody");
+
+        function setAuthMode(mode) {
+            authMode = mode;
+            const loginActive = mode === "login";
+            tabLogin.classList.toggle("active", loginActive);
+            tabRegister.classList.toggle("active", !loginActive);
+            confirmField.style.display = loginActive ? "none" : "block";
+            authGo.textContent = loginActive ? "Login" : "Register";
+        }
+
+        function openAuth() {
+            setAuthMode("login");
+            authBackdrop.style.display = "flex";
+        }
+
+        const closeAuth = () => authBackdrop.style.display = "none";
+
+        function setSettingsTab(tab) {
+            const profileActive = tab === "profile";
+            settingsProfileTab.classList.toggle("active", profileActive);
+            settingsAccountTab.classList.toggle("active", !profileActive);
+            settingsProfilePanel.classList.toggle("active", profileActive);
+            settingsAccountPanel.classList.toggle("active", !profileActive);
+        }
+
+        function openSettings() {
+            if (!session) return;
+            profileName.value = session.name || "";
+            profileImageData = session.photoURL || "";
+            profilePreview.src = profilePhotoOrDefault(session);
+            accountCurrentEmail.value = session.email || "";
+            accountNewEmail.value = "";
+            accountCurrentPassword.value = "";
+            accountNewPassword.value = "";
+            accountNewPassword2.value = "";
+            setSettingsTab("profile");
+            settingsBackdrop.style.display = "flex";
+        }
+
+        const closeSettings = () => settingsBackdrop.style.display = "none";
+
         function renderTop() {
             if (!session) {
-                userLine.textContent = "Not logged in";
+                whoLine.textContent = "Login required";
+                topAvatar.style.display = "none";
                 rolePill.style.display = "none";
-                loginBtn.style.display = "inline-block";
-                logoutBtn.style.display = "none";
-                addNodeBtn.style.display = "none";
-                addFrameBtn.style.display = "none";
-                addSectionBtn.style.display = "none";
-                connectModeBtn.style.display = "none";
-                clearSelectionBtn.style.display = "none";
+                btnSettings.style.display = "none";
+                btnLogin.style.display = "inline-block";
+                btnLogout.style.display = "none";
+                addEventBtn.style.display = "none";
+                addAvailBtn.style.display = "none";
+                resetBtn.style.display = "none";
+                viewModeBtn.style.display = "none";
+                clearAllBtn.style.display = "none";
+                sideSub.textContent = "Log in to view and manage the calendar";
                 return;
             }
-            userLine.textContent = `Logged in as ${session.name}`;
+
+            whoLine.textContent = `Logged in as ${session.name}`;
+            topAvatar.src = profilePhotoOrDefault(session);
+            topAvatar.style.display = "block";
             rolePill.style.display = "inline-flex";
-            roleText.textContent = session.role.toUpperCase();
-            loginBtn.style.display = "none";
-            logoutBtn.style.display = "inline-block";
+            rolePill.innerHTML = `Role: <b>${escapeHTML(session.role.toUpperCase())}</b>`;
+            btnSettings.style.display = "inline-block";
+            btnLogin.style.display = "none";
+            btnLogout.style.display = "inline-block";
+            viewModeBtn.style.display = "inline-block";
+            viewModeBtn.textContent = "View: " + (viewMode ? "ON" : "OFF");
 
-            if (isAdmin()) {
-                addNodeBtn.style.display = "inline-block";
-                addFrameBtn.style.display = "inline-block";
-                addSectionBtn.style.display = "inline-block";
-                connectModeBtn.style.display = "inline-block";
-                connectModeBtn.textContent = `Connect: ${connectMode ? "ON" : "OFF"}`;
-                clearSelectionBtn.style.display = selectedSourceNodeId ? "inline-block" : "none";
-            } else {
-                addNodeBtn.style.display = "none";
-                addFrameBtn.style.display = "none";
-                addSectionBtn.style.display = "none";
-                connectModeBtn.style.display = "none";
-                clearSelectionBtn.style.display = "none";
-            }
+            clearAllBtn.style.display = session.role === "admin" ? "inline-block" : "inline-block".replace("inline-block", "none");
+            resetBtn.style.display = session.role === "admin" ? "inline-block" : "none";
+            addEventBtn.style.display = (session.role === "admin" && !viewMode) ? "inline-block" : "none";
+            addAvailBtn.style.display = (session.role === "admin" && !viewMode) ? "inline-block" : "none";
+
+            sideSub.textContent = viewMode
+                ? "View mode: clicking days will not open editor"
+                : (session.role === "admin"
+                    ? "Admin: manage events, availability, and all picks"
+                    : "Staff: click dates and pick yourself as host");
         }
 
-        async function saveItem(item) { await setDoc(doc(db, "guide_items", item.id), item, { merge: true }); }
-        async function deleteItem(id) {
-            await deleteDoc(doc(db, "guide_items", id));
-            const related = links.filter(l => l.from === id || l.to === id);
-            await Promise.all(related.map(l => deleteDoc(doc(db, "guide_links", l.id))));
-        }
-        async function saveLink(link) { await setDoc(doc(db, "guide_links", link.id), link, { merge: true }); }
-        async function deleteLink(id) { await deleteDoc(doc(db, "guide_links", id)); }
+        function renderHostPicker() {
+            const show = !!session && !!selectedDate && !viewMode && hosts.length > 0;
+            pfpPickerBox.style.display = show ? "block" : "none";
+            if (!show) return;
 
-        function drawLines() {
-            svg.innerHTML = "";
-            links.forEach(link => {
-                const aEl = document.querySelector(`[data-id="${link.from}"]`);
-                const bEl = document.querySelector(`[data-id="${link.to}"]`);
-                if (!aEl || !bEl) return;
+            pfpGrid.innerHTML = "";
 
-                const x1 = aEl.offsetLeft + aEl.offsetWidth / 2;
-                const y1 = aEl.offsetTop + aEl.offsetHeight / 2;
-                const x2 = bEl.offsetLeft + bEl.offsetWidth / 2;
-                const y2 = bEl.offsetTop + bEl.offsetHeight / 2;
-                const dx = Math.max(80, Math.abs(x2 - x1) * 0.35);
-                const d = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+            hosts.forEach(host => {
+                const btn = document.createElement("div");
+                btn.className = "pfpBtn";
+                if (isPicked(selectedDate, host.uid)) btn.classList.add("active");
 
-                const visible = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                visible.setAttribute("d", d);
-                visible.setAttribute("fill", "none");
-                visible.setAttribute("stroke", "#32d583");
-                visible.setAttribute("stroke-width", "4");
-                visible.setAttribute("stroke-linecap", "round");
-                visible.style.pointerEvents = "none";
+                const allowed = canClickHost(host);
+                btn.setAttribute("aria-disabled", allowed ? "false" : "true");
 
-                const hit = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                hit.setAttribute("d", d);
-                hit.setAttribute("fill", "none");
-                hit.setAttribute("stroke", "transparent");
-                hit.setAttribute("stroke-width", "18");
-                hit.setAttribute("stroke-linecap", "round");
-                hit.style.pointerEvents = isAdmin() ? "stroke" : "none";
-                hit.style.cursor = isAdmin() ? "pointer" : "default";
+                btn.innerHTML = `<div class="pfpName">${escapeHTML(host.name || (host.email ? host.email.split("@")[0] : "User"))}</div>`;
 
-                if (isAdmin()) {
-                    hit.addEventListener("mouseenter", () => {
-                        visible.setAttribute("stroke", "#f5c04f");
-                        visible.setAttribute("stroke-width", "5");
-                    });
-                    hit.addEventListener("mouseleave", () => {
-                        visible.setAttribute("stroke", "#32d583");
-                        visible.setAttribute("stroke-width", "4");
-                    });
-                    hit.addEventListener("click", async (e) => {
-                        e.stopPropagation();
-                        if (!confirm("Delete this connection?")) return;
-                        try {
-                            await deleteLink(link.id);
-                            toast("Connection deleted");
-                        } catch (err) {
-                            console.error(err);
-                            toast("Could not delete connection");
-                        }
-                    });
-                }
+                btn.addEventListener("click", async e => {
+                    e.stopPropagation();
 
-                svg.appendChild(visible);
-                svg.appendChild(hit);
-            });
-        }
-        function emptyState() { emptyMessage.style.display = items.length ? "none" : "block"; }
-
-        function plainPaste(el) {
-            el.addEventListener("paste", e => {
-                e.preventDefault();
-                const text = (e.clipboardData || window.clipboardData).getData("text");
-                document.execCommand("insertText", false, text);
-            });
-        }
-
-        function bindEdit(el, item, mode) {
-            const titleEl = el.querySelector(".nodeTitle,.frameTitle,.sectionTitle");
-            const descEl = el.querySelector(".nodeDesc,.frameDesc,.sectionDesc");
-
-            if (isAdmin()) {
-                const begin = () => activeEditingId = item.id;
-                const finish = async () => {
-                    activeEditingId = null;
-                    const nextTitle = (titleEl?.innerText || "").trim() || (mode === "node" ? "Untitled" : mode === "frame" ? "New Frame" : "New Section");
-                    const nextDesc = (descEl?.innerText || "").trim();
-
-                    if (nextTitle === (item.title || "") && nextDesc === (item.desc || "")) {
-                        if (pendingRender) { pendingRender = false; render(); }
+                    if (!allowed) {
+                        toast("You can only pick your own profile");
                         return;
                     }
 
-                    item.title = nextTitle;
-                    item.desc = nextDesc;
                     try {
-                        await saveItem({ ...item, title: nextTitle, desc: nextDesc });
+                        if (isPicked(selectedDate, host.uid)) {
+                            await removePick(selectedDate, host.uid);
+                        } else {
+                            await setPick(selectedDate, host);
+                        }
                     } catch (err) {
                         console.error(err);
-                        toast("Could not save text");
-                    }
-                    if (pendingRender) { pendingRender = false; render(); }
-                };
-
-                if (titleEl) {
-                    titleEl.addEventListener("focus", begin);
-                    titleEl.addEventListener("blur", finish);
-                    plainPaste(titleEl);
-                    titleEl.addEventListener("keydown", e => {
-                        if (e.key === "Enter") {
-                            e.preventDefault();
-                            titleEl.blur();
-                        }
-                    });
-                }
-                if (descEl) {
-                    descEl.addEventListener("focus", begin);
-                    descEl.addEventListener("blur", finish);
-                    plainPaste(descEl);
-                    descEl.addEventListener("keydown", e => {
-                        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "enter") {
-                            e.preventDefault();
-                            descEl.blur();
-                        }
-                    });
-                }
-            }
-
-            const del = el.querySelector('[data-action="delete"]');
-            if (del) {
-                del.addEventListener("click", async e => {
-                    e.stopPropagation();
-                    if (!isAdmin()) return;
-                    if (!confirm(`Delete this ${mode}?`)) return;
-                    try {
-                        await deleteItem(item.id);
-                        if (selectedItemId === item.id) selectedItemId = null;
-                        if (selectedSourceNodeId === item.id) selectedSourceNodeId = null;
-                        toast(`${mode} deleted`);
-                    } catch (err) {
-                        console.error(err);
-                        toast(`Could not delete ${mode}`);
+                        toast("Could not update host pick");
                     }
                 });
+
+                pfpGrid.appendChild(btn);
+            });
+        }
+
+        function renderHostBar() {
+            if (!selectedDate) {
+                hostBar.style.display = "none";
+                return;
             }
 
-            el.addEventListener("click", e => {
-                e.stopPropagation();
-                selectedItemId = item.id;
-                render();
-            });
-        }
+            hostBar.style.display = "flex";
+            hostBarDate.textContent = prettyDate(selectedDate);
 
-        function enableMoveResize(el, item, options) {
-            let dragging = false;
-            let resizing = false;
-            let offsetX = 0, offsetY = 0;
-            let startX = 0, startY = 0, startW = 0, startH = 0;
+            const picks = picksForDate(selectedDate).slice().sort((a, b) => hostLabelFromPick(a).localeCompare(hostLabelFromPick(b)));
+            hostChips.innerHTML = "";
 
-            el.addEventListener("mousedown", e => {
-                if (!isAdmin() || isPanning || isSpacePressed || e.button !== 0) return;
-                if (e.target.closest('[contenteditable="true"]')) return;
-                if (e.target.closest('[data-action="delete"]')) return;
-
-                const resizeHandle = e.target.closest('[data-action="resize"]');
-                if (resizeHandle && options.resize) {
-                    resizing = true;
-                    startX = e.clientX;
-                    startY = e.clientY;
-                    startW = item.w || options.w;
-                    startH = item.h || options.h;
-                    el.classList.add("dragging");
-                    e.preventDefault();
-                    return;
-                }
-
-                dragging = true;
-                const p = screenToCanvas(e.clientX, e.clientY);
-                offsetX = p.x - (item.x || 0);
-                offsetY = p.y - (item.y || 0);
-                el.classList.add("dragging");
-                e.preventDefault();
-            });
-
-            window.addEventListener("mousemove", e => {
-                if (!dragging && !resizing) return;
-
-                if (dragging) {
-                    const p = screenToCanvas(e.clientX, e.clientY);
-                    const w = item.w || options.w;
-                    const h = item.h || options.h;
-                    const x = clamp(p.x - offsetX, 0, CANVAS_W - w - 20);
-                    const y = clamp(p.y - offsetY, 0, CANVAS_H - h - 20);
-
-                    el.style.left = x + "px";
-                    el.style.top = y + "px";
-                    item._draftX = x;
-                    item._draftY = y;
-                    scheduleDrawLines();
-                }
-
-                if (resizing) {
-                    let w = Math.max(options.minW, startW + (e.clientX - startX) / view.scale);
-                    let h = Math.max(options.minH, startH + (e.clientY - startY) / view.scale);
-                    w = clamp(w, options.minW, CANVAS_W - (item.x || 0));
-                    h = clamp(h, options.minH, CANVAS_H - (item.y || 0));
-
-                    el.style.width = w + "px";
-                    el.style.height = h + "px";
-                    item._draftW = w;
-                    item._draftH = h;
-                    scheduleDrawLines();
-                }
-            });
-
-            window.addEventListener("mouseup", async () => {
-                if (!dragging && !resizing) return;
-                dragging = false;
-                resizing = false;
-                el.classList.remove("dragging");
-
-                const update = { ...item };
-                let changed = false;
-
-                if (typeof item._draftX === "number") { item.x = item._draftX; update.x = item._draftX; delete item._draftX; changed = true; }
-                if (typeof item._draftY === "number") { item.y = item._draftY; update.y = item._draftY; delete item._draftY; changed = true; }
-                if (typeof item._draftW === "number") { item.w = item._draftW; update.w = item._draftW; delete item._draftW; changed = true; }
-                if (typeof item._draftH === "number") { item.h = item._draftH; update.h = item._draftH; delete item._draftH; changed = true; }
-
-                if (!changed) return;
-                try {
-                    await saveItem(update);
-                } catch (err) {
-                    console.error(err);
-                    toast("Could not save position/size");
-                }
-            });
-        }
-
-        function makeFrame(item) {
-            const el = document.createElement("div");
-            el.className = "frame" + (selectedItemId === item.id ? " selected" : "");
-            el.dataset.id = item.id;
-            el.style.left = (item.x || 120) + "px";
-            el.style.top = (item.y || 120) + "px";
-            el.style.width = (item.w || FRAME_W) + "px";
-            el.style.height = (item.h || FRAME_H) + "px";
-            el.innerHTML = `
-            <div class="frameTop">
-                <div class="frameTitle" ${isAdmin() ? `contenteditable="true" spellcheck="false"` : ``}>${esc(item.title || "New Frame")}</div>
-                <div class="nodeTools">${isAdmin() ? `<button class="iconBtn" data-action="delete">✕</button>` : ``}</div>
-            </div>
-            <div class="frameDesc" ${isAdmin() ? `contenteditable="true" spellcheck="false"` : ``}>${esc(item.desc || "")}</div>
-            ${isAdmin() ? `<div class="resizeHandle" data-action="resize"></div>` : ``}
-        `;
-            bindEdit(el, item, "frame");
-            if (isAdmin()) enableMoveResize(el, item, { resize: true, w: FRAME_W, h: FRAME_H, minW: 260, minH: 180 });
-            return el;
-        }
-
-        function makeSection(item) {
-            const el = document.createElement("div");
-            el.className = "sectionBox" + (selectedItemId === item.id ? " selected" : "");
-            el.dataset.id = item.id;
-            el.style.left = (item.x || 140) + "px";
-            el.style.top = (item.y || 140) + "px";
-            el.style.width = (item.w || SECTION_W) + "px";
-            el.style.height = (item.h || SECTION_H) + "px";
-            el.innerHTML = `
-            <div class="sectionTop">
-                <div class="sectionTitle" ${isAdmin() ? `contenteditable="true" spellcheck="false"` : ``}>${esc(item.title || "New Section")}</div>
-                <div class="nodeTools">${isAdmin() ? `<button class="iconBtn" data-action="delete">✕</button>` : ``}</div>
-            </div>
-            <div class="sectionDesc" ${isAdmin() ? `contenteditable="true" spellcheck="false"` : ``}>${esc(item.desc || "")}</div>
-            ${isAdmin() ? `<div class="resizeHandle" data-action="resize"></div>` : ``}
-        `;
-            bindEdit(el, item, "section");
-            if (isAdmin()) enableMoveResize(el, item, { resize: true, w: SECTION_W, h: SECTION_H, minW: 260, minH: 180 });
-            return el;
-        }
-
-        function makeNode(item) {
-            const el = document.createElement("div");
-            const selected = selectedItemId === item.id || selectedSourceNodeId === item.id;
-            el.className = "node" + (selected ? " selected" : "");
-            el.dataset.id = item.id;
-            el.style.left = (item.x || 180) + "px";
-            el.style.top = (item.y || 160) + "px";
-            el.innerHTML = `
-            <div class="nodeTop">
-                <div class="nodeType ${esc(item.type || "event")}">${nodeTypeLabel(item.type)}</div>
-                <div class="nodeTools">
-                    ${isAdmin() ? `<button class="iconBtn" data-action="connect">↔</button>` : ``}
-                    ${isAdmin() ? `<button class="iconBtn" data-action="delete">✕</button>` : ``}
-                </div>
-            </div>
-            <div class="nodeTitle" ${isAdmin() ? `contenteditable="true" spellcheck="false"` : ``}>${esc(item.title || "Untitled")}</div>
-            <div class="nodeDesc" ${isAdmin() ? `contenteditable="true" spellcheck="false"` : ``}>${esc(item.desc || "")}</div>
-        `;
-            bindEdit(el, item, "node");
-
-            const connectBtn = el.querySelector('[data-action="connect"]');
-            if (connectBtn) {
-                connectBtn.addEventListener("click", e => {
-                    e.stopPropagation();
-                    if (!isAdmin()) return;
-                    if (!connectMode) { toast("Turn Connect ON first"); return; }
-                    handleConnect(item.id);
+            if (!picks.length) {
+                const empty = document.createElement("div");
+                empty.className = "chip";
+                empty.innerHTML = `<b style="color:rgba(238,241,246,.78)">No hosts picked yet</b>`;
+                hostChips.appendChild(empty);
+            } else {
+                picks.forEach(p => {
+                    const chip = document.createElement("div");
+                    chip.className = "chip";
+                    chip.innerHTML = `<b>${escapeHTML(p.hostName || (p.email ? p.email.split("@")[0] : "Host"))}</b>`;
+                    hostChips.appendChild(chip);
                 });
             }
 
-            el.addEventListener("click", e => {
-                e.stopPropagation();
-                selectedItemId = item.id;
-                if (!isAdmin()) { render(); return; }
-                if (connectMode && !e.target.closest("[data-action]") && !e.target.isContentEditable) {
-                    handleConnect(item.id);
-                    return;
+            clearMyPickBtn.style.display = session && isPicked(selectedDate, session.uid) ? "inline-flex" : "none";
+        }
+
+        function getDayHeaderLabel(cellDate) {
+            const mon = cellDate.toLocaleString(undefined, { month: "short" }).toUpperCase();
+            return `${mon} ${cellDate.getDate()}`;
+        }
+
+        function getDaySymbol({ dayEvents, dayAvail, dayPicks, iso }) {
+            if (isPastDay(iso)) return "⏺";
+            if (dayEvents.length) return "★";
+            if (dayPicks.length) return "👥";
+            if (dayAvail.length) return "•";
+            return "";
+        }
+
+        function renderCalendar() {
+            monthTitle.textContent = monthLabel(viewDate);
+            calGrid.innerHTML = "";
+
+            const first = startOfMonth(viewDate);
+            const lead = mondayIndex(first.getDay());
+            const startCellDate = new Date(first);
+            startCellDate.setDate(first.getDate() - lead);
+
+            for (let i = 0; i < 42; i++) {
+                const cellDate = new Date(startCellDate);
+                cellDate.setDate(startCellDate.getDate() + i);
+                const iso = toISODate(cellDate);
+                const inMonth = cellDate.getMonth() === viewDate.getMonth();
+
+                const dayEvents = events.filter(e => e.date === iso);
+                const dayAvail = avail.filter(a => a.date === iso);
+                const dayPicks = hostPicks.filter(p => p.date === iso);
+
+                const div = document.createElement("div");
+                div.className = "day";
+                if (!inMonth) div.classList.add("muted");
+                if (selectedDate === iso) div.classList.add("selected");
+                if (isPastDay(iso)) div.classList.add("past");
+                if (isToday(iso)) div.classList.add("today");
+
+                const topBar = document.createElement("div");
+                topBar.className = "dayTopBar";
+
+                const dayDate = document.createElement("div");
+                dayDate.className = "dayDate";
+                dayDate.textContent = getDayHeaderLabel(cellDate);
+
+                const dayIcon = document.createElement("div");
+                dayIcon.className = "dayIcon";
+                dayIcon.textContent = getDaySymbol({ dayEvents, dayAvail, dayPicks, iso });
+
+                const body = document.createElement("div");
+                body.className = "dayBody";
+
+                topBar.append(dayDate, dayIcon);
+
+                if (dayEvents.length) {
+                    const ev = dayEvents[0];
+
+                    if (ev.time) {
+                        const time = document.createElement("div");
+                        time.className = "miniTime";
+                        time.textContent = ev.time;
+                        body.appendChild(time);
+                    }
+
+                    const title = document.createElement("div");
+                    title.className = "miniItem";
+                    title.textContent = ev.title;
+                    body.appendChild(title);
+
+                    const meta = document.createElement("div");
+                    meta.className = "miniMeta";
+                    meta.textContent = ev.note || (ev.host ? `with ${ev.host}` : "");
+                    body.appendChild(meta);
+                } else if (dayAvail.length) {
+                    const txt = document.createElement("div");
+                    txt.className = "miniItem";
+                    txt.textContent = `${dayAvail.length} availability added`;
+                    body.appendChild(txt);
+                } else if (dayPicks.length) {
+                    const txt = document.createElement("div");
+                    txt.className = "miniItem";
+                    txt.textContent = `${dayPicks.length} host pick${dayPicks.length === 1 ? "" : "s"}`;
+                    body.appendChild(txt);
                 }
-                render();
-            });
 
-            if (isAdmin()) enableMoveResize(el, item, { resize: false, w: NODE_W, h: NODE_H, minW: NODE_W, minH: NODE_H });
-            return el;
-        }
+                if (dayPicks.length) {
+                    const hostPreviewRow = document.createElement("div");
+                    hostPreviewRow.className = "hostPreviewRow";
 
-        async function handleConnect(nodeId) {
-            if (!selectedSourceNodeId) {
-                selectedSourceNodeId = nodeId;
-                renderTop();
-                render();
-                toast("First node selected");
-                return;
-            }
-            if (selectedSourceNodeId === nodeId) {
-                selectedSourceNodeId = null;
-                renderTop();
-                render();
-                toast("Selection cleared");
-                return;
-            }
-            const exists = links.some(l =>
-                (l.from === selectedSourceNodeId && l.to === nodeId) ||
-                (l.from === nodeId && l.to === selectedSourceNodeId)
-            );
-            if (exists) {
-                toast("Those nodes are already connected");
-                return;
-            }
-            try {
-                await saveLink({ id: uid(), from: selectedSourceNodeId, to: nodeId });
-                selectedSourceNodeId = null;
-                renderTop();
-                render();
-                toast("Nodes connected");
-            } catch (err) {
-                console.error(err);
-                toast("Could not create link");
-            }
-        }
+                    dayPicks.slice(0, 3).forEach(p => {
+                        const nameTag = document.createElement("div");
+                        nameTag.className = "badge ok";
+                        nameTag.textContent = p.hostName || (p.email ? p.email.split("@")[0] : "Host");
+                        hostPreviewRow.appendChild(nameTag);
+                    });
 
-        function render() {
-            if (activeEditingId) {
-                pendingRender = true;
-                scheduleDrawLines();
-                return;
-            }
+                    if (dayPicks.length > 3) {
+                        const extra = document.createElement("div");
+                        extra.className = "miniMeta";
+                        extra.textContent = `+${dayPicks.length - 3}`;
+                        hostPreviewRow.appendChild(extra);
+                    }
 
-            [...canvas.querySelectorAll(".frame,.sectionBox,.node")].forEach(el => el.remove());
+                    body.appendChild(hostPreviewRow);
+                }
 
-            getFrames().forEach(item => canvas.appendChild(makeFrame(item)));
-            getSections().forEach(item => canvas.appendChild(makeSection(item)));
-            getNodes().forEach(item => canvas.appendChild(makeNode(item)));
+                if (!dayEvents.length && !dayAvail.length && !dayPicks.length) {
+                    const spacer = document.createElement("div");
+                    spacer.className = "miniMeta";
+                    spacer.textContent = isPastDay(iso) ? "Past day" : "";
+                    body.appendChild(spacer);
+                }
 
-            emptyState();
-            scheduleDrawLines();
-        }
+                div.append(topBar, body);
 
-        function startRealtime() {
-            if (unsubItems) unsubItems();
-            if (unsubLinks) unsubLinks();
+                div.addEventListener("click", () => {
+                    selectedDate = iso;
+                    renderCalendar();
+                    renderDetails();
+                    renderHostPicker();
+                    renderHostBar();
 
-            unsubItems = onSnapshot(collection(db, "guide_items"), snap => {
-                items = snap.docs.map(d => d.data()).sort((a, b) => {
-                    const order = { frame: 1, section: 2, node: 3 };
-                    return (order[a.kind] || 9) - (order[b.kind] || 9) || (a.createdAt || 0) - (b.createdAt || 0);
+                    if (viewMode) return;
+
+                    if (!session) {
+                        pendingOpenDate = iso;
+                        openAuth();
+                        return;
+                    }
+
+                    if (session.role !== "admin") return;
+                    openDayModal(iso);
                 });
 
-                if (activeEditingId) {
-                    pendingRender = true;
-                    scheduleDrawLines();
-                    return;
-                }
-                render();
-            });
-
-            unsubLinks = onSnapshot(collection(db, "guide_links"), snap => {
-                links = snap.docs.map(d => d.data());
-                scheduleDrawLines();
-            });
+                calGrid.appendChild(div);
+            }
         }
 
-        function spawnPoint() {
-            const c = getViewCenter();
-            return {
-                x: clamp(c.x - 180, 40, CANVAS_W - 700),
-                y: clamp(c.y - 120, 40, CANVAS_H - 500)
+        function renderDetails() {
+            selectedDateText.textContent = selectedDate ? prettyDate(selectedDate) : "None";
+            detailList.innerHTML = "";
+            renderHostBar();
+            renderHostPicker();
+
+            if (!session) {
+                detailList.innerHTML = `<div class="emptyState">Login required. Create an account or log in to use the calendar.</div>`;
+                return;
+            }
+
+            if (!selectedDate) {
+                detailList.innerHTML = `<div class="emptyState">Pick a date to view events, picks, and availability.</div>`;
+                return;
+            }
+
+            const dayEvents = events.filter(e => e.date === selectedDate);
+            const dayAvail = avail.filter(a => a.date === selectedDate);
+            const dayPicks = picksForDate(selectedDate);
+
+            const picksCard = document.createElement("div");
+            picksCard.className = "detailCard";
+            picksCard.innerHTML = `
+                        <div class="detailCardTop">
+                            <h4>Picked hosts (${dayPicks.length})</h4>
+                            <div class="badge ok">Host picks</div>
+                        </div>
+                    `;
+
+            if (!dayPicks.length) {
+                picksCard.innerHTML += `<div class="emptyState">No host picks yet.</div>`;
+            } else {
+                dayPicks.forEach(pick => {
+                    const row = document.createElement("div");
+                    row.className = "pickEntry";
+
+                    row.innerHTML = `
+                                <div class="pickEntryLeft">
+                                    <div>
+                                        <div class="pickEntryName">${escapeHTML(pick.hostName || (pick.email ? pick.email.split("@")[0] : "Host"))}</div>
+                                        <div class="pickEntryMeta">${escapeHTML(pick.email || "")}</div>
+                                    </div>
+                                </div>
+                            `;
+
+                    const actions = document.createElement("div");
+                    actions.className = "actionsRow";
+
+                    const isMine = session && pick.hostUid === session.uid;
+
+                    if (!viewMode && (session.role === "admin" || isMine)) {
+                        const removeBtn = document.createElement("button");
+                        removeBtn.className = "btn small danger";
+                        removeBtn.textContent = session.role === "admin" && !isMine ? "Remove pick" : "Remove";
+                        removeBtn.onclick = async () => {
+                            try {
+                                await removePick(selectedDate, pick.hostUid);
+                                toast("Pick removed");
+                            } catch (err) {
+                                console.error(err);
+                                toast("Could not remove pick");
+                            }
+                        };
+                        actions.appendChild(removeBtn);
+                    }
+
+                    row.appendChild(actions);
+                    picksCard.appendChild(row);
+                });
+
+                if (!viewMode && session.role === "admin" && dayPicks.length) {
+                    const clearWrap = document.createElement("div");
+                    clearWrap.className = "actionsRow";
+                    clearWrap.style.marginTop = "10px";
+
+                    const clearBtn = document.createElement("button");
+                    clearBtn.className = "btn small danger";
+                    clearBtn.textContent = "Clear date picks";
+                    clearBtn.onclick = async () => {
+                        if (!confirm("Remove all host picks for this date?")) return;
+                        try {
+                            await clearPicksForDate(selectedDate);
+                            toast("Cleared picks");
+                        } catch (err) {
+                            console.error(err);
+                            toast("Could not clear picks");
+                        }
+                    };
+
+                    clearWrap.appendChild(clearBtn);
+                    picksCard.appendChild(clearWrap);
+                }
+            }
+
+            detailList.appendChild(picksCard);
+
+            const evCard = document.createElement("div");
+            evCard.className = "detailCard";
+            evCard.innerHTML = `
+                        <div class="detailCardTop">
+                            <h4>Official events (${dayEvents.length})</h4>
+                            <div class="badge brand">${session.role === "admin" ? "Admin" : "Staff"}</div>
+                        </div>
+                    `;
+
+            if (!dayEvents.length) {
+                evCard.innerHTML += `<div class="emptyState">No official events on this day yet.</div>`;
+            } else {
+                dayEvents
+                    .slice()
+                    .sort((a, b) => (a.time || "").localeCompare(b.time || ""))
+                    .forEach(ev => {
+                        const wrap = document.createElement("div");
+                        wrap.className = "eventBlock";
+                        wrap.innerHTML = `
+                                    <div class="eventTitle">${escapeHTML(ev.title)}</div>
+                                    <div class="metaText">${escapeHTML(ev.time || "Time TBA")} • ${escapeHTML(ev.location || "Location TBA")} • ${escapeHTML(ev.host ? `Host: ${ev.host}` : "Host: Unassigned")}</div>
+                                    ${ev.note ? `<div class="metaText" style="margin-top:8px;">${escapeHTML(ev.note)}</div>` : ""}
+                                `;
+
+                        if (!viewMode && session.role === "admin") {
+                            const controls = document.createElement("div");
+                            controls.className = "actionsRow";
+                            controls.style.marginTop = "10px";
+
+                            const setHostBtn = document.createElement("button");
+                            setHostBtn.className = "btn small primary";
+                            setHostBtn.textContent = "Set host";
+                            setHostBtn.onclick = async () => {
+                                const name = prompt("Host name:", ev.host || "");
+                                if (name === null) return;
+                                await upsertEvent({ ...ev, host: name.trim() });
+                                toast("Host updated");
+                            };
+
+                            const delBtn = document.createElement("button");
+                            delBtn.className = "btn small danger";
+                            delBtn.textContent = "Remove";
+                            delBtn.onclick = async () => {
+                                await removeEvent(ev.id);
+                                toast("Event removed");
+                            };
+
+                            controls.append(setHostBtn, delBtn);
+                            wrap.appendChild(controls);
+                        }
+
+                        evCard.appendChild(wrap);
+                    });
+            }
+
+            detailList.appendChild(evCard);
+
+            const avCard = document.createElement("div");
+            avCard.className = "detailCard";
+            avCard.innerHTML = `
+                        <div class="detailCardTop">
+                            <h4>Staff availability (${dayAvail.length})</h4>
+                            <div class="badge warn">Availability</div>
+                        </div>
+                    `;
+
+            if (!dayAvail.length) {
+                avCard.innerHTML += `<div class="emptyState">No availability added yet.</div>`;
+            } else {
+                dayAvail.forEach(a => {
+                    const line = document.createElement("div");
+                    line.className = "availabilityBlock";
+                    line.innerHTML = `
+                                <div class="eventTitle" style="margin-bottom:4px;">${escapeHTML(a.name)}</div>
+                                <div class="metaText">${escapeHTML(a.note || "Available to host")}</div>
+                            `;
+
+                    if (!viewMode && session.role === "admin") {
+                        const del = document.createElement("button");
+                        del.className = "btn small danger";
+                        del.textContent = "Remove";
+                        del.style.marginTop = "10px";
+                        del.onclick = async () => {
+                            await removeAvail(a.id);
+                            toast("Availability removed");
+                        };
+                        line.appendChild(del);
+                    }
+
+                    avCard.appendChild(line);
+                });
+            }
+
+            detailList.appendChild(avCard);
+        }
+
+        function openDayModal(iso) {
+            if (!session || viewMode || session.role !== "admin") return;
+
+            dayBackdrop.style.display = "flex";
+            dayModalTitle.textContent = prettyDate(iso);
+            dayModalSub.textContent = "Small quick editor for admins.";
+
+            dayModalBody.innerHTML = `
+                        <div class="actionsRow" style="justify-content:space-between; margin-bottom:12px;">
+                            <div class="pill">Selected: <b>${escapeHTML(iso)}</b></div>
+                            <button class="btn" id="closeDayModal" type="button">Close</button>
+                        </div>
+
+                        <div class="field">
+                            <label>Event title</label>
+                            <input id="evTitle" placeholder="e.g. Time Trial" maxlength="50">
+                        </div>
+
+                        <div class="editorMiniGrid">
+                            <div class="field">
+                                <label>Time</label>
+                                <input id="evTime" placeholder="e.g. 6:00PM AEST" maxlength="30">
+                            </div>
+                            <div class="field">
+                                <label>Location</label>
+                                <input id="evLoc" placeholder="e.g. Spider cave" maxlength="40">
+                            </div>
+                        </div>
+
+                        <div class="editorMiniGrid">
+                            <div class="field">
+                                <label>Host</label>
+                                <input id="evHost" placeholder="e.g. Nugg" maxlength="24">
+                            </div>
+                            <div class="field">
+                                <label>Availability name</label>
+                                <input id="avName" placeholder="e.g. Nugg" maxlength="24">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label>Notes</label>
+                            <textarea id="evNote" placeholder="Extra details or availability note"></textarea>
+                        </div>
+
+                        <div class="modalActions">
+                            <button class="btn primary" id="saveEvent" type="button">Add event</button>
+                            <button class="btn ok" id="saveAvail" type="button">Add availability</button>
+                        </div>
+                    `;
+
+            document.getElementById("closeDayModal").onclick = () => dayBackdrop.style.display = "none";
+
+            document.getElementById("saveEvent").onclick = async () => {
+                const title = document.getElementById("evTitle").value.trim();
+                const time = document.getElementById("evTime").value.trim();
+                const loc = document.getElementById("evLoc").value.trim();
+                const host = document.getElementById("evHost").value.trim();
+                const note = document.getElementById("evNote").value.trim();
+
+                if (!title) {
+                    toast("Event title required");
+                    return;
+                }
+
+                await upsertEvent({ id: uid(), date: iso, title, time, location: loc, host, note });
+                toast("Event added");
+                dayBackdrop.style.display = "none";
+            };
+
+            document.getElementById("saveAvail").onclick = async () => {
+                const name = document.getElementById("avName").value.trim();
+                const note = document.getElementById("evNote").value.trim();
+
+                if (!name) {
+                    toast("Availability name required");
+                    return;
+                }
+
+                await upsertAvail({ id: uid(), date: iso, name, note });
+                toast("Availability added");
+                dayBackdrop.style.display = "none";
             };
         }
-        async function createItem() {
-            if (!isAdmin()) return;
-            const title = (createName.value || "").trim() || (
-                createMode === "node" ? "New Node" :
-                    createMode === "frame" ? "New Frame" : "New Section"
-            );
-            const desc = (createDesc.value || "").trim();
-            const p = spawnPoint();
 
-            let item;
-            if (createMode === "node") {
-                item = {
-                    id: uid(), kind: "node", type: createType.value || "event",
-                    title, desc, x: p.x, y: p.y, w: NODE_W, h: NODE_H, createdAt: Date.now()
-                };
-            } else if (createMode === "frame") {
-                item = {
-                    id: uid(), kind: "frame",
-                    title, desc, x: p.x, y: p.y, w: FRAME_W, h: FRAME_H, createdAt: Date.now()
-                };
-            } else {
-                item = {
-                    id: uid(), kind: "section",
-                    title, desc, x: p.x, y: p.y, w: SECTION_W, h: SECTION_H, createdAt: Date.now()
-                };
-            }
-
-            try {
-                await saveItem(item);
-                closeCreate();
-                toast(`${createMode} added`);
-            } catch (err) {
-                console.error(err);
-                toast(`Could not add ${createMode}`);
-            }
+        function clearListeners() {
+            unsubscribers.forEach(fn => {
+                try { fn(); } catch { }
+            });
+            unsubscribers = [];
         }
 
-        function startPan(clientX, clientY) {
-            isPanning = true;
-            panStartX = clientX;
-            panStartY = clientY;
-            canvasWrap.classList.add("panning");
-        }
-        function stopPan() {
-            isPanning = false;
-            canvasWrap.classList.remove("panning");
-        }
-        function initPanZoom() {
-            canvasWrap.addEventListener("mousedown", e => {
-                const editable = e.target.closest('[contenteditable="true"]');
-                const tool = e.target.closest("[data-action]");
-                const item = e.target.closest(".node,.frame,.sectionBox");
+        function startListeners() {
+            clearListeners();
+            storageNote.textContent = "Syncing with Firebase...";
 
-                if (e.button === 1) {
-                    e.preventDefault();
-                    startPan(e.clientX, e.clientY);
-                    return;
-                }
+            unsubscribers.push(onSnapshot(collection(db, "users"), snap => {
+                usersMap.clear();
+                hosts = snap.docs.map(d => {
+                    const data = d.data();
+                    const user = {
+                        uid: d.id,
+                        name: data.name || "User",
+                        email: data.email || "",
+                        role: data.role || "staff",
+                        photoURL: data.photoURL || ""
+                    };
+                    usersMap.set(d.id, user);
+                    return user;
+                }).sort((a, b) => hostLabelFromUser(a).localeCompare(hostLabelFromUser(b)));
 
-                if (isSpacePressed && e.button === 0 && !editable && !tool) {
-                    e.preventDefault();
-                    startPan(e.clientX, e.clientY);
-                    return;
-                }
-
-                if (!item && e.button === 0) {
-                    selectedItemId = null;
-                    if (connectMode && isAdmin()) selectedSourceNodeId = null;
+                if (session && usersMap.has(session.uid)) {
+                    session = { ...session, ...usersMap.get(session.uid) };
                     renderTop();
-                    render();
                 }
-            });
 
-            window.addEventListener("mousemove", e => {
-                if (!isPanning) return;
-                const dx = e.clientX - panStartX;
-                const dy = e.clientY - panStartY;
-                canvasWrap.scrollLeft -= dx;
-                canvasWrap.scrollTop -= dy;
-                panStartX = e.clientX;
-                panStartY = e.clientY;
-                scheduleDrawLines();
-            });
+                renderHostPicker();
+                renderDetails();
+            }));
 
-            window.addEventListener("mouseup", stopPan);
+            unsubscribers.push(onSnapshot(collection(db, "events"), snap => {
+                events = snap.docs.map(d => d.data());
+                saveJSON(KEY_EVENTS, events);
+                renderCalendar();
+                renderDetails();
+                storageNote.textContent = "Synced with Firebase";
+            }));
 
-            canvasWrap.addEventListener("wheel", e => {
-                if (e.ctrlKey || e.metaKey) {
-                    e.preventDefault();
-                    zoomAt(e.clientX, e.clientY, view.scale * Math.exp(-e.deltaY * 0.0014));
-                    return;
-                }
-                if (e.shiftKey) {
-                    e.preventDefault();
-                    canvasWrap.scrollLeft += e.deltaY;
-                    scheduleDrawLines();
-                }
-            }, { passive: false });
+            unsubscribers.push(onSnapshot(collection(db, "availability"), snap => {
+                avail = snap.docs.map(d => d.data());
+                saveJSON(KEY_AVAIL, avail);
+                renderCalendar();
+                renderDetails();
+            }));
+
+            unsubscribers.push(onSnapshot(collection(db, "host_picks"), snap => {
+                hostPicks = snap.docs.map(d => d.data());
+                saveJSON(KEY_PICKS, hostPicks);
+                renderCalendar();
+                renderDetails();
+                renderHostPicker();
+                renderHostBar();
+            }));
         }
 
-        loginBtn.addEventListener("click", openAuth);
-        authClose.addEventListener("click", closeAuth);
-        authBackdrop.addEventListener("click", e => { if (e.target === authBackdrop) closeAuth(); });
+        btnLogin.addEventListener("click", openAuth);
 
-        authGo.addEventListener("click", async () => {
-            const email = (authEmail.value || "").trim();
-            const password = authPassword.value || "";
-            if (!email || !password) { toast("Enter email and password"); return; }
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                closeAuth();
-                toast("Logged in");
-            } catch (err) {
-                console.error(err);
-                toast(err.code || "Login failed");
-            }
-        });
-
-        logoutBtn.addEventListener("click", async () => {
+        btnLogout.addEventListener("click", async () => {
             try {
                 await signOut(auth);
                 toast("Logged out");
@@ -1480,93 +2453,338 @@
             }
         });
 
-        addNodeBtn.addEventListener("click", () => openCreate("node"));
-        addFrameBtn.addEventListener("click", () => openCreate("frame"));
-        addSectionBtn.addEventListener("click", () => openCreate("section"));
+        btnSettings.addEventListener("click", openSettings);
 
-        createClose.addEventListener("click", closeCreate);
-        createBackdrop.addEventListener("click", e => { if (e.target === createBackdrop) closeCreate(); });
-        createGo.addEventListener("click", createItem);
+        tabLogin.addEventListener("click", () => setAuthMode("login"));
+        tabRegister.addEventListener("click", () => setAuthMode("register"));
+        document.getElementById("authClose").addEventListener("click", closeAuth);
 
-        connectModeBtn.addEventListener("click", () => {
-            if (!isAdmin()) return;
-            connectMode = !connectMode;
-            if (!connectMode) selectedSourceNodeId = null;
-            renderTop();
-            render();
-            toast(`Connect mode ${connectMode ? "ON" : "OFF"}`);
-        });
+        authGo.addEventListener("click", async () => {
+            const email = authEmail.value.trim();
+            const password = authPassword.value;
+            const password2 = authPassword2.value;
 
-        clearSelectionBtn.addEventListener("click", () => {
-            selectedSourceNodeId = null;
-            renderTop();
-            render();
-            toast("Selected link cleared");
-        });
-
-        zoomInBtn.addEventListener("click", () => zoomBy(1));
-        zoomOutBtn.addEventListener("click", () => zoomBy(-1));
-        resetViewBtn.addEventListener("click", () => resetView(true));
-        fitViewBtn.addEventListener("click", fitView);
-
-        canvasWrap.addEventListener("scroll", scheduleDrawLines);
-        window.addEventListener("resize", scheduleDrawLines);
-
-        document.addEventListener("keydown", e => {
-            const tag = (document.activeElement?.tagName || "").toLowerCase();
-            const typing = ["input", "textarea", "select"].includes(tag) || document.activeElement?.isContentEditable;
-
-            if (e.code === "Space" && !typing) {
-                isSpacePressed = true;
-                document.body.style.userSelect = "none";
+            if (!email || !password) {
+                toast("Enter email and password");
+                return;
             }
 
-            if (typing) {
-                if (e.key === "Escape") document.activeElement.blur();
-                if (e.key === "Enter" && createBackdrop.style.display === "flex" && document.activeElement === createName) {
-                    e.preventDefault();
-                    createItem();
+            if (authMode === "register") {
+                if (password.length < 6) {
+                    toast("Password must be at least 6 characters");
+                    return;
+                }
+
+                if (password !== password2) {
+                    toast("Passwords do not match");
+                    return;
+                }
+
+                try {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                    closeAuth();
+                    toast("Account created");
+                } catch (err) {
+                    console.error("REGISTER ERROR:", err);
+                    toast(err.code || err.message || "Could not register");
                 }
                 return;
             }
 
-            if (e.key === "Escape") {
-                selectedSourceNodeId = null;
-                selectedItemId = null;
-                connectMode = false;
-                stopPan();
-                renderTop();
-                render();
-            }
-            if (e.key === "+" || e.key === "=") { e.preventDefault(); zoomBy(1); }
-            if (e.key === "-") { e.preventDefault(); zoomBy(-1); }
-            if (e.key === "0") { e.preventDefault(); resetView(true); }
-            if (e.key.toLowerCase() === "f") { e.preventDefault(); fitView(); }
-        });
-        document.addEventListener("keyup", e => {
-            if (e.code === "Space") {
-                isSpacePressed = false;
-                document.body.style.userSelect = "";
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                closeAuth();
+                toast("Logged in");
+            } catch (err) {
+                console.error("LOGIN ERROR:", err);
+                toast(err.code || err.message || "Login failed");
             }
         });
 
-        onAuthStateChanged(auth, async user => {
+        settingsProfileTab.addEventListener("click", () => setSettingsTab("profile"));
+        settingsAccountTab.addEventListener("click", () => setSettingsTab("account"));
+        document.getElementById("settingsClose").addEventListener("click", closeSettings);
+
+        profileFile.addEventListener("change", async () => {
+            const file = profileFile.files?.[0];
+            if (!file) return;
+
             try {
-                await loadSession(user);
+                profileImageData = await fileToAvatarDataURL(file);
+                profilePreview.src = profileImageData;
+            } catch (err) {
+                console.error(err);
+                toast("Could not read image");
+            }
+        });
+
+        document.getElementById("removeProfilePic").addEventListener("click", () => {
+            profileImageData = "";
+            profileFile.value = "";
+            profilePreview.src = defaultAvatarDataURL(profileName.value || session?.name || "User");
+        });
+
+        profileName.addEventListener("input", () => {
+            if (!profileImageData) {
+                profilePreview.src = defaultAvatarDataURL(profileName.value || "User");
+            }
+        });
+
+        document.getElementById("saveProfileBtn").addEventListener("click", async () => {
+            if (!session) return;
+
+            const name = profileName.value.trim();
+            if (name.length < 2) {
+                toast("Display name must be at least 2 characters");
+                return;
+            }
+
+            try {
+                const existing = await getDoc(doc(db, "users", session.uid));
+                const current = existing.exists() ? existing.data() : {};
+                await setDoc(doc(db, "users", session.uid), {
+                    name,
+                    email: session.email || current.email || "",
+                    role: current.role || "staff",
+                    photoURL: profileImageData || ""
+                }, { merge: true });
+
+                session = {
+                    ...session,
+                    name,
+                    photoURL: profileImageData || "",
+                    role: current.role || session.role || "staff"
+                };
+
+                topAvatar.src = profilePhotoOrDefault(session);
                 renderTop();
-                render();
+                renderHostPicker();
+                renderDetails();
+                toast("Profile saved");
+            } catch (err) {
+                console.error(err);
+                toast("Could not save profile");
+            }
+        });
+
+        document.getElementById("saveAccountBtn").addEventListener("click", async () => {
+            const user = auth.currentUser;
+            if (!user || !session) return;
+
+            const newEmail = accountNewEmail.value.trim();
+            const currentPassword = accountCurrentPassword.value;
+            const newPassword = accountNewPassword.value;
+            const newPassword2 = accountNewPassword2.value;
+
+            if (!newEmail && !newPassword) {
+                toast("No account changes entered");
+                return;
+            }
+
+            if (!currentPassword) {
+                toast("Enter your current password");
+                return;
+            }
+
+            if (newPassword && newPassword.length < 6) {
+                toast("New password must be at least 6 characters");
+                return;
+            }
+
+            if (newPassword && newPassword !== newPassword2) {
+                toast("New passwords do not match");
+                return;
+            }
+
+            try {
+                const credential = EmailAuthProvider.credential(user.email, currentPassword);
+                await reauthenticateWithCredential(user, credential);
+
+                if (newEmail) await updateEmail(user, newEmail);
+                if (newPassword) await updatePassword(user, newPassword);
+
+                await setDoc(doc(db, "users", session.uid), {
+                    email: newEmail || user.email || session.email || ""
+                }, { merge: true });
+
+                session.email = newEmail || user.email || session.email || "";
+                accountCurrentEmail.value = session.email;
+                accountNewEmail.value = "";
+                accountCurrentPassword.value = "";
+                accountNewPassword.value = "";
+                accountNewPassword2.value = "";
+
+                toast("Account updated");
+            } catch (err) {
+                console.error("ACCOUNT UPDATE ERROR:", err);
+                toast(err.code || err.message || "Could not update account");
+            }
+        });
+
+        clearMyPickBtn.addEventListener("click", async () => {
+            if (!session || !selectedDate) return;
+
+            try {
+                await removePick(selectedDate, session.uid);
+                toast("Removed your pick");
+            } catch (err) {
+                console.error(err);
+                toast("Could not remove pick");
+            }
+        });
+
+        document.getElementById("prevMonth").addEventListener("click", () => {
+            viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1);
+            renderCalendar();
+        });
+
+        document.getElementById("nextMonth").addEventListener("click", () => {
+            viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1);
+            renderCalendar();
+        });
+
+        document.getElementById("todayBtn").addEventListener("click", () => {
+            viewDate = new Date();
+            selectedDate = toISODate(new Date());
+            renderCalendar();
+            renderDetails();
+
+            if (viewMode) return;
+
+            if (!session) {
+                pendingOpenDate = selectedDate;
+                openAuth();
+                return;
+            }
+
+            if (session.role === "admin") openDayModal(selectedDate);
+        });
+
+        addEventBtn.addEventListener("click", () => {
+            if (viewMode) return;
+            if (!session) {
+                pendingOpenDate = selectedDate || toISODate(new Date());
+                openAuth();
+                return;
+            }
+            if (session.role !== "admin") return;
+            if (!selectedDate) selectedDate = toISODate(new Date());
+            openDayModal(selectedDate);
+        });
+
+        addAvailBtn.addEventListener("click", () => {
+            if (viewMode) return;
+            if (!session) {
+                pendingOpenDate = selectedDate || toISODate(new Date());
+                openAuth();
+                return;
+            }
+            if (session.role !== "admin") return;
+            if (!selectedDate) selectedDate = toISODate(new Date());
+            openDayModal(selectedDate);
+        });
+
+        viewModeBtn.addEventListener("click", () => {
+            viewMode = !viewMode;
+            saveJSON(KEY_VIEWMODE, viewMode);
+            toast("View mode " + (viewMode ? "ON" : "OFF"));
+            renderTop();
+            renderCalendar();
+            renderDetails();
+        });
+
+        clearAllBtn.addEventListener("click", async () => {
+            if (!session || session.role !== "admin") return;
+
+            const ok = confirm(
+                "CLEAR ALL?\n\nThis deletes:\n- All Events\n- All Availability\n- All Host Picks\n\nThis cannot be undone."
+            );
+            if (!ok) return;
+
+            try {
+                const [evSnap, avSnap, pkSnap] = await Promise.all([
+                    getDocs(collection(db, "events")),
+                    getDocs(collection(db, "availability")),
+                    getDocs(collection(db, "host_picks"))
+                ]);
+
+                const deletes = [];
+                evSnap.forEach(d => deletes.push(deleteDoc(doc(db, "events", d.id))));
+                avSnap.forEach(d => deletes.push(deleteDoc(doc(db, "availability", d.id))));
+                pkSnap.forEach(d => deletes.push(deleteDoc(doc(db, "host_picks", d.id))));
+                await Promise.all(deletes);
+
+                toast("Cleared everything");
+            } catch (err) {
+                console.error(err);
+                toast("Clear failed");
+            }
+        });
+
+        resetBtn.addEventListener("click", () => {
+            if (!session || session.role !== "admin") return;
+            saveJSON(KEY_EVENTS, []);
+            saveJSON(KEY_AVAIL, []);
+            saveJSON(KEY_PICKS, []);
+            toast("Local cache cleared");
+        });
+
+        authBackdrop.addEventListener("click", e => {
+            if (e.target === authBackdrop) closeAuth();
+        });
+
+        settingsBackdrop.addEventListener("click", e => {
+            if (e.target === settingsBackdrop) closeSettings();
+        });
+
+        dayBackdrop.addEventListener("click", e => {
+            if (e.target === dayBackdrop) dayBackdrop.style.display = "none";
+        });
+
+        onAuthStateChanged(auth, async firebaseUser => {
+            try {
+                if (!firebaseUser) {
+                    session = null;
+                    renderTop();
+                    renderCalendar();
+                    renderDetails();
+                    return;
+                }
+
+                await loadSessionFromAuth(firebaseUser);
+                renderTop();
+                renderCalendar();
+                renderDetails();
+                startListeners();
+
+                if (pendingOpenDate && session?.role === "admin" && !viewMode) {
+                    const dateToOpen = pendingOpenDate;
+                    pendingOpenDate = null;
+                    selectedDate = dateToOpen;
+                    renderCalendar();
+                    renderDetails();
+                    openDayModal(dateToOpen);
+                } else {
+                    pendingOpenDate = null;
+                }
             } catch (err) {
                 console.error(err);
                 toast("Could not load account");
             }
         });
 
-        initPanZoom();
-        startRealtime();
-        renderTop();
-        render();
-        resetView(true);
-        setTimeout(() => { if (!items.length) fitView(); }, 200);
+        function boot() {
+            selectedDate = toISODate(new Date());
+            renderTop();
+            renderCalendar();
+            renderDetails();
+            startListeners();
+        }
+
+        boot();
     </script>
+
+
+    <use-chat-gpt-ai id="USE_CHAT_GPT_AI_ROOT" class="close" data-version="8.37.0" style="transition: 0.1s ease-in-out;"></use-chat-gpt-ai><use-chat-gpt-ai-content-menu id="USE_CHAT_GPT_AI_ROOT_Context_Menu"></use-chat-gpt-ai-content-menu><use-chat-gpt-ai id="maxai-global-popup-container" translate="no"></use-chat-gpt-ai><max-ai-minimum-app id="USE_CHAT_GPT_AI_ROOT_Minimize_Container" data-version="8.37.0"></max-ai-minimum-app><div id="MAXAI_SNACKBAR_CONTAINER" style="z-index: 2147483647; color: rgb(255, 255, 255); position: absolute;"><span></span></div>
 </body>
 </html>
