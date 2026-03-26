@@ -4,671 +4,711 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Staff Calendar</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg: #0f1115;
-            --panel: rgba(255,255,255,.06);
-            --panel2: rgba(255,255,255,.09);
-            --stroke: rgba(255,255,255,.12);
-            --text: #eef1f6;
-            --muted: rgba(238,241,246,.7);
-            --brand: #7289da;
-            --danger: #ff6b6b;
-            --ok: #39d98a;
-            --warn: #f5c04f;
-            --shadow: 0 18px 60px rgba(0,0,0,.45);
-            --radius: 16px;
+            --bg: #0b0f0c;
+            --bg-2: #111712;
+            --panel: #171f19;
+            --panel-2: #1d2821;
+            --panel-3: #243128;
+            --stroke: rgba(255,255,255,.08);
+            --stroke-2: rgba(255,255,255,.14);
+            --text: #eef6ef;
+            --muted: #a7b5aa;
+            --brand: #f5c04f;
+            --brand-2: #d9a631;
+            --green: #32d583;
+            --green-2: #1f7a52;
+            --yellow: #f5c04f;
+            --yellow-2: #8d6a1b;
+            --red: #ef6262;
+            --dayPast: #4a1e1e;
+            --dayPast2: #6d2929;
+            --shadow: 0 18px 50px rgba(0,0,0,.28);
+            --radius: 18px;
+            --radius-sm: 14px;
+            --brand-banner: url("https://media.discordapp.net/attachments/1470700666895863900/1482343917595656315/221.png?ex=69b69bda&is=69b54a5a&hm=9df6c53a490b67404c757237d7fc601c2e18347127f1facdcb79df63ec9863ce&=&format=webp&quality=lossless&width=1768&height=710");
+            --brand-logo: url("https://media.discordapp.net/attachments/1470700666895863900/1482343894568927393/asda.png?ex=69b69bd5&is=69b54a55&hm=a85fca9d3a97cbf001db42ada026f5c41ec5936934c5cbf7b5f45d8e99253281&=&format=webp&quality=lossless&width=331&height=350");
         }
 
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            min-height: 100%;
+            font-family: Inter, system-ui, Arial, sans-serif;
+            background: radial-gradient(1000px 520px at 10% -10%, rgba(245,192,79,.13), transparent 58%), radial-gradient(900px 500px at 100% 0%, rgba(50,213,131,.10), transparent 55%), linear-gradient(180deg, #0b0f0c 0%, #101611 100%);
+            color: var(--text);
+        }
 
         body {
-            margin: 0;
-            font-family: Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
-            background:
-                radial-gradient(1200px 700px at 20% -10%, rgba(114,137,218,.22), transparent 60%),
-                radial-gradient(900px 600px at 95% 0%, rgba(57,217,138,.12), transparent 60%),
-                radial-gradient(900px 600px at 60% 110%, rgba(255,107,107,.12), transparent 60%),
-                var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            overflow-x: hidden;
-            padding-bottom: 130px;
+            padding: 18px 18px 140px;
         }
 
         .wrap {
-            width: min(1700px, calc(100vw - 24px));
+            width: min(1720px, 100%);
             margin: 0 auto;
-            padding: 12px;
         }
 
-        .topbar {
-            display: flex;
-            gap: 14px;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 16px;
+        .hero {
+            position: relative;
             border: 1px solid var(--stroke);
-            background: var(--panel);
-            border-radius: var(--radius);
+            border-radius: 28px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(245,192,79,.18), rgba(50,213,131,.10)), var(--bg-2);
+            min-height: 180px;
             box-shadow: var(--shadow);
-            position: sticky;
-            top: 10px;
-            backdrop-filter: blur(10px);
-            z-index: 10;
+            margin-bottom: 22px;
+        }
+
+            .hero::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background-image: linear-gradient(rgba(8,12,10,.52), rgba(8,12,10,.52)), var(--brand-banner);
+                background-size: cover;
+                background-position: center;
+                opacity: .42;
+                pointer-events: none;
+            }
+
+        .heroInner {
+            position: relative;
+            z-index: 1;
+            padding: 28px 28px 24px;
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            align-items: flex-start;
+            flex-wrap: wrap;
         }
 
         .brand {
             display: flex;
-            gap: 12px;
-            align-items: center;
+            gap: 18px;
+            align-items: flex-start;
             min-width: 0;
         }
 
-        .logo {
-            width: 38px;
-            height: 38px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, rgba(114,137,218,1), rgba(57,217,138,1));
-            box-shadow: 0 10px 30px rgba(114,137,218,.25);
+        .brandLogo {
+            width: 76px;
+            height: 76px;
+            border-radius: 20px;
             flex: 0 0 auto;
+            border: 1px solid rgba(255,255,255,.12);
+            background: linear-gradient(135deg, rgba(245,192,79,.18), rgba(50,213,131,.18)), #18211b;
+            background-image: var(--brand-logo);
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,.22);
         }
 
-        .brandText {
+        .brandText h1 {
+            margin: 0;
+            font-size: clamp(28px, 5vw, 54px);
+            font-weight: 800;
+            line-height: 1.02;
+            letter-spacing: -.03em;
+        }
+
+        .brandText p {
+            margin: 10px 0 0;
+            font-size: 14px;
+            color: #d7e2d7;
+            max-width: 760px;
+            line-height: 1.5;
+        }
+
+        .heroRight {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 12px;
             min-width: 0;
         }
 
-        .brand h1 {
-            font-size: 14px;
-            margin: 0;
-            letter-spacing: .2px;
-        }
-
-        .brand p {
-            font-size: 12px;
-            margin: 0;
-            color: var(--muted);
-            overflow-wrap: anywhere;
-        }
-
-        .userTop {
+        .topUser {
             display: flex;
             align-items: center;
-            gap: 10px;
-            min-width: 0;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
         }
 
         .topAvatar {
-            width: 38px;
-            height: 38px;
-            border-radius: 12px;
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
             object-fit: cover;
             border: 1px solid rgba(255,255,255,.12);
-            background: rgba(255,255,255,.05);
             display: none;
+            background: #223028;
         }
 
         .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 38px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.10);
+            background: rgba(255,255,255,.05);
             font-size: 12px;
             color: var(--text);
-            padding: 7px 10px;
-            border: 1px solid var(--stroke);
-            background: rgba(255,255,255,.05);
-            border-radius: 999px;
-            display: inline-flex;
-            gap: 8px;
-            align-items: center;
-            overflow-wrap: anywhere;
         }
 
-        .pill b { font-weight: 700; }
+            .pill b {
+                font-weight: 800;
+            }
+
+        .menuButtons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            margin-bottom: 40px; /* space below buttons */
+            gap: 15px;
+        }
+
+        .menuCardBtn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-height: 52px;
+            padding: 0 18px;
+            border: 1px solid rgba(255,255,255,.10);
+            border-radius: 16px;
+            background: linear-gradient(180deg, #1a241d, #151d18);
+            color: var(--text);
+            cursor: pointer;
+            text-align: center;
+            font: inherit;
+            font-weight: 700;
+            transition: .18s ease;
+            box-shadow: 0 10px 25px rgba(0,0,0,.18);
+        }
+
+            .menuCardBtn:hover {
+                transform: translateY(-2px);
+                border-color: rgba(245,192,79,.28);
+                background: linear-gradient(180deg, #202b23, #18211b);
+            }
 
         .btn {
-            border: 1px solid var(--stroke);
-            background: rgba(255,255,255,.06);
+            appearance: none;
+            border: 1px solid rgba(255,255,255,.10);
+            background: #1b241d;
             color: var(--text);
-            padding: 10px 12px;
-            border-radius: 12px;
-            font-weight: 600;
+            font: inherit;
             font-size: 13px;
+            font-weight: 700;
+            padding: 11px 14px;
+            border-radius: 14px;
             cursor: pointer;
-            transition: .15s transform,.15s background,.15s opacity;
-            user-select: none;
-            white-space: nowrap;
+            transition: .15s ease;
         }
 
-        .btn:hover { background: rgba(255,255,255,.10); }
-        .btn:active { transform: translateY(1px); }
-        .btn[disabled] { opacity: .55; cursor: not-allowed; }
+            .btn:hover {
+                transform: translateY(-1px);
+                border-color: rgba(255,255,255,.18);
+                background: #222d25;
+            }
 
-        .btn.primary {
-            background: rgba(114,137,218,.22);
-            border-color: rgba(114,137,218,.45);
-        }
+            .btn:active {
+                transform: translateY(0);
+            }
 
-        .btn.primary:hover { background: rgba(114,137,218,.28); }
+            .btn.small {
+                padding: 9px 12px;
+                border-radius: 12px;
+                font-size: 12px;
+            }
 
-        .btn.danger {
-            background: rgba(255,107,107,.14);
-            border-color: rgba(255,107,107,.35);
-        }
+            .btn.primary {
+                background: linear-gradient(135deg, #f5c04f, #d9a631);
+                border-color: rgba(245,192,79,.26);
+                color: #16120a;
+            }
 
-        .btn.danger:hover { background: rgba(255,107,107,.18); }
+                .btn.primary:hover {
+                    background: linear-gradient(135deg, #f7c75f, #dfaf3c);
+                }
 
-        .btn.ok {
-            background: rgba(57,217,138,.14);
-            border-color: rgba(57,217,138,.35);
-        }
+            .btn.ok {
+                background: #1b5b40;
+                border-color: rgba(50,213,131,.26);
+            }
 
-        .btn.ok:hover { background: rgba(57,217,138,.18); }
+                .btn.ok:hover {
+                    background: #216c4d;
+                }
 
-        .btn.warn {
-            background: rgba(245,192,79,.14);
-            border-color: rgba(245,192,79,.35);
-        }
+            .btn.warn {
+                background: #6b5319;
+                border-color: rgba(245,192,79,.24);
+            }
 
-        .btn.warn:hover { background: rgba(245,192,79,.18); }
+                .btn.warn:hover {
+                    background: #7a601c;
+                }
 
-        .btn.ghost { background: transparent; }
+            .btn.danger {
+                background: #612936;
+                border-color: rgba(239,98,98,.24);
+            }
 
-        .btn.small {
-            padding: 8px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-        }
+                .btn.danger:hover {
+                    background: #75303f;
+                }
 
-        .row {
+            .btn.ghost {
+                background: rgba(255,255,255,.04);
+            }
+
+        .actionsRow {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
+            justify-content: flex-end;
         }
 
-        .grid {
+        .mainGrid {
             display: grid;
-            grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-            gap: 16px;
-            margin-top: 14px;
+            grid-template-columns: minmax(0, 2.2fr) minmax(360px, .95fr);
+            gap: 22px;
             align-items: start;
         }
 
-        .card {
+        .panel {
             border: 1px solid var(--stroke);
-            background: var(--panel);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
+            border-radius: 24px;
             overflow: hidden;
-            min-width: 0;
+            background: linear-gradient(180deg, #161f19, #121913);
+            box-shadow: var(--shadow);
         }
 
-        .cardHead {
-            padding: 14px 16px;
+        .calendarTop {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            gap: 10px;
-            border-bottom: 1px solid rgba(255,255,255,.08);
+            align-items: center;
+            gap: 16px;
+            padding: 18px 20px;
+            background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+            border-bottom: 1px solid rgba(255,255,255,.06);
             flex-wrap: wrap;
         }
 
-        .cardHead h2 {
-            margin: 0;
-            font-size: 13px;
-        }
-
-        .cardHead p {
-            margin: 0;
-            font-size: 12px;
-            color: var(--muted);
-        }
-
-        .cardBody {
-            padding: 14px 16px;
-            min-width: 0;
-        }
-
-        .calTop {
+        .calendarTopLeft {
             display: flex;
-            gap: 10px;
             align-items: center;
-            justify-content: space-between;
-            padding: 12px 16px;
-            border-bottom: 1px solid rgba(255,255,255,.08);
-            background: rgba(255,255,255,.03);
-            flex-wrap: wrap;
-        }
-
-        .calTopLeft {
-            display: flex;
             gap: 10px;
-            align-items: center;
             flex-wrap: wrap;
         }
 
         .monthTitle {
-            font-size: 14px;
+            font-size: 22px;
             font-weight: 800;
-            letter-spacing: .2px;
+            letter-spacing: -.02em;
+            margin-left: 6px;
         }
 
         .weekdays {
             display: grid;
-            grid-template-columns: repeat(7,1fr);
-            gap: 8px;
-            padding: 10px 16px 0 16px;
-            color: var(--muted);
-            font-size: 12px;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 12px;
+            padding: 18px 20px 10px;
         }
 
-        .weekdays div {
-            padding: 6px 8px;
-            text-align: center;
-        }
+            .weekdays div {
+                text-align: center;
+                font-size: 15px;
+                font-weight: 700;
+                color: #d7e3d7;
+                padding: 6px 4px 0;
+                letter-spacing: -.01em;
+            }
 
         .calGrid {
             display: grid;
-            grid-template-columns: repeat(7,1fr);
-            gap: 8px;
-            padding: 8px 16px 16px 16px;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 12px;
+            padding: 8px 20px 20px;
         }
 
         .day {
-            min-height: 145px;
+            min-height: 160px;
+            border-radius: 18px;
+            overflow: hidden;
             border: 1px solid rgba(255,255,255,.10);
-            background: rgba(255,255,255,.04);
-            border-radius: 14px;
-            padding: 10px;
+            background: linear-gradient(180deg, #243127, #1c261e);
             display: flex;
             flex-direction: column;
-            gap: 8px;
             cursor: pointer;
-            transition: .12s background,.12s transform,.12s border-color,.12s box-shadow;
-            min-width: 0;
+            transition: .15s ease;
             position: relative;
-            overflow: hidden;
         }
 
-        .day:hover {
-            background: rgba(255,255,255,.06);
-            border-color: rgba(114,137,218,.35);
-        }
+            .day:hover {
+                transform: translateY(-2px);
+                border-color: rgba(245,192,79,.22);
+            }
 
-        .day:active { transform: translateY(1px); }
-        .day.muted { opacity: .45; }
+            .day.muted {
+                opacity: .42;
+            }
 
-        .day.selected {
-            border-color: rgba(114,137,218,.65);
-            background: rgba(114,137,218,.10);
-        }
+            .day.selected {
+                outline: 2px solid rgba(245,192,79,.85);
+                outline-offset: -2px;
+            }
 
-        .day.overlayOn {
-            border-color: rgba(255,107,107,.78) !important;
-            background:
-                linear-gradient(180deg, rgba(255,80,35,.92) 0%, rgba(255,70,20,.88) 56%, rgba(45,214,232,.95) 56%, rgba(45,214,232,.95) 100%);
-            box-shadow:
-                inset 0 0 0 1px rgba(255,255,255,.10),
-                0 0 0 1px rgba(255,80,35,.18),
-                0 18px 34px rgba(255,80,35,.14);
-        }
+            .day.past {
+                background: linear-gradient(180deg, var(--dayPast2), var(--dayPast));
+            }
 
-        .day.overlayOn .dayNum,
-        .day.overlayOn .miniItem,
-        .day.overlayOn .badge,
-        .day.overlayOn .dayHead {
-            color: #111;
-        }
+            .day.today {
+                box-shadow: inset 0 0 0 2px rgba(245,192,79,.35);
+            }
 
-        .day.overlayOn .miniItem {
-            background: rgba(255,255,255,.18);
-            border-color: rgba(0,0,0,.08);
-            font-weight: 700;
-        }
-
-        .day.overlayOn .badge {
-            background: rgba(255,255,255,.28);
-            border-color: rgba(0,0,0,.08);
-        }
-
-        .dayOverlayTag {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            font-size: 9px;
-            font-weight: 800;
-            letter-spacing: .5px;
-            text-transform: uppercase;
-            padding: 3px 6px;
-            border-radius: 999px;
-            background: rgba(255,255,255,.28);
-            color: #111;
-            border: 1px solid rgba(0,0,0,.08);
-            z-index: 2;
-        }
-
-        .dayHead {
+        .dayTopBar {
+            min-height: 46px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 12px;
-            color: var(--muted);
             gap: 8px;
+            padding: 10px 12px;
+            background: rgba(6,9,7,.34);
+            border-bottom: 1px solid rgba(255,255,255,.08);
         }
 
-        .dayNum {
-            font-weight: 800;
-            color: var(--text);
+        .dayDate {
             font-size: 13px;
+            font-weight: 800;
+            letter-spacing: .02em;
+            text-transform: uppercase;
         }
 
-        .badge {
-            font-size: 11px;
-            padding: 4px 8px;
-            border-radius: 999px;
-            border: 1px solid rgba(255,255,255,.14);
-            background: rgba(0,0,0,.18);
-            color: var(--muted);
-            display: inline-flex;
-            gap: 6px;
-            align-items: center;
-            max-width: 100%;
-            overflow-wrap: anywhere;
+        .dayIcon {
+            font-size: 12px;
+            color: #f8f2de;
+            opacity: .9;
         }
 
-        .badge.brand {
-            border-color: rgba(114,137,218,.35);
-            color: rgba(220,230,255,.92);
-            background: rgba(114,137,218,.12);
-        }
-
-        .badge.ok {
-            border-color: rgba(57,217,138,.35);
-            color: rgba(204,255,230,.92);
-            background: rgba(57,217,138,.12);
-        }
-
-        .badge.warn {
-            border-color: rgba(245,192,79,.35);
-            color: rgba(255,239,194,.92);
-            background: rgba(245,192,79,.12);
-        }
-
-        .badge.live {
-            border-color: rgba(255,107,107,.45);
-            color: #ffdede;
-            background: rgba(255,107,107,.15);
-        }
-
-        .miniList {
+        .dayBody {
+            flex: 1;
+            padding: 10px 12px 12px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            overflow: hidden;
-            min-width: 0;
-            margin-top: 6px;
+            gap: 8px;
+            justify-content: flex-start;
+        }
+
+        .miniTime {
+            font-size: 12px;
+            font-weight: 800;
+            color: #f5c04f;
+            text-transform: uppercase;
+            letter-spacing: .02em;
         }
 
         .miniItem {
-            font-size: 12px;
-            padding: 7px 8px;
-            border-radius: 12px;
-            background: rgba(0,0,0,.18);
-            border: 1px solid rgba(255,255,255,.10);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            min-width: 0;
-        }
-
-        .miniItem span { color: var(--muted); }
-
-        .divider {
-            height: 1px;
-            background: rgba(255,255,255,.08);
-            margin: 12px 0;
-        }
-
-        .kvs {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
-        }
-
-        .kv {
-            padding: 12px;
-            border-radius: 14px;
-            border: 1px solid rgba(255,255,255,.10);
-            background: rgba(255,255,255,.04);
-        }
-
-        .kv .t {
-            font-size: 12px;
-            color: var(--muted);
-        }
-
-        .kv .v {
             font-size: 13px;
+            line-height: 1.24;
+            color: #f4f8f4;
             font-weight: 700;
-            margin-top: 6px;
-            overflow-wrap: anywhere;
         }
 
-        .list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+        .miniMeta {
+            font-size: 12px;
+            color: #d1ddd2;
+            margin-top: auto;
+            padding-top: 6px;
         }
 
-        .item {
-            padding: 12px;
-            border-radius: 14px;
-            border: 1px solid rgba(255,255,255,.10);
-            background: rgba(255,255,255,.04);
+        .hostPreviewRow {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 2px;
+        }
+
+        .sideHead {
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(255,255,255,.06);
+            display: flex;
             justify-content: space-between;
-            gap: 10px;
+            gap: 12px;
+            align-items: flex-start;
             flex-wrap: wrap;
         }
 
-        .item h4 {
-            margin: 0;
-            font-size: 13px;
-            overflow-wrap: anywhere;
+            .sideHead h2 {
+                margin: 0;
+                font-size: 18px;
+                font-weight: 800;
+                letter-spacing: -.01em;
+            }
+
+            .sideHead p {
+                margin: 8px 0 0;
+                font-size: 13px;
+                color: var(--muted);
+                line-height: 1.45;
+            }
+
+        .sideBody {
+            padding: 18px 20px 20px;
         }
 
-        .item p {
-            margin: 6px 0 0;
+        .infoBlock,
+        .detailCard,
+        .eventBlock,
+        .pickEntry,
+        .availabilityBlock,
+        .pfpBtn,
+        .infoBox {
+            background: #18211b;
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 18px;
+        }
+
+        .infoBlock {
+            padding: 16px;
+        }
+
+        .infoLabel {
             font-size: 12px;
             color: var(--muted);
-            line-height: 1.35;
-            overflow-wrap: anywhere;
+            margin-bottom: 8px;
         }
 
-        .item .meta {
+        .infoValue {
+            font-size: 18px;
+            font-weight: 800;
+            line-height: 1.25;
+        }
+
+        .divider {
+            height: 1px;
+            background: rgba(255,255,255,.06);
+            margin: 18px 0;
+        }
+
+        .sectionTitle {
+            font-size: 13px;
+            font-weight: 800;
+            color: #dce7dc;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+
+        .detailList {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .detailCard {
+            padding: 14px;
+        }
+
+        .detailCardTop {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+            .detailCardTop h4 {
+                margin: 0;
+                font-size: 15px;
+                font-weight: 800;
+            }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 28px;
+            padding: 4px 10px;
+            border-radius: 999px;
             font-size: 11px;
+            font-weight: 800;
+            border: 1px solid rgba(255,255,255,.10);
+            background: rgba(255,255,255,.04);
+        }
+
+            .badge.brand {
+                background: rgba(245,192,79,.10);
+                border-color: rgba(245,192,79,.22);
+                color: #f8ddb0;
+            }
+
+            .badge.ok {
+                background: rgba(50,213,131,.10);
+                border-color: rgba(50,213,131,.22);
+            }
+
+            .badge.warn {
+                background: rgba(245,192,79,.08);
+                border-color: rgba(245,192,79,.18);
+            }
+
+        .emptyState {
+            padding: 14px;
+            border-radius: 16px;
+            border: 1px dashed rgba(255,255,255,.10);
             color: var(--muted);
-            margin-top: 6px;
-            overflow-wrap: anywhere;
+            font-size: 13px;
+            background: rgba(255,255,255,.02);
+        }
+
+        .eventBlock,
+        .pickEntry,
+        .availabilityBlock {
+            padding: 12px;
+            margin-top: 10px;
+        }
+
+        .eventTitle {
+            font-size: 14px;
+            font-weight: 800;
+            margin: 0 0 6px;
+        }
+
+        .metaText {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.45;
         }
 
         .pickEntry {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            gap: 10px;
+            gap: 12px;
+            align-items: center;
             flex-wrap: wrap;
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,.10);
-            background: rgba(0,0,0,.16);
         }
 
         .pickEntryLeft {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             min-width: 0;
-        }
-
-        .pickEntryLeft img {
-            width: 38px;
-            height: 38px;
-            border-radius: 12px;
-            object-fit: cover;
-            border: 1px solid rgba(255,255,255,.12);
-            background: rgba(255,255,255,.06);
         }
 
         .pickEntryName {
             font-size: 13px;
-            font-weight: 700;
-            overflow-wrap: anywhere;
+            font-weight: 800;
         }
 
         .pickEntryMeta {
             font-size: 11px;
             color: var(--muted);
             margin-top: 4px;
-            overflow-wrap: anywhere;
+            word-break: break-word;
         }
 
-        .toast {
-            position: fixed;
-            left: 50%;
-            bottom: 18px;
-            transform: translateX(-50%);
-            padding: 10px 12px;
-            border-radius: 999px;
-            background: rgba(0,0,0,.55);
-            border: 1px solid rgba(255,255,255,.14);
-            color: var(--text);
-            font-size: 12px;
+        .pfpPickerBox {
+            margin-top: 16px;
             display: none;
-            z-index: 20000;
-            backdrop-filter: blur(10px);
-            max-width: min(720px, calc(100vw - 30px));
-            overflow-wrap: anywhere;
         }
-
-        .tiny {
-            font-size: 11px;
-            color: var(--muted);
-            overflow-wrap: anywhere;
-        }
-
-        .rightActions {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-        }
-
-        .okText { color: rgba(190,255,220,.95); }
 
         .pfpGrid {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0,1fr));
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 10px;
             margin-top: 10px;
         }
 
         .pfpBtn {
-            border: 1px solid rgba(255,255,255,.12);
-            background: rgba(0,0,0,.14);
-            border-radius: 14px;
-            padding: 10px 8px;
+            padding: 12px;
             cursor: pointer;
+            min-height: 52px;
+            transition: .15s ease;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 8px;
-            transition: .12s transform,.12s background,.12s border-color;
-            user-select: none;
-            min-height: 100px;
-            min-width: 0;
+            justify-content: center;
+            text-align: center;
         }
 
-        .pfpBtn:hover {
-            background: rgba(255,255,255,.06);
-            border-color: rgba(114,137,218,.35);
-        }
+            .pfpBtn:hover {
+                background: #202b23;
+                border-color: rgba(255,255,255,.16);
+            }
 
-        .pfpBtn:active { transform: translateY(1px); }
+            .pfpBtn.active {
+                border-color: rgba(50,213,131,.36);
+                background: #1b3528;
+            }
 
-        .pfpBtn[aria-disabled="true"] {
-            opacity: .45;
-            cursor: not-allowed;
-        }
-
-        .pfpBtn.active {
-            border-color: rgba(57,217,138,.55);
-            background: rgba(57,217,138,.10);
-        }
-
-        .pfpImg {
-            width: 46px;
-            height: 46px;
-            border-radius: 14px;
-            object-fit: cover;
-            border: 1px solid rgba(255,255,255,.12);
-            background: rgba(255,255,255,.06);
-        }
+            .pfpBtn[aria-disabled="true"] {
+                opacity: .45;
+                cursor: not-allowed;
+            }
 
         .pfpName {
-            font-size: 11px;
-            color: var(--text);
-            font-weight: 700;
+            min-width: 0;
+            font-size: 13px;
+            font-weight: 800;
+            white-space: normal;
             text-align: center;
-            line-height: 1.15;
-            overflow-wrap: anywhere;
+            line-height: 1.2;
         }
 
         .hostBar {
             position: fixed;
             left: 50%;
-            bottom: 12px;
+            bottom: 16px;
             transform: translateX(-50%);
-            width: min(1200px, calc(100vw - 18px));
-            border: 1px solid var(--stroke);
-            background: rgba(20,22,26,.84);
-            backdrop-filter: blur(10px);
-            border-radius: 18px;
-            box-shadow: var(--shadow);
-            z-index: 1500;
+            width: min(1180px, calc(100vw - 22px));
+            border: 1px solid rgba(255,255,255,.10);
+            border-radius: 20px;
+            background: #131b15;
+            box-shadow: 0 14px 40px rgba(0,0,0,.35);
+            padding: 12px 14px;
             display: none;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
-            padding: 12px 14px;
+            gap: 14px;
+            z-index: 1500;
         }
 
         .hostBarLeft {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            min-width: 180px;
+            min-width: 170px;
         }
 
         .hostBarTitle {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .06em;
         }
 
         .hostBarDate {
-            font-size: 13px;
+            margin-top: 4px;
+            font-size: 14px;
             font-weight: 800;
         }
 
         .hostChips {
             display: flex;
-            gap: 10px;
             align-items: center;
-            overflow-x: auto;
-            padding-bottom: 2px;
+            gap: 10px;
             flex: 1;
             min-width: 0;
+            overflow-x: auto;
+            padding-bottom: 2px;
         }
 
         .chip {
@@ -676,112 +716,110 @@
             align-items: center;
             gap: 8px;
             padding: 8px 10px;
+            background: #1d2821;
+            border: 1px solid rgba(255,255,255,.08);
             border-radius: 999px;
-            border: 1px solid rgba(255,255,255,.14);
-            background: rgba(0,0,0,.18);
             white-space: nowrap;
         }
 
-        .chip img {
-            width: 26px;
-            height: 26px;
-            border-radius: 10px;
-            object-fit: cover;
-            border: 1px solid rgba(255,255,255,.12);
-            background: rgba(255,255,255,.06);
-        }
-
-        .chip b { font-size: 12px; }
+            .chip b {
+                font-size: 12px;
+            }
 
         .hostBarRight {
             display: flex;
             gap: 8px;
-            align-items: center;
             flex-wrap: wrap;
+            justify-content: flex-end;
         }
 
         .modalBackdrop {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,.55);
+            background: rgba(5,10,7,.62);
             display: none;
             align-items: center;
             justify-content: center;
-            padding: 16px;
+            padding: 18px;
             z-index: 9999;
-            backdrop-filter: blur(6px);
         }
 
         .modal {
             width: min(560px, 100%);
-            border: 1px solid var(--stroke);
-            background: rgba(20,22,26,.96);
-            border-radius: 20px;
-            box-shadow: var(--shadow);
+            background: #141c16;
+            border: 1px solid rgba(255,255,255,.10);
+            border-radius: 22px;
             overflow: hidden;
-            max-height: calc(100vh - 32px);
+            box-shadow: 0 22px 65px rgba(0,0,0,.38);
+            max-height: calc(100vh - 36px);
             overflow-y: auto;
         }
 
+            .modal.slim {
+                width: min(500px, 100%);
+            }
+
         .modalTop {
-            padding: 18px;
-            border-bottom: 1px solid rgba(255,255,255,.08);
+            padding: 18px 18px 14px;
+            border-bottom: 1px solid rgba(255,255,255,.06);
         }
 
-        .modalTop h3 {
-            margin: 0;
-            font-size: 14px;
-        }
+            .modalTop h3 {
+                margin: 0;
+                font-size: 18px;
+                font-weight: 800;
+            }
 
-        .modalTop p {
-            margin: 8px 0 0;
-            color: var(--muted);
-            font-size: 12px;
-            line-height: 1.35;
-        }
+            .modalTop p {
+                margin: 8px 0 0;
+                font-size: 13px;
+                color: var(--muted);
+                line-height: 1.45;
+            }
 
         .modalBody {
-            padding: 16px;
+            padding: 16px 18px 18px;
         }
 
         .field {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 7px;
             margin-bottom: 12px;
         }
 
-        .field label {
-            font-size: 12px;
-            color: var(--muted);
-        }
+            .field label {
+                font-size: 12px;
+                font-weight: 700;
+                color: #dce8dd;
+            }
 
         input, textarea {
+            width: 100%;
             font: inherit;
             color: var(--text);
-            background: rgba(255,255,255,.06);
-            border: 1px solid rgba(255,255,255,.12);
-            border-radius: 12px;
-            padding: 11px 12px;
+            background: #1a241d;
+            border: 1px solid rgba(255,255,255,.10);
+            border-radius: 14px;
+            padding: 12px 13px;
             outline: none;
-            min-width: 0;
         }
 
         textarea {
-            min-height: 74px;
+            min-height: 90px;
             resize: vertical;
         }
 
-        input:focus, textarea:focus {
-            border-color: rgba(114,137,218,.55);
-        }
+            input:focus, textarea:focus {
+                border-color: rgba(245,192,79,.45);
+            }
 
         .modalActions {
             display: flex;
-            gap: 10px;
             justify-content: flex-end;
-            margin-top: 12px;
+            gap: 10px;
             flex-wrap: wrap;
+            margin-top: 14px;
         }
 
         .authTabs, .settingsTabs {
@@ -793,18 +831,34 @@
         .authTab, .settingsTab {
             flex: 1;
             text-align: center;
-            padding: 10px 12px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,.10);
-            background: rgba(255,255,255,.04);
-            cursor: pointer;
+            padding: 11px 12px;
+            border-radius: 14px;
+            background: #1a241d;
+            border: 1px solid rgba(255,255,255,.08);
             font-size: 13px;
-            font-weight: 700;
+            font-weight: 800;
+            cursor: pointer;
         }
 
-        .authTab.active, .settingsTab.active {
-            border-color: rgba(114,137,218,.45);
-            background: rgba(114,137,218,.18);
+            .authTab.active, .settingsTab.active {
+                background: #2a342c;
+                border-color: rgba(245,192,79,.24);
+            }
+
+        .settingsPanel {
+            display: none;
+        }
+
+            .settingsPanel.active {
+                display: block;
+            }
+
+        .infoBox {
+            padding: 12px;
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.45;
+            margin-bottom: 12px;
         }
 
         .avatarPreviewWrap {
@@ -815,116 +869,105 @@
         }
 
         .avatarPreview {
-            width: 74px;
-            height: 74px;
-            border-radius: 20px;
+            width: 72px;
+            height: 72px;
+            border-radius: 18px;
             object-fit: cover;
-            border: 1px solid rgba(255,255,255,.12);
-            background: rgba(255,255,255,.05);
-        }
-
-        .emptyState {
-            padding: 16px;
-            border-radius: 14px;
-            border: 1px dashed rgba(255,255,255,.14);
-            background: rgba(255,255,255,.03);
-        }
-
-        .settingsPanel {
-            display: none;
-        }
-
-        .settingsPanel.active {
-            display: block;
-        }
-
-        .infoBox {
-            padding: 10px 12px;
-            border-radius: 12px;
             border: 1px solid rgba(255,255,255,.10);
-            background: rgba(255,255,255,.04);
+            background: #223028;
+        }
+
+        .tiny {
             font-size: 12px;
             color: var(--muted);
-            margin-bottom: 12px;
-            line-height: 1.4;
+            line-height: 1.45;
         }
 
-        @media (max-width: 1200px) {
-            .grid {
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 24px;
+            transform: translateX(-50%);
+            max-width: min(700px, calc(100vw - 26px));
+            background: #131b15;
+            border: 1px solid rgba(255,255,255,.10);
+            color: var(--text);
+            border-radius: 999px;
+            padding: 12px 16px;
+            font-size: 12px;
+            display: none;
+            z-index: 20000;
+            box-shadow: 0 14px 35px rgba(0,0,0,.30);
+        }
+
+        .editorMiniGrid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        @media (max-width: 1220px) {
+            .mainGrid {
                 grid-template-columns: 1fr;
             }
-
-            .topbar {
-                position: static;
-            }
         }
 
-        @media (max-width: 760px) {
+        @media (max-width: 860px) {
             body {
-                padding-bottom: 150px;
+                padding: 12px 12px 150px;
             }
 
-            .wrap {
-                width: min(100vw - 10px, 100%);
-                padding: 8px;
+            .heroInner {
+                padding: 20px;
             }
 
-            .topbar {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 12px;
-                padding: 12px;
+            .brandLogo {
+                width: 60px;
+                height: 60px;
+                border-radius: 16px;
             }
 
-            .userTop {
-                justify-content: space-between;
-                flex-wrap: wrap;
-            }
-
-            .cardHead,
-            .calTop {
-                padding: 12px;
-            }
-
-            .cardBody {
-                padding: 12px;
-            }
-
-            .weekdays {
-                gap: 4px;
-                padding: 8px 8px 0 8px;
-                font-size: 11px;
+            .brandText p {
+                font-size: 13px;
             }
 
             .weekdays div {
-                padding: 4px 2px;
+                font-size: 13px;
             }
 
             .calGrid {
-                gap: 4px;
-                padding: 6px 8px 10px 8px;
+                gap: 8px;
+                padding: 6px 12px 14px;
+            }
+
+            .weekdays {
+                gap: 8px;
+                padding: 14px 12px 8px;
             }
 
             .day {
-                min-height: 92px;
-                padding: 6px;
-                border-radius: 12px;
-                gap: 4px;
+                min-height: 118px;
             }
 
-            .dayNum {
+            .dayTopBar {
+                min-height: 40px;
+                padding: 8px 9px;
+            }
+
+            .dayDate {
                 font-size: 12px;
             }
 
-            .miniItem {
+            .miniTime {
                 font-size: 10px;
-                padding: 5px 6px;
-                border-radius: 10px;
             }
 
-            .badge {
-                font-size: 9px;
-                padding: 3px 6px;
+            .miniItem {
+                font-size: 11px;
+            }
+
+            .miniMeta {
+                font-size: 10px;
             }
 
             .pfpGrid {
@@ -934,126 +977,133 @@
             .hostBar {
                 flex-direction: column;
                 align-items: stretch;
-                gap: 10px;
-                padding: 10px 12px;
-                border-radius: 16px;
             }
 
-            .hostBarLeft {
+            .hostBarLeft,
+            .hostBarRight {
                 min-width: 0;
             }
 
             .hostBarRight {
                 justify-content: flex-end;
             }
-
-            .modal {
-                width: 100%;
-                border-radius: 18px;
-            }
-
-            .modalTop,
-            .modalBody {
-                padding: 14px;
-            }
         }
 
-        @media (max-width: 480px) {
-            .btn,
-            .btn.small {
-                font-size: 12px;
+        @media (max-width: 560px) {
+            .heroRight {
+                align-items: stretch;
+                width: 100%;
             }
 
-            .monthTitle {
-                font-size: 13px;
+            .topUser,
+            .actionsRow {
+                justify-content: flex-start;
             }
 
-            .brand h1 {
-                font-size: 13px;
-            }
-
-            .brand p {
+            .weekdays div {
                 font-size: 11px;
-            }
-
-            .topAvatar {
-                width: 34px;
-                height: 34px;
-                border-radius: 10px;
-            }
-
-            .logo {
-                width: 34px;
-                height: 34px;
-                border-radius: 10px;
+                padding-top: 6px;
             }
 
             .day {
-                min-height: 82px;
+                min-height: 92px;
+            }
+
+            .dayBody {
+                padding: 8px;
+                gap: 5px;
             }
 
             .miniItem {
+                font-size: 10px;
+            }
+
+            .miniMeta {
                 font-size: 9px;
             }
 
             .authTabs, .settingsTabs {
                 flex-direction: column;
             }
+
+            .editorMiniGrid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="wrap">
-        <div class="topbar">
-            <div class="brand">
-                <div class="logo"></div>
-                <div class="brandText">
-                    <h1>Staff Calendar</h1>
-                    <p id="whoLine">Loading...</p>
+        <div class="hero">
+            <div class="heroInner">
+                <div class="brand">
+                    <div class=""></div>
+                    <div class="brandText">
+                        <h1>Event Staff Calendar</h1>
+                        <p id="whoLine">Loading...</p>
+                    </div>
                 </div>
-            </div>
 
-            <div class="userTop">
-                <img id="topAvatar" class="topAvatar" alt="Profile">
-                <div class="row" style="align-items:center;justify-content:flex-end">
-                    <div class="pill" id="rolePill" style="display:none;">Role: <b>STAFF</b></div>
-                    <button class="btn ghost" id="btnSettings" style="display:none;">Settings</button>
-                    <button class="btn ghost" id="btnLogin" style="display:none;">Login</button>
-                    <button class="btn" id="btnLogout" style="display:none;">Logout</button>
+                <div class="heroRight">
+                    <div class="topUser">
+                        <img id="topAvatar" class="topAvatar" alt="Profile">
+                        <div class="pill" id="rolePill" style="display:none;">Role: <b>STAFF</b></div>
+                    </div>
+
+                    <div class="actionsRow">
+                        <button class="btn ghost" id="btnSettings" style="display:none;">Settings</button>
+                        <button class="btn ghost" id="btnLogin" style="display:none;">Login</button>
+                        <button class="btn" id="btnLogout" style="display:none;">Logout</button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="grid">
-            <div class="card">
-                <div class="calTop">
-                    <div class="calTopLeft">
+        <div class="menuButtons">
+            <button class="menuCardBtn" onclick="window.location.href='tutorial.html'">
+                Open Tutorial (MUST DO FIRST)
+            </button>
+
+            <button class="menuCardBtn" onclick="window.location.href='techtree.html'">
+                Open Resources
+            </button>
+        </div>
+
+        <div class="mainGrid">
+            <div class="panel">
+                <div class="calendarTop">
+                    <div class="calendarTopLeft">
                         <button class="btn small" id="prevMonth">◀</button>
                         <button class="btn small" id="todayBtn">Today</button>
                         <button class="btn small" id="nextMonth">▶</button>
                         <div class="monthTitle" id="monthTitle">March 2026</div>
                     </div>
-                    <div>
-                        <span class="pill" id="viewHint">Tap or click a day</span>
+                    <div class="actionsRow">
+                        <span class="pill" id="viewHint">Click a day</span>
                     </div>
                 </div>
 
                 <div class="weekdays">
-                    <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+                    <div>Monday</div>
+                    <div>Tuesday</div>
+                    <div>Wednesday</div>
+                    <div>Thursday</div>
+                    <div>Friday</div>
+                    <div>Saturday</div>
+                    <div>Sunday</div>
                 </div>
 
                 <div class="calGrid" id="calGrid"></div>
             </div>
 
-            <div class="card">
-                <div class="cardHead">
+            <div class="panel">
+                <div class="sideHead">
                     <div>
                         <h2>Details</h2>
                         <p id="sideSub">Staff: view only • Admin: manage calendar</p>
                     </div>
 
-                    <div class="rightActions">
-                        <button class="btn small warn" id="overlayToggleBtn" style="display:none;">Event Overlay: OFF</button>
+                    <div class="actionsRow">
                         <button class="btn small" id="viewModeBtn" style="display:none;">View: OFF</button>
                         <button class="btn small danger" id="clearAllBtn" style="display:none;">Clear ALL</button>
                         <button class="btn small ok" id="addEventBtn" style="display:none;">+ Add event</button>
@@ -1061,29 +1111,29 @@
                     </div>
                 </div>
 
-                <div class="cardBody">
-                    <div class="kvs">
-                        <div class="kv">
-                            <div class="t">Selected date</div>
-                            <div class="v" id="selectedDateText">None</div>
-                            <p class="tiny" id="selectedHint" style="margin-top:8px;">Staff can view and pick themselves. Admins can edit and remove any pick.</p>
-                            <div id="overlayInfoBox" style="margin-top:10px;"></div>
-                        </div>
-
-                        <div class="kv" id="pfpPickerBox" style="display:none;">
-                            <div class="t">Who is hosting</div>
-                            <div class="tiny" style="margin-top:8px">Staff can only click their own profile. Admins can click anyone.</div>
-                            <div class="pfpGrid" id="pfpGrid"></div>
+                <div class="sideBody">
+                    <div class="infoBlock">
+                        <div class="infoLabel">Selected date</div>
+                        <div class="infoValue" id="selectedDateText">None</div>
+                        <div class="tiny" id="selectedHint" style="margin-top:10px;">
+                            Staff can pick themselves. Admins can edit and remove anything.
                         </div>
                     </div>
 
-                    <div class="divider"></div>
-                    <div class="list" id="detailList"></div>
+                    <div class="pfpPickerBox" id="pfpPickerBox">
+                        <div class="sectionTitle">Quick host picker</div>
+                        <div class="tiny">Uses names instead of profile images.</div>
+                        <div class="pfpGrid" id="pfpGrid"></div>
+                    </div>
 
                     <div class="divider"></div>
 
-                    <div class="row" style="justify-content:space-between;align-items:center">
-                        <p class="tiny" id="storageNote">Syncing with Firebase...</p>
+                    <div class="detailList" id="detailList"></div>
+
+                    <div class="divider"></div>
+
+                    <div class="actionsRow" style="justify-content:space-between;">
+                        <div class="tiny" id="storageNote">Syncing with Firebase...</div>
                         <button class="btn small danger" id="resetBtn" style="display:none;">Reset local cache</button>
                     </div>
                 </div>
@@ -1103,10 +1153,10 @@
     </div>
 
     <div class="modalBackdrop" id="authBackdrop">
-        <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal slim" role="dialog" aria-modal="true">
             <div class="modalTop">
                 <h3>Account</h3>
-                <p>Create an account or log in. Each person gets their own secure login.</p>
+                <p>Create an account or log in.</p>
             </div>
             <div class="modalBody">
                 <div class="authTabs">
@@ -1129,7 +1179,7 @@
                     <input id="authPassword2" type="password" placeholder="Confirm password" autocomplete="new-password">
                 </div>
 
-                <div class="tiny">Admins must still be set in Firestore. New accounts are staff by default.</div>
+                <div class="tiny">Admins still need their role set in Firestore.</div>
 
                 <div class="modalActions">
                     <button class="btn" id="authClose" type="button">Close</button>
@@ -1161,12 +1211,12 @@
                         <label>Profile picture</label>
                         <div class="avatarPreviewWrap">
                             <img id="profilePreview" class="avatarPreview" alt="Preview">
-                            <div class="row">
-                                <input id="profileFile" type="file" accept="image/*" style="max-width:220px;">
+                            <div class="actionsRow">
+                                <input id="profileFile" type="file" accept="image/*" style="max-width:240px;">
                                 <button class="btn small" id="removeProfilePic" type="button">Use default</button>
                             </div>
                         </div>
-                        <div class="tiny">Small image works best.</div>
+                        <div class="tiny">Profile image is optional, but host picks now use names.</div>
                     </div>
 
                     <div class="modalActions">
@@ -1176,7 +1226,7 @@
 
                 <div class="settingsPanel" id="settingsAccountPanel">
                     <div class="infoBox">
-                        To change your email or password, enter your current password first. This helps keep the account secure.
+                        To change your email or password, enter your current password first.
                     </div>
 
                     <div class="field">
@@ -1217,7 +1267,7 @@
     </div>
 
     <div class="modalBackdrop" id="dayBackdrop">
-        <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal slim" role="dialog" aria-modal="true">
             <div class="modalTop">
                 <h3 id="dayModalTitle"></h3>
                 <p id="dayModalSub"></p>
@@ -1266,21 +1316,20 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        const KEY_EVENTS = "staffCal.events.v3";
-        const KEY_AVAIL = "staffCal.availability.v3";
-        const KEY_PICKS = "staffCal.hostPicks.v3";
-        const KEY_VIEWMODE = "staffCal.viewMode.v3";
-        const KEY_FLAGS = "staffCal.dayFlags.v1";
+        const KEY_EVENTS = "staffCal.events.v5";
+        const KEY_AVAIL = "staffCal.availability.v5";
+        const KEY_PICKS = "staffCal.hostPicks.v5";
+        const KEY_VIEWMODE = "staffCal.viewMode.v5";
 
-        function saveJSON(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
-        function loadJSON(key, fallback) {
+        const saveJSON = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+        const loadJSON = (key, fallback) => {
             try {
                 const raw = localStorage.getItem(key);
                 return raw ? JSON.parse(raw) : fallback;
             } catch {
                 return fallback;
             }
-        }
+        };
 
         let session = null;
         let usersMap = new Map();
@@ -1288,7 +1337,6 @@
         let events = loadJSON(KEY_EVENTS, []);
         let avail = loadJSON(KEY_AVAIL, []);
         let hostPicks = loadJSON(KEY_PICKS, []);
-        let dayFlags = loadJSON(KEY_FLAGS, []);
         let viewMode = loadJSON(KEY_VIEWMODE, false);
 
         let viewDate = new Date();
@@ -1298,27 +1346,39 @@
         let profileImageData = null;
         let unsubscribers = [];
 
-        function uid() { return Math.random().toString(16).slice(2) + Date.now().toString(16); }
-        function pad2(n) { return String(n).padStart(2, "0"); }
-        function toISODate(d) { return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
-        function fromISODate(s) { const p = s.split("-").map(Number); return new Date(p[0], p[1] - 1, p[2]); }
-        function startOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
-        function monthLabel(d) { return d.toLocaleString(undefined, { month: "long", year: "numeric" }); }
-        function mondayIndex(jsDay) { return (jsDay + 6) % 7; }
-        function prettyDate(iso) {
-            const d = fromISODate(iso);
-            return d.toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" });
-        }
+        const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
+        const pad2 = n => String(n).padStart(2, "0");
+        const toISODate = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+        const fromISODate = s => {
+            const [y, m, d] = s.split("-").map(Number);
+            return new Date(y, m - 1, d);
+        };
+        const startOfMonth = d => new Date(d.getFullYear(), d.getMonth(), 1);
+        const monthLabel = d => d.toLocaleString(undefined, { month: "long", year: "numeric" });
+        const mondayIndex = jsDay => (jsDay + 6) % 7;
 
-        function escapeHTML(s) {
-            return String(s).replace(/[&<>"']/g, c => ({
-                "&": "&amp;",
-                "<": "&lt;",
-                ">": "&gt;",
-                '"': "&quot;",
-                "'": "&#39;"
-            }[c]));
-        }
+        const prettyDate = iso => fromISODate(iso).toLocaleDateString(undefined, {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        });
+
+        const isPastDay = iso => {
+            const today = new Date();
+            const t = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            return fromISODate(iso) < t;
+        };
+
+        const isToday = iso => iso === toISODate(new Date());
+
+        const escapeHTML = s => String(s).replace(/[&<>"']/g, c => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        }[c]));
 
         function toast(msg) {
             const t = document.getElementById("toast");
@@ -1331,24 +1391,27 @@
         function initialsFromName(name) {
             const clean = String(name || "").trim();
             if (!clean) return "U";
-            const parts = clean.split(/\s+/).slice(0, 2);
-            return parts.map(p => p[0]?.toUpperCase() || "").join("") || "U";
+            return clean
+                .split(/\s+/)
+                .slice(0, 2)
+                .map(p => p[0]?.toUpperCase() || "")
+                .join("") || "U";
         }
 
         function defaultAvatarDataURL(name) {
             const initials = initialsFromName(name);
             const svg = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
-                    <defs>
-                        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-                            <stop stop-color="#7289da"/>
-                            <stop offset="1" stop-color="#39d98a"/>
-                        </linearGradient>
-                    </defs>
-                    <rect width="160" height="160" rx="34" fill="url(#g)"/>
-                    <text x="80" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="54" font-weight="700" fill="white">${initials}</text>
-                </svg>
-            `;
+                    <svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+                        <defs>
+                            <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                                <stop stop-color="#f5c04f"/>
+                                <stop offset="1" stop-color="#32d583"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="160" height="160" rx="34" fill="url(#g)"/>
+                        <text x="80" y="95" text-anchor="middle" font-family="Arial, sans-serif" font-size="54" font-weight="700" fill="#15120c">${initials}</text>
+                    </svg>
+                `;
             return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
         }
 
@@ -1381,33 +1444,14 @@
             return canvas.toDataURL("image/jpeg", 0.82);
         }
 
-        function profilePhotoOrDefault(userLike) {
-            return userLike?.photoURL || defaultAvatarDataURL(userLike?.name || userLike?.displayName || userLike?.email || "User");
-        }
+        const profilePhotoOrDefault = userLike =>
+            userLike?.photoURL || defaultAvatarDataURL(userLike?.name || userLike?.displayName || userLike?.email || "User");
 
-        function getDayFlag(dateIso) {
-            return dayFlags.find(f => f.date === dateIso) || null;
-        }
+        const hostLabelFromUser = userLike =>
+            userLike?.name || (userLike?.email ? userLike.email.split("@")[0] : "User");
 
-        function isOverlayOn(dateIso) {
-            return !!getDayFlag(dateIso)?.active;
-        }
-
-        async function setDayOverlay(dateIso, active) {
-            const ref = doc(db, "day_flags", dateIso);
-
-            if (active) {
-                await setDoc(ref, {
-                    date: dateIso,
-                    active: true,
-                    label: "EVENT",
-                    updatedAt: Date.now(),
-                    updatedBy: session?.uid || ""
-                }, { merge: true });
-            } else {
-                await deleteDoc(ref);
-            }
-        }
+        const hostLabelFromPick = pick =>
+            pick?.hostName || (pick?.email ? pick.email.split("@")[0] : "Host");
 
         async function ensureUserDoc(firebaseUser) {
             const ref = doc(db, "users", firebaseUser.uid);
@@ -1445,60 +1489,41 @@
             };
         }
 
-        function canClickHost(host) {
+        const canClickHost = host => {
             if (!session) return false;
             if (session.role === "admin") return true;
             return host.uid === session.uid;
-        }
+        };
 
-        async function upsertEvent(ev) {
-            await setDoc(doc(db, "events", ev.id), ev, { merge: true });
-        }
+        const upsertEvent = ev => setDoc(doc(db, "events", ev.id), ev, { merge: true });
+        const removeEvent = id => deleteDoc(doc(db, "events", id));
+        const upsertAvail = a => setDoc(doc(db, "availability", a.id), a, { merge: true });
+        const removeAvail = id => deleteDoc(doc(db, "availability", id));
 
-        async function removeEvent(id) {
-            await deleteDoc(doc(db, "events", id));
-        }
+        const pickDocId = (dateIso, hostUid) => `${dateIso}_${hostUid}`;
 
-        async function upsertAvail(a) {
-            await setDoc(doc(db, "availability", a.id), a, { merge: true });
-        }
-
-        async function removeAvail(id) {
-            await deleteDoc(doc(db, "availability", id));
-        }
-
-        function pickDocId(dateIso, hostUid) {
-            return `${dateIso}_${hostUid}`;
-        }
-
-        async function setPick(dateIso, host) {
+        function setPick(dateIso, host) {
             const id = pickDocId(dateIso, host.uid);
-            await setDoc(doc(db, "host_picks", id), {
+            return setDoc(doc(db, "host_picks", id), {
                 id,
                 date: dateIso,
                 hostUid: host.uid,
-                hostName: host.name,
-                hostImg: profilePhotoOrDefault(host),
+                hostName: host.name || (host.email ? host.email.split("@")[0] : "User"),
+                hostImg: "",
                 email: host.email || ""
             }, { merge: true });
         }
 
-        async function removePick(dateIso, hostUid) {
-            await deleteDoc(doc(db, "host_picks", pickDocId(dateIso, hostUid)));
-        }
+        const removePick = (dateIso, hostUid) =>
+            deleteDoc(doc(db, "host_picks", pickDocId(dateIso, hostUid)));
 
         async function clearPicksForDate(dateIso) {
             const picks = hostPicks.filter(p => p.date === dateIso);
             await Promise.all(picks.map(p => removePick(dateIso, p.hostUid)));
         }
 
-        function picksForDate(dateIso) {
-            return hostPicks.filter(p => p.date === dateIso);
-        }
-
-        function isPicked(dateIso, hostUid) {
-            return hostPicks.some(p => p.date === dateIso && p.hostUid === hostUid);
-        }
+        const picksForDate = dateIso => hostPicks.filter(p => p.date === dateIso);
+        const isPicked = (dateIso, hostUid) => hostPicks.some(p => p.date === dateIso && p.hostUid === hostUid);
 
         const whoLine = document.getElementById("whoLine");
         const topAvatar = document.getElementById("topAvatar");
@@ -1517,8 +1542,6 @@
         const storageNote = document.getElementById("storageNote");
         const viewModeBtn = document.getElementById("viewModeBtn");
         const clearAllBtn = document.getElementById("clearAllBtn");
-        const overlayToggleBtn = document.getElementById("overlayToggleBtn");
-        const overlayInfoBox = document.getElementById("overlayInfoBox");
         const pfpPickerBox = document.getElementById("pfpPickerBox");
         const pfpGrid = document.getElementById("pfpGrid");
         const hostBar = document.getElementById("hostBar");
@@ -1568,9 +1591,7 @@
             authBackdrop.style.display = "flex";
         }
 
-        function closeAuth() {
-            authBackdrop.style.display = "none";
-        }
+        const closeAuth = () => authBackdrop.style.display = "none";
 
         function setSettingsTab(tab) {
             const profileActive = tab === "profile";
@@ -1594,9 +1615,7 @@
             settingsBackdrop.style.display = "flex";
         }
 
-        function closeSettings() {
-            settingsBackdrop.style.display = "none";
-        }
+        const closeSettings = () => settingsBackdrop.style.display = "none";
 
         function renderTop() {
             if (!session) {
@@ -1611,7 +1630,6 @@
                 resetBtn.style.display = "none";
                 viewModeBtn.style.display = "none";
                 clearAllBtn.style.display = "none";
-                overlayToggleBtn.style.display = "none";
                 sideSub.textContent = "Log in to view and manage the calendar";
                 return;
             }
@@ -1627,38 +1645,16 @@
             viewModeBtn.style.display = "inline-block";
             viewModeBtn.textContent = "View: " + (viewMode ? "ON" : "OFF");
 
-            const admin = session.role === "admin";
-            clearAllBtn.style.display = admin ? "inline-block" : "none";
-            resetBtn.style.display = admin ? "inline-block" : "none";
-            addEventBtn.style.display = (admin && !viewMode) ? "inline-block" : "none";
-            addAvailBtn.style.display = (admin && !viewMode) ? "inline-block" : "none";
-            overlayToggleBtn.style.display = admin ? "inline-block" : "none";
-
-            if (!selectedDate) {
-                overlayToggleBtn.textContent = "Event Overlay: OFF";
-                overlayToggleBtn.disabled = true;
-            } else {
-                overlayToggleBtn.disabled = false;
-                overlayToggleBtn.textContent = "Event Overlay: " + (isOverlayOn(selectedDate) ? "ON" : "OFF");
-            }
+            clearAllBtn.style.display = session.role === "admin" ? "inline-block" : "inline-block".replace("inline-block", "none");
+            resetBtn.style.display = session.role === "admin" ? "inline-block" : "none";
+            addEventBtn.style.display = (session.role === "admin" && !viewMode) ? "inline-block" : "none";
+            addAvailBtn.style.display = (session.role === "admin" && !viewMode) ? "inline-block" : "none";
 
             sideSub.textContent = viewMode
-                ? "View mode: no edit popup"
-                : (admin
-                    ? "Admin: manage events, availability, host picks, and event overlays"
-                    : "Staff: view dates and pick yourself as host");
-        }
-
-        function renderOverlayInfo() {
-            if (!selectedDate) {
-                overlayInfoBox.innerHTML = `<div class="tiny">Pick a date to see if an event overlay is active.</div>`;
-                return;
-            }
-
-            const active = isOverlayOn(selectedDate);
-            overlayInfoBox.innerHTML = active
-                ? `<div class="badge live">Event overlay is ON for this date</div>`
-                : `<div class="tiny">No event overlay on this date.</div>`;
+                ? "View mode: clicking days will not open editor"
+                : (session.role === "admin"
+                    ? "Admin: manage events, availability, and all picks"
+                    : "Staff: click dates and pick yourself as host");
         }
 
         function renderHostPicker() {
@@ -1676,12 +1672,9 @@
                 const allowed = canClickHost(host);
                 btn.setAttribute("aria-disabled", allowed ? "false" : "true");
 
-                btn.innerHTML = `
-                    <img class="pfpImg" src="${escapeHTML(profilePhotoOrDefault(host))}" alt="${escapeHTML(host.name)}" />
-                    <div class="pfpName">${escapeHTML(host.name)}</div>
-                `;
+                btn.innerHTML = `<div class="pfpName">${escapeHTML(host.name || (host.email ? host.email.split("@")[0] : "User"))}</div>`;
 
-                btn.addEventListener("click", async (e) => {
+                btn.addEventListener("click", async e => {
                     e.stopPropagation();
 
                     if (!allowed) {
@@ -1714,31 +1707,37 @@
             hostBar.style.display = "flex";
             hostBarDate.textContent = prettyDate(selectedDate);
 
-            const picks = picksForDate(selectedDate).slice().sort((a, b) => (a.hostName || "").localeCompare(b.hostName || ""));
+            const picks = picksForDate(selectedDate).slice().sort((a, b) => hostLabelFromPick(a).localeCompare(hostLabelFromPick(b)));
             hostChips.innerHTML = "";
 
             if (!picks.length) {
                 const empty = document.createElement("div");
                 empty.className = "chip";
-                empty.innerHTML = `<b style="color:rgba(238,241,246,.75)">No hosts picked yet</b>`;
+                empty.innerHTML = `<b style="color:rgba(238,241,246,.78)">No hosts picked yet</b>`;
                 hostChips.appendChild(empty);
             } else {
                 picks.forEach(p => {
                     const chip = document.createElement("div");
                     chip.className = "chip";
-                    chip.innerHTML = `
-                        <img src="${escapeHTML(p.hostImg || defaultAvatarDataURL(p.hostName || "U"))}" alt="${escapeHTML(p.hostName || "Host")}" />
-                        <b>${escapeHTML(p.hostName || "Host")}</b>
-                    `;
+                    chip.innerHTML = `<b>${escapeHTML(p.hostName || (p.email ? p.email.split("@")[0] : "Host"))}</b>`;
                     hostChips.appendChild(chip);
                 });
             }
 
-            if (session) {
-                clearMyPickBtn.style.display = isPicked(selectedDate, session.uid) ? "inline-flex" : "none";
-            } else {
-                clearMyPickBtn.style.display = "none";
-            }
+            clearMyPickBtn.style.display = session && isPicked(selectedDate, session.uid) ? "inline-flex" : "none";
+        }
+
+        function getDayHeaderLabel(cellDate) {
+            const mon = cellDate.toLocaleString(undefined, { month: "short" }).toUpperCase();
+            return `${mon} ${cellDate.getDate()}`;
+        }
+
+        function getDaySymbol({ dayEvents, dayAvail, dayPicks, iso }) {
+            if (isPastDay(iso)) return "⏺";
+            if (dayEvents.length) return "★";
+            if (dayPicks.length) return "👥";
+            if (dayAvail.length) return "•";
+            return "";
         }
 
         function renderCalendar() {
@@ -1759,90 +1758,93 @@
                 const dayEvents = events.filter(e => e.date === iso);
                 const dayAvail = avail.filter(a => a.date === iso);
                 const dayPicks = hostPicks.filter(p => p.date === iso);
-                const overlayActive = isOverlayOn(iso);
 
                 const div = document.createElement("div");
-                div.className = "day" + (inMonth ? "" : " muted");
+                div.className = "day";
+                if (!inMonth) div.classList.add("muted");
                 if (selectedDate === iso) div.classList.add("selected");
-                if (overlayActive) div.classList.add("overlayOn");
+                if (isPastDay(iso)) div.classList.add("past");
+                if (isToday(iso)) div.classList.add("today");
 
-                if (overlayActive) {
-                    const overlayTag = document.createElement("div");
-                    overlayTag.className = "dayOverlayTag";
-                    overlayTag.textContent = "Weekly";
-                    div.appendChild(overlayTag);
+                const topBar = document.createElement("div");
+                topBar.className = "dayTopBar";
+
+                const dayDate = document.createElement("div");
+                dayDate.className = "dayDate";
+                dayDate.textContent = getDayHeaderLabel(cellDate);
+
+                const dayIcon = document.createElement("div");
+                dayIcon.className = "dayIcon";
+                dayIcon.textContent = getDaySymbol({ dayEvents, dayAvail, dayPicks, iso });
+
+                const body = document.createElement("div");
+                body.className = "dayBody";
+
+                topBar.append(dayDate, dayIcon);
+
+                if (dayEvents.length) {
+                    const ev = dayEvents[0];
+
+                    if (ev.time) {
+                        const time = document.createElement("div");
+                        time.className = "miniTime";
+                        time.textContent = ev.time;
+                        body.appendChild(time);
+                    }
+
+                    const title = document.createElement("div");
+                    title.className = "miniItem";
+                    title.textContent = ev.title;
+                    body.appendChild(title);
+
+                    const meta = document.createElement("div");
+                    meta.className = "miniMeta";
+                    meta.textContent = ev.note || (ev.host ? `with ${ev.host}` : "");
+                    body.appendChild(meta);
+                } else if (dayAvail.length) {
+                    const txt = document.createElement("div");
+                    txt.className = "miniItem";
+                    txt.textContent = `${dayAvail.length} availability added`;
+                    body.appendChild(txt);
+                } else if (dayPicks.length) {
+                    const txt = document.createElement("div");
+                    txt.className = "miniItem";
+                    txt.textContent = `${dayPicks.length} host pick${dayPicks.length === 1 ? "" : "s"}`;
+                    body.appendChild(txt);
                 }
-
-                const head = document.createElement("div");
-                head.className = "dayHead";
-
-                const num = document.createElement("div");
-                num.className = "dayNum";
-                num.textContent = String(cellDate.getDate());
-
-                const badge = document.createElement("div");
-                const parts = [];
-                if (dayEvents.length) parts.push("E " + dayEvents.length);
-                if (dayAvail.length) parts.push("A " + dayAvail.length);
-                if (dayPicks.length) parts.push("H " + dayPicks.length);
-                if (overlayActive) parts.unshift("LIVE");
-
-                badge.className = "badge";
-                if (overlayActive) {
-                    badge.classList.add("live");
-                } else if (dayEvents.length) {
-                    badge.classList.add("brand");
-                } else if (dayAvail.length || dayPicks.length) {
-                    badge.classList.add("ok");
-                }
-                badge.textContent = parts.length ? parts.join(" ") : "";
-
-                head.appendChild(num);
-                head.appendChild(badge);
-
-                const list = document.createElement("div");
-                list.className = "miniList";
-
-                dayEvents.slice(0, 2).forEach(ev => {
-                    const it = document.createElement("div");
-                    it.className = "miniItem";
-                    it.textContent = ev.host ? `${ev.title} - ${ev.host}` : ev.title;
-                    list.appendChild(it);
-                });
 
                 if (dayPicks.length) {
-                    const it = document.createElement("div");
-                    it.className = "miniItem";
-                    const icons = dayPicks.slice(0, 3).map(p =>
-                        `<img src="${escapeHTML(p.hostImg || defaultAvatarDataURL(p.hostName || "U"))}"
-                              title="${escapeHTML(p.hostName || "Host")}"
-                              style="width:20px;height:20px;border-radius:50%;border:1px solid rgba(255,255,255,.18);margin-right:-6px;vertical-align:middle;background:rgba(255,255,255,.06)">`
-                    ).join("");
-                    const extra = dayPicks.length > 3 ? ` <span>+${dayPicks.length - 3}</span>` : "";
-                    it.innerHTML = `<span>Hosts:</span> ${icons}${extra}`;
-                    list.appendChild(it);
+                    const hostPreviewRow = document.createElement("div");
+                    hostPreviewRow.className = "hostPreviewRow";
+
+                    dayPicks.slice(0, 3).forEach(p => {
+                        const nameTag = document.createElement("div");
+                        nameTag.className = "badge ok";
+                        nameTag.textContent = p.hostName || (p.email ? p.email.split("@")[0] : "Host");
+                        hostPreviewRow.appendChild(nameTag);
+                    });
+
+                    if (dayPicks.length > 3) {
+                        const extra = document.createElement("div");
+                        extra.className = "miniMeta";
+                        extra.textContent = `+${dayPicks.length - 3}`;
+                        hostPreviewRow.appendChild(extra);
+                    }
+
+                    body.appendChild(hostPreviewRow);
                 }
 
-                if (dayEvents.length > 2) {
-                    const it = document.createElement("div");
-                    it.className = "miniItem";
-                    it.innerHTML = `<span>+${dayEvents.length - 2} more</span>`;
-                    list.appendChild(it);
+                if (!dayEvents.length && !dayAvail.length && !dayPicks.length) {
+                    const spacer = document.createElement("div");
+                    spacer.className = "miniMeta";
+                    spacer.textContent = isPastDay(iso) ? "Past day" : "";
+                    body.appendChild(spacer);
                 }
 
-                if (overlayActive && !dayEvents.length) {
-                    const it = document.createElement("div");
-                    it.className = "miniItem";
-                    it.textContent = "Event overlay active";
-                    list.appendChild(it);
-                }
-
-                div.appendChild(head);
-                div.appendChild(list);
+                div.append(topBar, body);
 
                 div.addEventListener("click", () => {
                     selectedDate = iso;
-                    renderTop();
                     renderCalendar();
                     renderDetails();
                     renderHostPicker();
@@ -1857,7 +1859,6 @@
                     }
 
                     if (session.role !== "admin") return;
-
                     openDayModal(iso);
                 });
 
@@ -1870,61 +1871,48 @@
             detailList.innerHTML = "";
             renderHostBar();
             renderHostPicker();
-            renderOverlayInfo();
-            renderTop();
 
             if (!session) {
-                detailList.innerHTML = `
-                    <div class="emptyState">
-                        <b>Login required</b>
-                        <p style="margin:8px 0 0;color:var(--muted);font-size:12px;">Create an account or log in to use the calendar.</p>
-                    </div>
-                `;
+                detailList.innerHTML = `<div class="emptyState">Login required. Create an account or log in to use the calendar.</div>`;
                 return;
             }
 
             if (!selectedDate) {
-                detailList.innerHTML = `
-                    <div class="emptyState">
-                        <b>Pick a date</b>
-                        <p style="margin:8px 0 0;color:var(--muted);font-size:12px;">Tap or click a day to view events and host picks.</p>
-                    </div>
-                `;
+                detailList.innerHTML = `<div class="emptyState">Pick a date to view events, picks, and availability.</div>`;
                 return;
             }
 
             const dayEvents = events.filter(e => e.date === selectedDate);
             const dayAvail = avail.filter(a => a.date === selectedDate);
             const dayPicks = picksForDate(selectedDate);
-            const overlayActive = isOverlayOn(selectedDate);
 
             const picksCard = document.createElement("div");
-            picksCard.className = "item";
-
-            const picksLeft = document.createElement("div");
-            picksLeft.style.flex = "1";
-            picksLeft.innerHTML = `<h4>Picked hosts (${dayPicks.length})</h4>`;
+            picksCard.className = "detailCard";
+            picksCard.innerHTML = `
+                    <div class="detailCardTop">
+                        <h4>Picked hosts (${dayPicks.length})</h4>
+                        <div class="badge ok">Host picks</div>
+                    </div>
+                `;
 
             if (!dayPicks.length) {
-                const p = document.createElement("p");
-                p.textContent = "No host picks yet.";
-                picksLeft.appendChild(p);
+                picksCard.innerHTML += `<div class="emptyState">No host picks yet.</div>`;
             } else {
                 dayPicks.forEach(pick => {
                     const row = document.createElement("div");
                     row.className = "pickEntry";
+
                     row.innerHTML = `
-                        <div class="pickEntryLeft">
-                            <img src="${escapeHTML(pick.hostImg || defaultAvatarDataURL(pick.hostName || "U"))}" alt="${escapeHTML(pick.hostName || "Host")}">
-                            <div>
-                                <div class="pickEntryName">${escapeHTML(pick.hostName || "Host")}</div>
-                                <div class="pickEntryMeta">${escapeHTML(pick.email || "")}</div>
+                            <div class="pickEntryLeft">
+                                <div>
+                                    <div class="pickEntryName">${escapeHTML(pick.hostName || (pick.email ? pick.email.split("@")[0] : "Host"))}</div>
+                                    <div class="pickEntryMeta">${escapeHTML(pick.email || "")}</div>
+                                </div>
                             </div>
-                        </div>
-                    `;
+                        `;
 
                     const actions = document.createElement("div");
-                    actions.className = "row";
+                    actions.className = "actionsRow";
 
                     const isMine = session && pick.hostUid === session.uid;
 
@@ -1945,169 +1933,111 @@
                     }
 
                     row.appendChild(actions);
-                    picksLeft.appendChild(row);
+                    picksCard.appendChild(row);
                 });
+
+                if (!viewMode && session.role === "admin" && dayPicks.length) {
+                    const clearWrap = document.createElement("div");
+                    clearWrap.className = "actionsRow";
+                    clearWrap.style.marginTop = "10px";
+
+                    const clearBtn = document.createElement("button");
+                    clearBtn.className = "btn small danger";
+                    clearBtn.textContent = "Clear date picks";
+                    clearBtn.onclick = async () => {
+                        if (!confirm("Remove all host picks for this date?")) return;
+                        try {
+                            await clearPicksForDate(selectedDate);
+                            toast("Cleared picks");
+                        } catch (err) {
+                            console.error(err);
+                            toast("Could not clear picks");
+                        }
+                    };
+
+                    clearWrap.appendChild(clearBtn);
+                    picksCard.appendChild(clearWrap);
+                }
             }
 
-            const picksRight = document.createElement("div");
-            picksRight.className = "row";
-            picksRight.innerHTML = `<div class="badge ok">Host picks</div>`;
-
-            if (!viewMode && session.role === "admin" && dayPicks.length) {
-                const clearBtn = document.createElement("button");
-                clearBtn.className = "btn small danger";
-                clearBtn.textContent = "Clear date picks";
-                clearBtn.onclick = async () => {
-                    const ok = confirm("Remove all host picks for this date?");
-                    if (!ok) return;
-                    try {
-                        await clearPicksForDate(selectedDate);
-                        toast("Cleared picks");
-                    } catch (err) {
-                        console.error(err);
-                        toast("Could not clear picks");
-                    }
-                };
-                picksRight.appendChild(clearBtn);
-            }
-
-            picksCard.appendChild(picksLeft);
-            picksCard.appendChild(picksRight);
             detailList.appendChild(picksCard);
 
-            const overlayCard = document.createElement("div");
-            overlayCard.className = "item";
-
-            const overlayLeft = document.createElement("div");
-            overlayLeft.style.flex = "1";
-            overlayLeft.innerHTML = `
-                <h4>Event overlay</h4>
-                <p>${overlayActive ? "This date is highlighted for everyone viewing the calendar." : "This date is not highlighted right now."}</p>
-            `;
-
-            if (!viewMode && session.role === "admin") {
-                const row = document.createElement("div");
-                row.className = "row";
-                row.style.marginTop = "10px";
-
-                const toggleBtn = document.createElement("button");
-                toggleBtn.className = "btn small warn";
-                toggleBtn.textContent = overlayActive ? "Turn OFF overlay" : "Turn ON overlay";
-                toggleBtn.onclick = async () => {
-                    try {
-                        await setDayOverlay(selectedDate, !overlayActive);
-                        toast("Overlay " + (!overlayActive ? "enabled" : "disabled"));
-                    } catch (err) {
-                        console.error(err);
-                        toast("Could not update overlay");
-                    }
-                };
-
-                row.appendChild(toggleBtn);
-                overlayLeft.appendChild(row);
-            }
-
-            const overlayRight = document.createElement("div");
-            overlayRight.innerHTML = overlayActive
-                ? '<div class="badge live">LIVE</div>'
-                : '<div class="badge">OFF</div>';
-
-            overlayCard.appendChild(overlayLeft);
-            overlayCard.appendChild(overlayRight);
-            detailList.appendChild(overlayCard);
-
             const evCard = document.createElement("div");
-            evCard.className = "item";
-            const evLeft = document.createElement("div");
-            evLeft.style.flex = "1";
-            evLeft.innerHTML = `<h4>Official events (${dayEvents.length})</h4>`;
+            evCard.className = "detailCard";
+            evCard.innerHTML = `
+                    <div class="detailCardTop">
+                        <h4>Official events (${dayEvents.length})</h4>
+                        <div class="badge brand">${session.role === "admin" ? "Admin" : "Staff"}</div>
+                    </div>
+                `;
 
             if (!dayEvents.length) {
-                const p = document.createElement("p");
-                p.textContent = "No official events on this day yet.";
-                evLeft.appendChild(p);
+                evCard.innerHTML += `<div class="emptyState">No official events on this day yet.</div>`;
             } else {
-                dayEvents.slice().sort((a, b) => (a.time || "").localeCompare(b.time || "")).forEach(ev => {
-                    const wrap = document.createElement("div");
-                    wrap.style.marginTop = "10px";
-                    wrap.style.padding = "10px";
-                    wrap.style.borderRadius = "12px";
-                    wrap.style.border = "1px solid rgba(255,255,255,.10)";
-                    wrap.style.background = "rgba(0,0,0,.16)";
+                dayEvents
+                    .slice()
+                    .sort((a, b) => (a.time || "").localeCompare(b.time || ""))
+                    .forEach(ev => {
+                        const wrap = document.createElement("div");
+                        wrap.className = "eventBlock";
+                        wrap.innerHTML = `
+                                <div class="eventTitle">${escapeHTML(ev.title)}</div>
+                                <div class="metaText">${escapeHTML(ev.time || "Time TBA")} • ${escapeHTML(ev.location || "Location TBA")} • ${escapeHTML(ev.host ? `Host: ${ev.host}` : "Host: Unassigned")}</div>
+                                ${ev.note ? `<div class="metaText" style="margin-top:8px;">${escapeHTML(ev.note)}</div>` : ""}
+                            `;
 
-                    const hostLine = ev.host ? `Host: ${ev.host}` : "Host: Unassigned";
+                        if (!viewMode && session.role === "admin") {
+                            const controls = document.createElement("div");
+                            controls.className = "actionsRow";
+                            controls.style.marginTop = "10px";
 
-                    wrap.innerHTML = `
-                        <b>${escapeHTML(ev.title)}</b>
-                        <div class="meta">${escapeHTML(ev.time || "Time TBA")} • ${escapeHTML(ev.location || "Location TBA")} • ${escapeHTML(hostLine)}</div>
-                        ${ev.note ? `<p style="margin:8px 0 0;font-size:12px;color:var(--muted)">${escapeHTML(ev.note)}</p>` : ""}
-                    `;
+                            const setHostBtn = document.createElement("button");
+                            setHostBtn.className = "btn small primary";
+                            setHostBtn.textContent = "Set host";
+                            setHostBtn.onclick = async () => {
+                                const name = prompt("Host name:", ev.host || "");
+                                if (name === null) return;
+                                await upsertEvent({ ...ev, host: name.trim() });
+                                toast("Host updated");
+                            };
 
-                    if (!viewMode && session.role === "admin") {
-                        const controls = document.createElement("div");
-                        controls.style.marginTop = "10px";
-                        controls.style.display = "flex";
-                        controls.style.gap = "8px";
-                        controls.style.flexWrap = "wrap";
+                            const delBtn = document.createElement("button");
+                            delBtn.className = "btn small danger";
+                            delBtn.textContent = "Remove";
+                            delBtn.onclick = async () => {
+                                await removeEvent(ev.id);
+                                toast("Event removed");
+                            };
 
-                        const setHostBtn = document.createElement("button");
-                        setHostBtn.className = "btn small primary";
-                        setHostBtn.textContent = "Set host";
-                        setHostBtn.onclick = async () => {
-                            const name = prompt("Host name:", ev.host || "");
-                            if (name === null) return;
-                            await upsertEvent({ ...ev, host: name.trim() });
-                            toast("Host updated");
-                        };
+                            controls.append(setHostBtn, delBtn);
+                            wrap.appendChild(controls);
+                        }
 
-                        const delBtn = document.createElement("button");
-                        delBtn.className = "btn small danger";
-                        delBtn.textContent = "Remove";
-                        delBtn.onclick = async () => {
-                            await removeEvent(ev.id);
-                            toast("Event removed");
-                        };
-
-                        controls.appendChild(setHostBtn);
-                        controls.appendChild(delBtn);
-                        wrap.appendChild(controls);
-                    }
-
-                    evLeft.appendChild(wrap);
-                });
+                        evCard.appendChild(wrap);
+                    });
             }
 
-            const evRight = document.createElement("div");
-            evRight.innerHTML = (session.role === "admin")
-                ? '<div class="badge brand">Admin</div>'
-                : '<div class="badge">Staff</div>';
-
-            evCard.appendChild(evLeft);
-            evCard.appendChild(evRight);
             detailList.appendChild(evCard);
 
             const avCard = document.createElement("div");
-            avCard.className = "item";
-            const avLeft = document.createElement("div");
-            avLeft.style.flex = "1";
-            avLeft.innerHTML = `<h4>Staff availability (${dayAvail.length})</h4>`;
+            avCard.className = "detailCard";
+            avCard.innerHTML = `
+                    <div class="detailCardTop">
+                        <h4>Staff availability (${dayAvail.length})</h4>
+                        <div class="badge warn">Availability</div>
+                    </div>
+                `;
 
             if (!dayAvail.length) {
-                const p = document.createElement("p");
-                p.textContent = "No availability added yet.";
-                avLeft.appendChild(p);
+                avCard.innerHTML += `<div class="emptyState">No availability added yet.</div>`;
             } else {
                 dayAvail.forEach(a => {
                     const line = document.createElement("div");
-                    line.style.marginTop = "10px";
-                    line.style.padding = "10px";
-                    line.style.borderRadius = "12px";
-                    line.style.border = "1px solid rgba(255,255,255,.10)";
-                    line.style.background = "rgba(0,0,0,.16)";
+                    line.className = "availabilityBlock";
                     line.innerHTML = `
-                        <b class="okText">${escapeHTML(a.name)}</b>
-                        <div class="meta">${escapeHTML(a.note || "Available to host")}</div>
-                    `;
+                            <div class="eventTitle" style="margin-bottom:4px;">${escapeHTML(a.name)}</div>
+                            <div class="metaText">${escapeHTML(a.note || "Available to host")}</div>
+                        `;
 
                     if (!viewMode && session.role === "admin") {
                         const del = document.createElement("button");
@@ -2121,120 +2051,93 @@
                         line.appendChild(del);
                     }
 
-                    avLeft.appendChild(line);
+                    avCard.appendChild(line);
                 });
             }
 
-            const avRight = document.createElement("div");
-            avRight.innerHTML = '<div class="badge warn">Availability</div>';
-            avCard.appendChild(avLeft);
-            avCard.appendChild(avRight);
             detailList.appendChild(avCard);
         }
 
         function openDayModal(iso) {
             if (!session || viewMode || session.role !== "admin") return;
 
-            const overlayActive = isOverlayOn(iso);
-
             dayBackdrop.style.display = "flex";
             dayModalTitle.textContent = prettyDate(iso);
-            dayModalSub.textContent = "Admin: add an official event, add staff availability, or toggle the event overlay.";
+            dayModalSub.textContent = "Small quick editor for admins.";
 
             dayModalBody.innerHTML = `
-                <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:10px">
-                    <div class="pill">Selected: <b>${escapeHTML(iso)}</b></div>
-                    <button class="btn" id="closeDayModal" type="button">Close</button>
-                </div>
-
-                <div class="kv" style="margin-bottom:12px;">
-                    <div class="t">Event overlay</div>
-                    <div style="height:10px"></div>
-                    <div class="tiny" style="margin-bottom:10px;">This highlights the date for everyone viewing the site.</div>
-                    <button class="btn warn" id="toggleDayOverlayInModal" type="button">${overlayActive ? "Turn OFF overlay" : "Turn ON overlay"}</button>
-                </div>
-
-                <div class="kv">
-                    <div class="t">Add official event</div>
-                    <div style="height:10px"></div>
-                    <div class="field"><label>Event title</label><input id="evTitle" placeholder="e.g. Time Trial" maxlength="50"></div>
-                    <div class="row">
-                        <div class="field" style="flex:1;min-width:160px"><label>Time (optional)</label><input id="evTime" placeholder="e.g. 6:00PM AEST" maxlength="30"></div>
-                        <div class="field" style="flex:1;min-width:160px"><label>Location (optional)</label><input id="evLoc" placeholder="e.g. Spider cave" maxlength="40"></div>
+                    <div class="actionsRow" style="justify-content:space-between; margin-bottom:12px;">
+                        <div class="pill">Selected: <b>${escapeHTML(iso)}</b></div>
+                        <button class="btn" id="closeDayModal" type="button">Close</button>
                     </div>
-                    <div class="field"><label>Host (optional)</label><input id="evHost" placeholder="e.g. Nugg" maxlength="24"></div>
-                    <div class="field"><label>Notes (optional)</label><textarea id="evNote" placeholder="Extra details..."></textarea></div>
-                    <button class="btn ok" id="saveEvent" type="button">Add event</button>
-                </div>
 
-                <div class="divider"></div>
+                    <div class="field">
+                        <label>Event title</label>
+                        <input id="evTitle" placeholder="e.g. Time Trial" maxlength="50">
+                    </div>
 
-                <div class="kv">
-                    <div class="t">Add availability</div>
-                    <div style="height:10px"></div>
-                    <div class="field"><label>Name</label><input id="avName" placeholder="e.g. Nugg" maxlength="24"></div>
-                    <div class="field"><label>Note (optional)</label><input id="avNote" placeholder="e.g. Can host after 5pm" maxlength="60"></div>
-                    <button class="btn primary" id="saveAvail" type="button">Add availability</button>
-                </div>
-            `;
+                    <div class="editorMiniGrid">
+                        <div class="field">
+                            <label>Time</label>
+                            <input id="evTime" placeholder="e.g. 6:00PM AEST" maxlength="30">
+                        </div>
+                        <div class="field">
+                            <label>Location</label>
+                            <input id="evLoc" placeholder="e.g. Spider cave" maxlength="40">
+                        </div>
+                    </div>
 
-            document.getElementById("closeDayModal").onclick = () => {
-                dayBackdrop.style.display = "none";
-            };
+                    <div class="editorMiniGrid">
+                        <div class="field">
+                            <label>Host</label>
+                            <input id="evHost" placeholder="e.g. Nugg" maxlength="24">
+                        </div>
+                        <div class="field">
+                            <label>Availability name</label>
+                            <input id="avName" placeholder="e.g. Nugg" maxlength="24">
+                        </div>
+                    </div>
 
-            document.getElementById("toggleDayOverlayInModal").onclick = async () => {
-                try {
-                    await setDayOverlay(iso, !overlayActive);
-                    toast("Overlay " + (!overlayActive ? "enabled" : "disabled"));
-                    dayBackdrop.style.display = "none";
-                } catch (err) {
-                    console.error(err);
-                    toast("Could not update overlay");
-                }
-            };
+                    <div class="field">
+                        <label>Notes</label>
+                        <textarea id="evNote" placeholder="Extra details or availability note"></textarea>
+                    </div>
+
+                    <div class="modalActions">
+                        <button class="btn primary" id="saveEvent" type="button">Add event</button>
+                        <button class="btn ok" id="saveAvail" type="button">Add availability</button>
+                    </div>
+                `;
+
+            document.getElementById("closeDayModal").onclick = () => dayBackdrop.style.display = "none";
 
             document.getElementById("saveEvent").onclick = async () => {
-                const title = (document.getElementById("evTitle").value || "").trim();
-                const time = (document.getElementById("evTime").value || "").trim();
-                const loc = (document.getElementById("evLoc").value || "").trim();
-                const host = (document.getElementById("evHost").value || "").trim();
-                const note = (document.getElementById("evNote").value || "").trim();
+                const title = document.getElementById("evTitle").value.trim();
+                const time = document.getElementById("evTime").value.trim();
+                const loc = document.getElementById("evLoc").value.trim();
+                const host = document.getElementById("evHost").value.trim();
+                const note = document.getElementById("evNote").value.trim();
 
                 if (!title) {
                     toast("Event title required");
                     return;
                 }
 
-                await upsertEvent({
-                    id: uid(),
-                    date: iso,
-                    title,
-                    time,
-                    location: loc,
-                    host,
-                    note
-                });
-
+                await upsertEvent({ id: uid(), date: iso, title, time, location: loc, host, note });
                 toast("Event added");
                 dayBackdrop.style.display = "none";
             };
 
             document.getElementById("saveAvail").onclick = async () => {
-                const name = (document.getElementById("avName").value || "").trim();
-                const note = (document.getElementById("avNote").value || "").trim();
+                const name = document.getElementById("avName").value.trim();
+                const note = document.getElementById("evNote").value.trim();
 
                 if (!name) {
-                    toast("Name required");
+                    toast("Availability name required");
                     return;
                 }
 
-                await upsertAvail({
-                    id: uid(),
-                    date: iso,
-                    name,
-                    note
-                });
-
+                await upsertAvail({ id: uid(), date: iso, name, note });
                 toast("Availability added");
                 dayBackdrop.style.display = "none";
             };
@@ -2242,7 +2145,7 @@
 
         function clearListeners() {
             unsubscribers.forEach(fn => {
-                try { fn(); } catch {}
+                try { fn(); } catch { }
             });
             unsubscribers = [];
         }
@@ -2251,7 +2154,7 @@
             clearListeners();
             storageNote.textContent = "Syncing with Firebase...";
 
-            unsubscribers.push(onSnapshot(collection(db, "users"), (snap) => {
+            unsubscribers.push(onSnapshot(collection(db, "users"), snap => {
                 usersMap.clear();
                 hosts = snap.docs.map(d => {
                     const data = d.data();
@@ -2264,11 +2167,10 @@
                     };
                     usersMap.set(d.id, user);
                     return user;
-                }).sort((a, b) => a.name.localeCompare(b.name));
+                }).sort((a, b) => hostLabelFromUser(a).localeCompare(hostLabelFromUser(b)));
 
                 if (session && usersMap.has(session.uid)) {
-                    const fresh = usersMap.get(session.uid);
-                    session = { ...session, ...fresh };
+                    session = { ...session, ...usersMap.get(session.uid) };
                     renderTop();
                 }
 
@@ -2276,36 +2178,28 @@
                 renderDetails();
             }));
 
-            unsubscribers.push(onSnapshot(collection(db, "events"), (snap) => {
+            unsubscribers.push(onSnapshot(collection(db, "events"), snap => {
                 events = snap.docs.map(d => d.data());
                 saveJSON(KEY_EVENTS, events);
                 renderCalendar();
                 renderDetails();
-                storageNote.textContent = "Synced with Firebase";
+                storageNote.textContent = "";
             }));
 
-            unsubscribers.push(onSnapshot(collection(db, "availability"), (snap) => {
+            unsubscribers.push(onSnapshot(collection(db, "availability"), snap => {
                 avail = snap.docs.map(d => d.data());
                 saveJSON(KEY_AVAIL, avail);
                 renderCalendar();
                 renderDetails();
             }));
 
-            unsubscribers.push(onSnapshot(collection(db, "host_picks"), (snap) => {
+            unsubscribers.push(onSnapshot(collection(db, "host_picks"), snap => {
                 hostPicks = snap.docs.map(d => d.data());
                 saveJSON(KEY_PICKS, hostPicks);
                 renderCalendar();
                 renderDetails();
                 renderHostPicker();
                 renderHostBar();
-            }));
-
-            unsubscribers.push(onSnapshot(collection(db, "day_flags"), (snap) => {
-                dayFlags = snap.docs.map(d => d.data());
-                saveJSON(KEY_FLAGS, dayFlags);
-                renderTop();
-                renderCalendar();
-                renderDetails();
             }));
         }
 
@@ -2328,9 +2222,9 @@
         document.getElementById("authClose").addEventListener("click", closeAuth);
 
         authGo.addEventListener("click", async () => {
-            const email = (authEmail.value || "").trim();
-            const password = authPassword.value || "";
-            const password2 = authPassword2.value || "";
+            const email = authEmail.value.trim();
+            const password = authPassword.value;
+            const password2 = authPassword2.value;
 
             if (!email || !password) {
                 toast("Enter email and password");
@@ -2401,7 +2295,7 @@
         document.getElementById("saveProfileBtn").addEventListener("click", async () => {
             if (!session) return;
 
-            const name = (profileName.value || "").trim();
+            const name = profileName.value.trim();
             if (name.length < 2) {
                 toast("Display name must be at least 2 characters");
                 return;
@@ -2439,10 +2333,10 @@
             const user = auth.currentUser;
             if (!user || !session) return;
 
-            const newEmail = (accountNewEmail.value || "").trim();
-            const currentPassword = accountCurrentPassword.value || "";
-            const newPassword = accountNewPassword.value || "";
-            const newPassword2 = accountNewPassword2.value || "";
+            const newEmail = accountNewEmail.value.trim();
+            const currentPassword = accountCurrentPassword.value;
+            const newPassword = accountNewPassword.value;
+            const newPassword2 = accountNewPassword2.value;
 
             if (!newEmail && !newPassword) {
                 toast("No account changes entered");
@@ -2468,13 +2362,8 @@
                 const credential = EmailAuthProvider.credential(user.email, currentPassword);
                 await reauthenticateWithCredential(user, credential);
 
-                if (newEmail) {
-                    await updateEmail(user, newEmail);
-                }
-
-                if (newPassword) {
-                    await updatePassword(user, newPassword);
-                }
+                if (newEmail) await updateEmail(user, newEmail);
+                if (newPassword) await updatePassword(user, newPassword);
 
                 await setDoc(doc(db, "users", session.uid), {
                     email: newEmail || user.email || session.email || ""
@@ -2519,7 +2408,6 @@
         document.getElementById("todayBtn").addEventListener("click", () => {
             viewDate = new Date();
             selectedDate = toISODate(new Date());
-            renderTop();
             renderCalendar();
             renderDetails();
 
@@ -2531,9 +2419,7 @@
                 return;
             }
 
-            if (session.role === "admin") {
-                openDayModal(selectedDate);
-            }
+            if (session.role === "admin") openDayModal(selectedDate);
         });
 
         addEventBtn.addEventListener("click", () => {
@@ -2569,40 +2455,25 @@
             renderDetails();
         });
 
-        overlayToggleBtn.addEventListener("click", async () => {
-            if (!session || session.role !== "admin" || !selectedDate) return;
-
-            try {
-                const next = !isOverlayOn(selectedDate);
-                await setDayOverlay(selectedDate, next);
-                toast("Event overlay " + (next ? "ON" : "OFF"));
-            } catch (err) {
-                console.error(err);
-                toast("Could not update event overlay");
-            }
-        });
-
         clearAllBtn.addEventListener("click", async () => {
             if (!session || session.role !== "admin") return;
 
             const ok = confirm(
-                "CLEAR ALL?\n\nThis deletes:\n- All Events\n- All Availability\n- All Host Picks\n- All Event Overlays\n\nThis cannot be undone."
+                "CLEAR ALL?\n\nThis deletes:\n- All Events\n- All Availability\n- All Host Picks\n\nThis cannot be undone."
             );
             if (!ok) return;
 
             try {
-                const [evSnap, avSnap, pkSnap, flSnap] = await Promise.all([
+                const [evSnap, avSnap, pkSnap] = await Promise.all([
                     getDocs(collection(db, "events")),
                     getDocs(collection(db, "availability")),
-                    getDocs(collection(db, "host_picks")),
-                    getDocs(collection(db, "day_flags"))
+                    getDocs(collection(db, "host_picks"))
                 ]);
 
                 const deletes = [];
                 evSnap.forEach(d => deletes.push(deleteDoc(doc(db, "events", d.id))));
                 avSnap.forEach(d => deletes.push(deleteDoc(doc(db, "availability", d.id))));
                 pkSnap.forEach(d => deletes.push(deleteDoc(doc(db, "host_picks", d.id))));
-                flSnap.forEach(d => deletes.push(deleteDoc(doc(db, "day_flags", d.id))));
                 await Promise.all(deletes);
 
                 toast("Cleared everything");
@@ -2617,23 +2488,22 @@
             saveJSON(KEY_EVENTS, []);
             saveJSON(KEY_AVAIL, []);
             saveJSON(KEY_PICKS, []);
-            saveJSON(KEY_FLAGS, []);
             toast("Local cache cleared");
         });
 
-        authBackdrop.addEventListener("click", (e) => {
+        authBackdrop.addEventListener("click", e => {
             if (e.target === authBackdrop) closeAuth();
         });
 
-        settingsBackdrop.addEventListener("click", (e) => {
+        settingsBackdrop.addEventListener("click", e => {
             if (e.target === settingsBackdrop) closeSettings();
         });
 
-        dayBackdrop.addEventListener("click", (e) => {
+        dayBackdrop.addEventListener("click", e => {
             if (e.target === dayBackdrop) dayBackdrop.style.display = "none";
         });
 
-        onAuthStateChanged(auth, async (firebaseUser) => {
+        onAuthStateChanged(auth, async firebaseUser => {
             try {
                 if (!firebaseUser) {
                     session = null;
@@ -2653,7 +2523,6 @@
                     const dateToOpen = pendingOpenDate;
                     pendingOpenDate = null;
                     selectedDate = dateToOpen;
-                    renderTop();
                     renderCalendar();
                     renderDetails();
                     openDayModal(dateToOpen);
